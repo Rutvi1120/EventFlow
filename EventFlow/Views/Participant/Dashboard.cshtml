@@ -1,0 +1,78 @@
+﻿@model IEnumerable<EventFlow.Models.Event>
+
+@{
+    ViewData["Title"] = "Participant Dashboard";
+}
+
+<h1>Participant Dashboard</h1>
+
+<p>View upcoming events and manage your event participation.</p>
+
+<div class="row">
+
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Total Events</h5>
+                <h2>@ViewBag.TotalEvents</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Upcoming Events</h5>
+                <h2>@ViewBag.UpcomingEvents</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr />
+
+<h4>Upcoming Events</h4>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Event</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Venue</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.StartDateTime</td>
+                <td>@item.EndDateTime</td>
+                <td>@item.Venue?.Name</td>
+                <td>@item.Status</td>
+                <td>
+                    <a asp-controller="Events"
+                       asp-action="Details"
+                       asp-route-id="@item.Id">
+                        View Details
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h4>Event Activities</h4>
+
+<a asp-controller="Events"
+   asp-action="Index"
+   class="btn btn-primary">
+    Browse Events
+</a>

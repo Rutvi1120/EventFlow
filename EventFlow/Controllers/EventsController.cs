@@ -5,7 +5,7 @@ using EventFlow.Data;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
 
-[Authorize(Roles = "Admin,Organizer")]
+//[Authorize(Roles = "Admin,Organizer")]
 public class EventsController : Controller
 {
     private readonly ApplicationDbContext _context;

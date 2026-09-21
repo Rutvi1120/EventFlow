@@ -1,0 +1,108 @@
+﻿@model IEnumerable<EventFlow.Models.Event>
+
+@{
+    ViewData["Title"] = "Organizer Dashboard";
+}
+
+<h1>Organizer Dashboard</h1>
+
+<p>Manage and monitor your events from here.</p>
+
+<div class="row">
+
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Total Events</h5>
+                <h2>@ViewBag.TotalEvents</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Upcoming</h5>
+                <h2>@ViewBag.UpcomingEvents</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Ongoing</h5>
+                <h2>@ViewBag.OngoingEvents</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Delayed</h5>
+                <h2>@ViewBag.DelayedEvents</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr />
+
+<h4>Recent Events</h4>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Event</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Venue</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.StartDateTime</td>
+                <td>@item.EndDateTime</td>
+                <td>@item.Venue?.Name</td>
+                <td>@item.Status</td>
+                <td>
+                    <a asp-controller="Events"
+                       asp-action="Details"
+                       asp-route-id="@item.Id">
+                        Details
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h4>Event Management</h4>
+
+<a asp-controller="Events"
+   asp-action="Create"
+   class="btn btn-primary">
+    Create Event
+</a>
+
+<a asp-controller="Events"
+   asp-action="Index"
+   class="btn btn-secondary">
+    Manage Events
+</a>
+
+<a asp-controller="Venues"
+   asp-action="Index"
+   class="btn btn-secondary">
+    Manage Venues
+</a>

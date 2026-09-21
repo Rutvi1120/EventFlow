@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1>Admin Dashboard</h1>
+
+<p>Welcome to the EventFlow administration panel.</p>
+
+<div class="row">
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Total Users</h5>
+                <h2>@ViewBag.TotalUsers</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Admins</h5>
+                <h2>@ViewBag.TotalAdmins</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Organizers</h5>
+                <h2>@ViewBag.TotalOrganizers</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Participants</h5>
+                <h2>@ViewBag.TotalParticipants</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>Volunteers</h5>
+                <h2>@ViewBag.TotalVolunteers</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<hr />
+
+<h4>Administration</h4>
+
+<a asp-controller="Role"
+   asp-action="Index"
+   class="btn btn-primary">
+    Manage User Roles
+</a>

@@ -1,0 +1,49 @@
+﻿@model IEnumerable<EventFlow.Models.UserRoleViewModel>
+
+@{
+    ViewData["Title"] = "User Roles";
+}
+
+<h1>User Roles</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Student ID</th>
+            <th>Department</th>
+            <th>Current Role</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.User.FullName</td>
+                <td>@item.User.Email</td>
+                <td>@item.User.StudentId</td>
+                <td>@item.User.Department</td>
+                <td>
+                    @if (item.Roles.Any())
+                    {
+                        @string.Join(", ", item.Roles)
+                    }
+                    else
+                    {
+                        <span>No Role</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="AssignRole"
+                       asp-route-id="@item.User.Id"
+                       class="btn btn-primary">
+                        Assign Role
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

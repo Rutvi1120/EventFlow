@@ -1,0 +1,56 @@
+﻿@model EventFlow.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Assign Role";
+}
+
+<h1>Assign Role</h1>
+
+<div class="row">
+    <div class="col-md-6">
+
+        <h4>User Details</h4>
+
+        <dl class="row">
+            <dt class="col-sm-4">Full Name</dt>
+            <dd class="col-sm-8">@Model.FullName</dd>
+
+            <dt class="col-sm-4">Email</dt>
+            <dd class="col-sm-8">@Model.Email</dd>
+
+            <dt class="col-sm-4">Student ID</dt>
+            <dd class="col-sm-8">@Model.StudentId</dd>
+
+            <dt class="col-sm-4">Department</dt>
+            <dd class="col-sm-8">@Model.Department</dd>
+        </dl>
+
+        <form asp-action="AssignRole" method="post">
+
+            <input type="hidden" name="id" value="@Model.Id" />
+
+            <div class="form-group mb-3">
+                <label class="control-label">Select Role</label>
+
+                <select name="role" class="form-control">
+                    <option value="">-- Select Role --</option>
+
+                    @foreach (var role in ViewBag.Roles)
+                    {
+                        <option value="@role">@role</option>
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Assign Role
+            </button>
+
+            <a asp-action="Index" class="btn btn-secondary">
+                Back
+            </a>
+
+        </form>
+
+    </div>
+</div>

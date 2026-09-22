@@ -1,0 +1,78 @@
+﻿@model IEnumerable<EventFlow.Models.WaitlistEntry>
+
+@{
+    ViewData["Title"] = "My Waitlist";
+}
+
+<h1>My Waitlist</h1>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        You are not currently on any event waitlists.
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Venue</th>
+                <th>Joined At</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Event?.Name</td>
+
+                    <td>
+                        @item.Event?.StartDateTime
+                    </td>
+
+                    <td>
+                        @item.Event?.EndDateTime
+                    </td>
+
+                    <td>
+                        @item.Event?.Venue?.Name
+                    </td>
+
+                    <td>
+                        @item.JoinedAt
+                    </td>
+
+                    <td>
+                        <a asp-controller="Events"
+                           asp-action="Details"
+                           asp-route-id="@item.EventId"
+                           class="btn btn-sm btn-info">
+                            Details
+                        </a>
+
+                        <form asp-controller="Registration"
+                              asp-action="LeaveWaitlist"
+                              method="post"
+                              style="display:inline;">
+
+                            <input type="hidden"
+                                   name="eventId"
+                                   value="@item.EventId" />
+
+                            <button type="submit"
+                                    class="btn btn-sm btn-danger">
+                                Leave Waitlist
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

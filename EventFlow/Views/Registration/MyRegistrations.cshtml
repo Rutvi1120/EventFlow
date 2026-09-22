@@ -1,0 +1,78 @@
+﻿@model IEnumerable<EventFlow.Models.Registration>
+
+@{
+    ViewData["Title"] = "My Registrations";
+}
+
+<h1>My Registrations</h1>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        You are not registered for any events yet.
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Venue</th>
+                <th>Registered At</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var registration in Model)
+            {
+                <tr>
+                    <td>@registration.Event?.Name</td>
+
+                    <td>
+                        @registration.Event?.StartDateTime
+                    </td>
+
+                    <td>
+                        @registration.Event?.EndDateTime
+                    </td>
+
+                    <td>
+                        @registration.Event?.Venue?.Name
+                    </td>
+
+                    <td>
+                        @registration.RegisteredAt
+                    </td>
+
+                    <td>
+                        <a asp-controller="Events"
+                           asp-action="Details"
+                           asp-route-id="@registration.EventId"
+                           class="btn btn-sm btn-info">
+                            Details
+                        </a>
+
+                        <form asp-controller="Registration"
+                              asp-action="CancelRegistration"
+                              method="post"
+                              style="display:inline;">
+
+                            <input type="hidden"
+                                   name="eventId"
+                                   value="@registration.EventId" />
+
+                            <button type="submit"
+                                    class="btn btn-sm btn-danger">
+                                Cancel
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

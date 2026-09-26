@@ -69,7 +69,7 @@ public class EventsController : Controller
                 "End date and time must be after start date and time.");
         }
 
-        // Check venue and capacity
+        // Check selected venue
         var venue = await _context.Venues
             .FindAsync(eventModel.VenueId);
 
@@ -79,18 +79,38 @@ public class EventsController : Controller
                 "VenueId",
                 "Please select a valid venue.");
         }
-        else if (eventModel.MaxParticipants > venue.Capacity)
+        else
+        {
+            // Check venue capacity
+            if (eventModel.MaxParticipants > venue.Capacity)
+            {
+                ModelState.AddModelError(
+                    "MaxParticipants",
+                    $"Maximum participants cannot exceed the venue capacity of {venue.Capacity}.");
+            }
+        }
+
+        // Check if another event is using the same venue
+        // during an overlapping time period.
+        bool venueConflict = await _context.Events.AnyAsync(e =>
+            e.VenueId == eventModel.VenueId &&
+            e.StartDateTime < eventModel.EndDateTime &&
+            e.EndDateTime > eventModel.StartDateTime);
+
+        if (venueConflict)
         {
             ModelState.AddModelError(
-                "MaxParticipants",
-                $"Maximum participants cannot exceed the venue capacity of {venue.Capacity}.");
+                "StartDateTime",
+                "This venue is already booked during the selected time.");
         }
 
         if (ModelState.IsValid)
         {
+            // New events always start as Upcoming
             eventModel.Status = "Upcoming";
 
             _context.Events.Add(eventModel);
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
@@ -113,7 +133,8 @@ public class EventsController : Controller
             return NotFound();
         }
 
-        var eventModel = await _context.Events.FindAsync(id);
+        var eventModel = await _context.Events
+            .FindAsync(id);
 
         if (eventModel == null)
         {
@@ -150,7 +171,7 @@ public class EventsController : Controller
                 "End date and time must be after start date and time.");
         }
 
-        // Check venue and capacity
+        // Check selected venue
         var venue = await _context.Venues
             .FindAsync(eventModel.VenueId);
 
@@ -160,11 +181,30 @@ public class EventsController : Controller
                 "VenueId",
                 "Please select a valid venue.");
         }
-        else if (eventModel.MaxParticipants > venue.Capacity)
+        else
+        {
+            // Check venue capacity
+            if (eventModel.MaxParticipants > venue.Capacity)
+            {
+                ModelState.AddModelError(
+                    "MaxParticipants",
+                    $"Maximum participants cannot exceed the venue capacity of {venue.Capacity}.");
+            }
+        }
+
+        // Check for overlapping event at the same venue.
+        // Exclude the event currently being edited.
+        bool venueConflict = await _context.Events.AnyAsync(e =>
+            e.Id != eventModel.Id &&
+            e.VenueId == eventModel.VenueId &&
+            e.StartDateTime < eventModel.EndDateTime &&
+            e.EndDateTime > eventModel.StartDateTime);
+
+        if (venueConflict)
         {
             ModelState.AddModelError(
-                "MaxParticipants",
-                $"Maximum participants cannot exceed the venue capacity of {venue.Capacity}.");
+                "StartDateTime",
+                "This venue is already booked during the selected time.");
         }
 
         if (ModelState.IsValid)
@@ -172,6 +212,7 @@ public class EventsController : Controller
             try
             {
                 _context.Events.Update(eventModel);
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -221,7 +262,8 @@ public class EventsController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int? id)
     {
-        var eventModel = await _context.Events.FindAsync(id);
+        var eventModel = await _context.Events
+            .FindAsync(id);
 
         if (eventModel != null)
         {

@@ -1,0 +1,171 @@
+﻿@model IEnumerable<EventFlow.Models.Volunteer>
+
+@{
+    ViewData["Title"] = "Volunteer Dashboard";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Volunteer Dashboard</h1>
+            <p class="text-muted">
+                View and manage your event assignments.
+            </p>
+        </div>
+
+        <a asp-controller="Volunteer"
+           asp-action="Assignment"
+           class="btn btn-primary">
+            My Assignments
+        </a>
+    </div>
+
+    <div class="row mb-4">
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Assignments</h6>
+                    <h2>@ViewBag.TotalAssignments</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Active</h6>
+                    <h2>@ViewBag.ActiveAssignments</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Upcoming</h6>
+                    <h2>@ViewBag.UpcomingAssignments</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Completed</h6>
+                    <h2>@ViewBag.CompletedAssignments</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h4 class="mb-0">My Assignments</h4>
+        </div>
+
+        <div class="card-body">
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Venue</th>
+                                <th>Role</th>
+                                <th>Event Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var assignment in Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            @assignment.Event?.Name
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        @assignment.Event?.Venue?.Name
+                                    </td>
+
+                                    <td>
+                                        @assignment.Role
+                                    </td>
+
+                                    <td>
+                                        @assignment.Event?.StartDateTime
+                                        .ToString("dd MMM yyyy hh:mm tt")
+                                    </td>
+
+                                    <td>
+
+                                        @if (assignment.Status == "Completed")
+                                        {
+                                            <span class="badge bg-success">
+                                                Completed
+                                            </span>
+                                        }
+                                        else if (assignment.Status == "Accepted")
+                                        {
+                                            <span class="badge bg-primary">
+                                                Accepted
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                @assignment.Status
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                    <td>
+                                        <a asp-action="Details"
+                                           asp-route-id="@assignment.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Details
+                                        </a>
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+
+                    <h5>No assignments found</h5>
+
+                    <p class="text-muted">
+                        You currently don't have any volunteer assignments.
+                    </p>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>

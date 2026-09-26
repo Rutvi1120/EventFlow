@@ -1,0 +1,244 @@
+﻿@model IEnumerable<EventFlow.Models.Volunteer>
+
+@{
+    ViewData["Title"] = "Manage Volunteers";
+
+    var volunteers = ViewBag.Volunteers as IEnumerable<EventFlow.Models.ApplicationUser>;
+    var events = ViewBag.Events as IEnumerable<EventFlow.Models.Event>;
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Manage Volunteers</h2>
+
+        <a asp-controller="Organizer"
+           asp-action="Dashboard"
+           class="btn btn-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- ASSIGN VOLUNTEER -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4 class="mb-0">Assign Volunteer to Event</h4>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-controller="Organizer"
+                  asp-action="AssignVolunteer"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="row">
+
+                    <!-- Volunteer -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Volunteer
+                        </label>
+
+                        <select name="volunteerId"
+                                class="form-select"
+                                required>
+
+                            <option value="">
+                                -- Select Volunteer --
+                            </option>
+
+                            @if (volunteers != null)
+                            {
+                                foreach (var volunteer in volunteers)
+                                {
+                                    <option value="@volunteer.Id">
+                                        @volunteer.FullName
+                                        (@volunteer.Email)
+                                    </option>
+                                }
+                            }
+
+                        </select>
+                    </div>
+
+
+                    <!-- Event -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Event
+                        </label>
+
+                        <select name="eventId"
+                                class="form-select"
+                                required>
+
+                            <option value="">
+                                -- Select Event --
+                            </option>
+
+                            @if (events != null)
+                            {
+                                foreach (var eventItem in events)
+                                {
+                                    <option value="@eventItem.Id">
+                                        @eventItem.Name
+                                    </option>
+                                }
+                            }
+
+                        </select>
+                    </div>
+
+
+                    <!-- Role -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Volunteer Role
+                        </label>
+
+                        <input type="text"
+                               name="role"
+                               class="form-control"
+                               placeholder="Example: Registration Desk"
+                               maxlength="100"
+                               required />
+                    </div>
+
+
+                    <!-- Notes -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Notes
+                        </label>
+
+                        <input type="text"
+                               name="notes"
+                               class="form-control"
+                               placeholder="Optional notes"
+                               maxlength="500" />
+                    </div>
+
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Assign Volunteer
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- EXISTING ASSIGNMENTS -->
+    <div class="card">
+
+        <div class="card-header">
+            <h4 class="mb-0">Volunteer Assignments</h4>
+        </div>
+
+        <div class="card-body">
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">
+                    No volunteer assignments found.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-striped">
+
+                        <thead>
+                            <tr>
+                                <th>Volunteer</th>
+                                <th>Event</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Assigned At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var assignment in Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @assignment.VolunteerId
+                                    </td>
+
+                                    <td>
+                                        @assignment.Event?.Name
+                                    </td>
+
+                                    <td>
+                                        @assignment.Role
+                                    </td>
+
+                                    <td>
+                                        @assignment.Status
+                                    </td>
+
+                                    <td>
+                                        @assignment.AssignedAt.ToLocalTime()
+                                    </td>
+
+                                    <td>
+
+                                        <form asp-controller="Organizer"
+                                              asp-action="RemoveVolunteerAssignment"
+                                              method="post"
+                                              onsubmit="return confirm('Are you sure you want to remove this assignment?');">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@assignment.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-danger btn-sm">
+                                                Remove
+                                            </button>
+
+                                        </form>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>

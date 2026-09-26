@@ -1,0 +1,167 @@
+﻿@model IEnumerable<EventFlow.Models.Volunteer>
+
+@{
+    ViewData["Title"] = "My Assignments";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h1>My Assignments</h1>
+
+            <p class="text-muted">
+                All events assigned to you as a volunteer.
+            </p>
+        </div>
+
+        <a asp-action="Dashboard"
+           class="btn btn-outline-secondary">
+            Back to Dashboard
+        </a>
+
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow-sm">
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Venue</th>
+                                <th>Role</th>
+                                <th>Notes</th>
+                                <th>Event Date</th>
+                                <th>Status</th>
+                                <th>Assigned At</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var assignment in Model)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <strong>
+                                            @assignment.Event?.Name
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        @assignment.Event?.Venue?.Name
+                                    </td>
+
+                                    <td>
+                                        @assignment.Role
+                                    </td>
+
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(assignment.Notes))
+                                        {
+                                            @assignment.Notes
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                No notes
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (assignment.Event != null)
+                                        {
+@assignment.Event.StartDateTime.ToString("dd MMM yyyy")
+
+                                            < br />
+
+                                            < small class= "text-muted" >
+                                                @assignment.Event.StartDateTime.ToString("hh:mm tt")
+                                            </ small >
+                                        }
+</td>
+
+<td>
+
+    @if (assignment.Status == "Completed")
+    {
+        <span class="badge bg-success">
+            Completed
+        </span>
+    }
+    else if (assignment.Status == "Accepted")
+    {
+        <span class="badge bg-primary">
+            Accepted
+        </span>
+    }
+    else
+    {
+        <span class="badge bg-warning text-dark">
+            @assignment.Status
+        </span>
+    }
+
+</td>
+
+<td>
+    @assignment.AssignedAt
+    .ToLocalTime()
+    .ToString("dd MMM yyyy")
+</td>
+
+<td>
+    <a asp-action="Details"
+       asp-route-id="@assignment.Id"
+       class="btn btn-sm btn-primary">
+        View
+    </a>
+</td>
+
+</tr>
+                            }
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+    }
+    else
+{
+    <div class="card shadow-sm">
+
+        <div class="card-body text-center py-5">
+
+            <h4>No Volunteer Assignments</h4>
+
+            <p class="text-muted">
+                You have not been assigned to any events yet.
+            </p>
+
+            <a asp-action="Dashboard"
+               class="btn btn-primary">
+                Go to Dashboard
+            </a>
+
+        </div>
+
+    </div>
+}
+
+</div>

@@ -13,5 +13,8 @@ namespace EventFlow.Data
         public DbSet<Registration> Registrations { get; set; }
 
         public DbSet<WaitlistEntry> WaitlistEntries { get; set; }
+       
+        public DbSet<Volunteer> Volunteers { get; set; }
+
     }
 }

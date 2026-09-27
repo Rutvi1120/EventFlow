@@ -6,6 +6,7 @@
 
 <div class="container mt-4">
 
+    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
@@ -23,6 +24,26 @@
 
     </div>
 
+
+    <!-- SUCCESS MESSAGE -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+
+    <!-- ERROR MESSAGE -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["Error"]
+        </div>
+    }
+
+
+    <!-- ASSIGNMENTS -->
     @if (Model != null && Model.Any())
     {
         <div class="card shadow-sm">
@@ -52,20 +73,27 @@
                             {
                                 <tr>
 
+                                    <!-- EVENT -->
                                     <td>
                                         <strong>
                                             @assignment.Event?.Name
                                         </strong>
                                     </td>
 
+
+                                    <!-- VENUE -->
                                     <td>
                                         @assignment.Event?.Venue?.Name
                                     </td>
 
+
+                                    <!-- ROLE -->
                                     <td>
                                         @assignment.Role
                                     </td>
 
+
+                                    <!-- NOTES -->
                                     <td>
                                         @if (!string.IsNullOrEmpty(assignment.Notes))
                                         {
@@ -79,89 +107,156 @@
                                         }
                                     </td>
 
+
+                                    <!-- EVENT DATE -->
                                     <td>
                                         @if (assignment.Event != null)
                                         {
-@assignment.Event.StartDateTime.ToString("dd MMM yyyy")
+                                            <span>
+                                                @assignment.Event.StartDateTime.ToString("dd MMM yyyy")
+                                            </span>
 
-                                            < br />
+                                            <br />
 
-                                            < small class= "text-muted" >
+                                            <small class="text-muted">
                                                 @assignment.Event.StartDateTime.ToString("hh:mm tt")
-                                            </ small >
+                                            </small>
                                         }
-</td>
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                No event
+                                            </span>
+                                        }
+                                    </td>
 
-<td>
 
-    @if (assignment.Status == "Completed")
-    {
-        <span class="badge bg-success">
-            Completed
-        </span>
-    }
-    else if (assignment.Status == "Accepted")
-    {
-        <span class="badge bg-primary">
-            Accepted
-        </span>
-    }
-    else
-    {
-        <span class="badge bg-warning text-dark">
-            @assignment.Status
-        </span>
-    }
+                                    <!-- STATUS -->
+                                    <td>
 
-</td>
+                                        @if (assignment.Status == "Completed")
+                                        {
+                                            <span class="badge bg-success">
+                                                Completed
+                                            </span>
+                                        }
+                                        else if (assignment.Status == "Accepted")
+                                        {
+                                            <span class="badge bg-primary">
+                                                Accepted
+                                            </span>
+                                        }
+                                        else if (assignment.Status == "Rejected")
+                                        {
+                                            <span class="badge bg-danger">
+                                                Rejected
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                                @assignment.Status
+                                            </span>
+                                        }
 
-<td>
-    @assignment.AssignedAt
-    .ToLocalTime()
-    .ToString("dd MMM yyyy")
-</td>
+                                    </td>
 
-<td>
-    <a asp-action="Details"
-       asp-route-id="@assignment.Id"
-       class="btn btn-sm btn-primary">
-        View
-    </a>
-</td>
 
-</tr>
+                                    <!-- ASSIGNED AT -->
+                                    <td>
+                                        @assignment.AssignedAt.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")
+                                    </td>
+
+
+                                    <!-- ACTIONS -->
+                                    <td>
+
+                                        <!-- VIEW -->
+                                        <a asp-action="Details"
+                                           asp-route-id="@assignment.Id"
+                                           class="btn btn-sm btn-primary mb-1">
+                                            View
+                                        </a>
+
+
+                                        <!-- ACCEPT / REJECT -->
+                                        @if (assignment.Status == "Assigned")
+                                        {
+                                            <!-- ACCEPT -->
+                                            <form asp-action="AcceptAssignment"
+                                                  method="post"
+                                                  class="d-inline">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="id"
+                                                       value="@assignment.Id" />
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-success mb-1">
+                                                    Accept
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- REJECT -->
+                                            <form asp-action="RejectAssignment"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Are you sure you want to reject this assignment?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden"
+                                                       name="id"
+                                                       value="@assignment.Id" />
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-danger mb-1">
+                                                    Reject
+                                                </button>
+
+                                            </form>
+                                        }
+
+                                    </td>
+
+                                </tr>
                             }
 
-</tbody>
+                        </tbody>
 
-</table>
+                    </table>
 
-</div>
+                </div>
 
-</div>
-
-</div>
-    }
-    else
-{
-    <div class="card shadow-sm">
-
-        <div class="card-body text-center py-5">
-
-            <h4>No Volunteer Assignments</h4>
-
-            <p class="text-muted">
-                You have not been assigned to any events yet.
-            </p>
-
-            <a asp-action="Dashboard"
-               class="btn btn-primary">
-                Go to Dashboard
-            </a>
+            </div>
 
         </div>
+    }
+    else
+    {
+        <!-- NO ASSIGNMENTS -->
+        <div class="card shadow-sm">
 
-    </div>
-}
+            <div class="card-body text-center py-5">
+
+                <h4>No Volunteer Assignments</h4>
+
+                <p class="text-muted">
+                    You have not been assigned to any events yet.
+                </p>
+
+                <a asp-action="Dashboard"
+                   class="btn btn-primary">
+                    Go to Dashboard
+                </a>
+
+            </div>
+
+        </div>
+    }
 
 </div>

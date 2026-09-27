@@ -37,7 +37,16 @@ namespace EventFlow.Controllers
 
             if (eventModel == null)
                 return NotFound();
+            if (eventModel.StartDateTime <= DateTime.Now)
+            {
+                TempData["Message"] =
+                    "You cannot register for an event that has already started.";
 
+                return RedirectToAction(
+                    "Details",
+                    "Events",
+                    new { id = eventId });
+            }
             // Check whether the user is already registered
             var alreadyRegistered = await _context.Registrations
                 .AnyAsync(r =>

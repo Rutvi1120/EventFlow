@@ -51,6 +51,7 @@ namespace EventFlow.Controllers
             return View(assignments);
         }
 
+
         // GET: Volunteer/Assignment
         public async Task<IActionResult> Assignment()
         {
@@ -69,6 +70,82 @@ namespace EventFlow.Controllers
             return View(assignments);
         }
 
+
+        // POST: Volunteer/AcceptAssignment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AcceptAssignment(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return Challenge();
+
+            var assignment = await _context.Volunteers
+                .FirstOrDefaultAsync(v =>
+                    v.Id == id &&
+                    v.VolunteerId == user.Id);
+
+            if (assignment == null)
+                return NotFound();
+
+            if (assignment.Status != "Assigned")
+            {
+                TempData["Error"] =
+                    "This assignment can no longer be accepted.";
+
+                return RedirectToAction(nameof(Assignment));
+            }
+
+            assignment.Status = "Accepted";
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] =
+                "Volunteer assignment accepted successfully.";
+
+            return RedirectToAction(nameof(Assignment));
+        }
+
+
+        // POST: Volunteer/RejectAssignment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectAssignment(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+                return Challenge();
+
+            var assignment = await _context.Volunteers
+                .FirstOrDefaultAsync(v =>
+                    v.Id == id &&
+                    v.VolunteerId == user.Id);
+
+            if (assignment == null)
+                return NotFound();
+
+            if (assignment.Status != "Assigned")
+            {
+                TempData["Error"] =
+                    "This assignment can no longer be rejected.";
+
+                return RedirectToAction(nameof(Assignment));
+            }
+
+            assignment.Status = "Rejected";
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] =
+                "Volunteer assignment rejected.";
+
+            return RedirectToAction(nameof(Assignment));
+        }
+
+
+        // GET: Volunteer/Details/5
         // GET: Volunteer/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -89,17 +166,19 @@ namespace EventFlow.Controllers
                     v.VolunteerId == currentUser.Id);
 
             if (assignment == null)
-                return NotFound();
+            {
+                TempData["Error"] = "Volunteer assignment not found.";
+                return RedirectToAction(nameof(Assignment));
+            }
 
-            return View(assignment);
+            return View("Details", assignment);
         }
 
-        // POST: Volunteer/UpdateStatus
+
+        // POST: Volunteer/MarkCompleted
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateStatus(
-            int id,
-            string status)
+        public async Task<IActionResult> MarkCompleted(int id)
         {
             var currentUser = await _userManager.GetUserAsync(User);
 
@@ -114,37 +193,23 @@ namespace EventFlow.Controllers
             if (assignment == null)
                 return NotFound();
 
-            var allowedStatuses = new[]
+            if (assignment.Status != "Accepted")
             {
-                "Assigned",
-                "Accepted",
-                "Completed"
-            };
-
-            if (!allowedStatuses.Contains(status))
-            {
-                TempData["Error"] = "Invalid assignment status.";
+                TempData["Error"] =
+                    "Only accepted assignments can be marked as completed.";
 
                 return RedirectToAction(
                     nameof(Details),
                     new { id });
             }
 
-            assignment.Status = status;
-
-            if (status == "Completed")
-            {
-                assignment.CompletedAt = DateTime.UtcNow;
-            }
-            else
-            {
-                assignment.CompletedAt = null;
-            }
+            assignment.Status = "Completed";
+            assignment.CompletedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
             TempData["Success"] =
-                "Assignment status updated successfully.";
+                "Assignment marked as completed successfully.";
 
             return RedirectToAction(
                 nameof(Details),

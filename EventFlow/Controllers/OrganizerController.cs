@@ -77,6 +77,7 @@ namespace EventFlow.Controllers
             // Existing assignments
             var assignments = await _context.Volunteers
                 .Include(v => v.Event)
+                .Include(v => v.VolunteerUser)
                 .OrderByDescending(v => v.AssignedAt)
                 .ToListAsync();
 

@@ -4,15 +4,20 @@ using EventFlow.Models;
 using EventFlow.Data;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 //[Authorize(Roles = "Admin,Organizer")]
 public class EventsController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public EventsController(ApplicationDbContext context)
+    public EventsController(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     // GET: Events
@@ -39,6 +44,40 @@ public class EventsController : Controller
         {
             return NotFound();
         }
+
+        // Check Participant registration/waitlist status
+        var currentUser = await _userManager.GetUserAsync(User);
+
+        bool alreadyRegistered = false;
+        bool alreadyWaitlisted = false;
+
+        if (currentUser != null)
+        {
+            alreadyRegistered = await _context.Registrations
+                .AnyAsync(r =>
+                    r.EventId == id &&
+                    r.UserId == currentUser.Id);
+
+            alreadyWaitlisted = await _context.WaitlistEntries
+                .AnyAsync(w =>
+                    w.EventId == id &&
+                    w.UserId == currentUser.Id);
+        }
+        var registeredCount = await _context.Registrations
+         .CountAsync(r => r.EventId == id);
+
+        var availableSeats = eventModel.MaxParticipants - registeredCount;
+
+        if (availableSeats < 0)
+        {
+            availableSeats = 0;
+        }
+
+        ViewBag.RegisteredCount = registeredCount;
+        ViewBag.AvailableSeats = availableSeats;
+
+        ViewBag.AlreadyRegistered = alreadyRegistered;
+        ViewBag.AlreadyWaitlisted = alreadyWaitlisted;
 
         return View(eventModel);
     }

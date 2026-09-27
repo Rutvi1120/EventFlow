@@ -186,7 +186,17 @@
                                 <tr>
 
                                     <td>
-                                        @assignment.VolunteerId
+                                        <strong>
+                                            @assignment.VolunteerUser?.FullName
+                                        </strong>
+
+                                        @if (!string.IsNullOrEmpty(assignment.VolunteerUser?.Email))
+                                        {
+                                            <br />
+                                            <small class="text-muted">
+                                                @assignment.VolunteerUser.Email
+                                            </small>
+                                        }
                                     </td>
 
                                     <td>

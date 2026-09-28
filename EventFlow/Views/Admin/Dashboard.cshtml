@@ -2,65 +2,202 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<h1>Admin Dashboard</h1>
+<div class="ef-dashboard">
 
-<p>Welcome to the EventFlow administration panel.</p>
+     
+    <div class="ef-dashboard-container">
 
-<div class="row">
+        <!-- HEADER -->
+        <div class="ef-dashboard-header">
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Total Users</h5>
-                <h2>@ViewBag.TotalUsers</h2>
+            <div>
+                <h1 class="ef-dashboard-title">
+                    Admin Dashboard
+                </h1>
+
+                <p class="ef-dashboard-subtitle">
+                    Manage users, roles, events and the EventFlow system.
+                </p>
             </div>
-        </div>
-    </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Admins</h5>
-                <h2>@ViewBag.TotalAdmins</h2>
-            </div>
         </div>
-    </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Organizers</h5>
-                <h2>@ViewBag.TotalOrganizers</h2>
-            </div>
-        </div>
-    </div>
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Participants</h5>
-                <h2>@ViewBag.TotalParticipants</h2>
-            </div>
-        </div>
-    </div>
+        <!-- STAT CARDS -->
+        <div class="ef-stat-grid">
 
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Volunteers</h5>
-                <h2>@ViewBag.TotalVolunteers</h2>
+            <div class="ef-stat-card">
+                <span class="ef-stat-label">
+                    Total Users
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.TotalUsers
+                </div>
+
+                <div class="ef-stat-icon">
+                    +
+                </div>
             </div>
+
+
+            <div class="ef-stat-card">
+                <span class="ef-stat-label">
+                    Admins
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.TotalAdmins
+                </div>
+
+                <div class="ef-stat-icon">
+                    ◆
+                </div>
+            </div>
+
+
+            <div class="ef-stat-card">
+                <span class="ef-stat-label">
+                    Organizers
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.TotalOrganizers
+                </div>
+
+                <div class="ef-stat-icon">
+                    ◈
+                </div>
+            </div>
+
+
+            <div class="ef-stat-card">
+                <span class="ef-stat-label">
+                    Participants
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.TotalParticipants
+                </div>
+
+                <div class="ef-stat-icon">
+                    ●
+                </div>
+            </div>
+
         </div>
+
+
+        <!-- MAIN CONTENT -->
+        <div class="ef-dashboard-grid">
+
+            <!-- USER MANAGEMENT -->
+            <div class="ef-dashboard-panel">
+
+                <div class="ef-panel-header">
+
+                    <h2 class="ef-panel-title">
+                        User Management
+                    </h2>
+
+                </div>
+
+
+                <div class="ef-quick-actions">
+
+                    <a asp-controller="Role"
+                       asp-action="Index"
+                       class="ef-quick-action">
+
+                        <span class="ef-quick-icon">
+                            +
+                        </span>
+
+                        <span class="ef-quick-text">
+
+                            <span class="ef-quick-title">
+                                Manage Users & Roles
+                            </span>
+
+                            <span class="ef-quick-description">
+                                Assign and manage user roles
+                            </span>
+
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- EVENT MANAGEMENT -->
+            <div class="ef-dashboard-panel">
+
+                <div class="ef-panel-header">
+
+                    <h2 class="ef-panel-title">
+                        Event Management
+                    </h2>
+
+                </div>
+
+
+                <div class="ef-quick-actions">
+
+                    <a asp-controller="Events"
+                       asp-action="Index"
+                       class="ef-quick-action">
+
+                        <span class="ef-quick-icon">
+                            ◈
+                        </span>
+
+                        <span class="ef-quick-text">
+
+                            <span class="ef-quick-title">
+                                Manage Events
+                            </span>
+
+                            <span class="ef-quick-description">
+                                View and manage events
+                            </span>
+
+                        </span>
+
+                    </a>
+
+
+                    <a asp-controller="Venues"
+                       asp-action="Index"
+                       class="ef-quick-action">
+
+                        <span class="ef-quick-icon">
+                            □
+                        </span>
+
+                        <span class="ef-quick-text">
+
+                            <span class="ef-quick-title">
+                                Manage Venues
+                            </span>
+
+                            <span class="ef-quick-description">
+                                Manage event locations
+                            </span>
+
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
+     
 
 </div>
-
-<hr />
-
-<h4>Administration</h4>
-
-<a asp-controller="Role"
-   asp-action="Index"
-   class="btn btn-primary">
-    Manage User Roles
-</a>

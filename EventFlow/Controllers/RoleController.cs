@@ -22,7 +22,7 @@ namespace EventFlow.Controllers
         // Show all users and their roles
         public async Task<IActionResult> Index()
         {
-            var users = _userManager.Users.ToList();
+            var users = _userManager.Users.Where(u => u.Email != "admin@gmail.com").ToList();
 
             var userRoles = new List<UserRoleViewModel>();
 
@@ -53,8 +53,9 @@ namespace EventFlow.Controllers
                 return NotFound();
 
             ViewBag.Roles = _roleManager.Roles
-                .Select(r => r.Name!)
-                .ToList();
+    .Where(r => r.Name != "Admin")
+    .Select(r => r.Name!)
+    .ToList();
 
             return View(user);
         }
@@ -77,8 +78,9 @@ namespace EventFlow.Controllers
                 ModelState.AddModelError("", "Invalid role.");
 
                 ViewBag.Roles = _roleManager.Roles
-                    .Select(r => r.Name!)
-                    .ToList();
+    .Where(r => r.Name != "Admin")
+    .Select(r => r.Name!)
+    .ToList();
 
                 return View(user);
             }

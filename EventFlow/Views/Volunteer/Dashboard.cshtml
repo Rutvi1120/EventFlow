@@ -4,167 +4,270 @@
     ViewData["Title"] = "Volunteer Dashboard";
 }
 
-<div class="container mt-4">
+<div class="ef-dashboard">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1>Volunteer Dashboard</h1>
-            <p class="text-muted">
-                View and manage your event assignments.
-            </p>
+     
+    <div class="ef-dashboard-container">
+
+        <!-- HEADER -->
+        <div class="ef-dashboard-header">
+
+            <div>
+                <h1 class="ef-dashboard-title">
+                    Volunteer Dashboard
+                </h1>
+
+                <p class="ef-dashboard-subtitle">
+                    Manage your volunteer assignments and event activities.
+                </p>
+            </div>
+
+            <div class="ef-dashboard-actions">
+
+                <a asp-controller="Volunteer"
+                   asp-action="Assignment"
+                   class="ef-dashboard-btn ef-dashboard-btn-primary">
+                    My Assignments
+                </a>
+
+            </div>
+
         </div>
 
-        <a asp-controller="Volunteer"
-           asp-action="Assignment"
-           class="btn btn-primary">
-            My Assignments
-        </a>
+
+        <!-- STAT CARDS -->
+        <div class="ef-stat-grid">
+
+            <div class="ef-stat-card">
+
+                <span class="ef-stat-label">
+                    Total Assignments
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.TotalAssignments
+                </div>
+
+                <div class="ef-stat-icon">
+                    ◈
+                </div>
+
+            </div>
+
+
+            <div class="ef-stat-card">
+
+                <span class="ef-stat-label">
+                    Active
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.ActiveAssignments
+                </div>
+
+                <div class="ef-stat-icon">
+                    ●
+                </div>
+
+            </div>
+
+
+            <div class="ef-stat-card">
+
+                <span class="ef-stat-label">
+                    Upcoming
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.UpcomingAssignments
+                </div>
+
+                <div class="ef-stat-icon">
+                    ◷
+                </div>
+
+            </div>
+
+
+            <div class="ef-stat-card">
+
+                <span class="ef-stat-label">
+                    Completed
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.CompletedAssignments
+                </div>
+
+                <div class="ef-stat-icon">
+                    ✓
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ASSIGNMENTS -->
+        <div class="ef-dashboard-panel">
+
+            <div class="ef-panel-header">
+
+                <h2 class="ef-panel-title">
+                    My Assignments
+                </h2>
+
+                <a asp-controller="Volunteer"
+                   asp-action="Assignment"
+                   class="ef-panel-link">
+                    View all →
+                </a>
+
+            </div>
+
+
+            <div class="ef-event-list">
+
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var assignment in Model.Take(5))
+                    {
+                        <div class="ef-event-item">
+
+                            <div class="ef-event-date">
+
+                                <span class="ef-event-date-day">
+                                    @assignment.Event.StartDateTime.Day
+                                </span>
+
+                                <span class="ef-event-date-month">
+                                    @assignment.Event.StartDateTime.ToString("MMM")
+                                </span>
+
+                            </div>
+
+
+                            <div class="ef-event-info">
+
+                                <h3 class="ef-event-name">
+                                    @assignment.Event.Name
+                                </h3>
+
+                                <div class="ef-event-meta">
+                                    @assignment.Role
+                                </div>
+
+                            </div>
+
+
+                            <span class="ef-status
+                                @(assignment.Status == "Completed"
+                                    ? "ef-status-completed"
+                                    : assignment.Status == "Accepted"
+                                        ? "ef-status-ongoing"
+                                        : assignment.Status == "Rejected"
+                                            ? "ef-status-delayed"
+                                            : "ef-status-upcoming")">
+
+                                @assignment.Status
+
+                            </span>
+
+
+                            <a asp-controller="Volunteer"
+                               asp-action="Details"
+                               asp-route-id="@assignment.Id"
+                               class="ef-panel-link">
+                                View →
+                            </a>
+
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="ef-empty-state">
+
+                        <div class="ef-empty-icon">
+                            +
+                        </div>
+
+                        <p>
+                            No volunteer assignments yet.
+                        </p>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- QUICK ACTIONS -->
+        <div class="ef-dashboard-panel">
+
+            <div class="ef-panel-header">
+
+                <h2 class="ef-panel-title">
+                    Quick Actions
+                </h2>
+
+            </div>
+
+
+            <div class="ef-quick-actions">
+
+                <a asp-controller="Volunteer"
+                   asp-action="Assignment"
+                   class="ef-quick-action">
+
+                    <span class="ef-quick-icon">
+                        ◈
+                    </span>
+
+                    <span class="ef-quick-text">
+
+                        <span class="ef-quick-title">
+                            My Assignments
+                        </span>
+
+                        <span class="ef-quick-description">
+                            View and manage your assignments
+                        </span>
+
+                    </span>
+
+                </a>
+
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="ef-quick-action">
+
+                    <span class="ef-quick-icon">
+                        ←
+                    </span>
+
+                    <span class="ef-quick-text">
+
+                        <span class="ef-quick-title">
+                            Home
+                        </span>
+
+                        <span class="ef-quick-description">
+                            Return to EventFlow home
+                        </span>
+
+                    </span>
+
+                </a>
+
+            </div>
+
+        </div>
+
     </div>
-
-    <div class="row mb-4">
-
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="text-muted">Total Assignments</h6>
-                    <h2>@ViewBag.TotalAssignments</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="text-muted">Active</h6>
-                    <h2>@ViewBag.ActiveAssignments</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="text-muted">Upcoming</h6>
-                    <h2>@ViewBag.UpcomingAssignments</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h6 class="text-muted">Completed</h6>
-                    <h2>@ViewBag.CompletedAssignments</h2>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="card shadow-sm">
-
-        <div class="card-header">
-            <h4 class="mb-0">My Assignments</h4>
-        </div>
-
-        <div class="card-body">
-
-            @if (Model != null && Model.Any())
-            {
-                <div class="table-responsive">
-
-                    <table class="table table-hover align-middle">
-
-                        <thead>
-                            <tr>
-                                <th>Event</th>
-                                <th>Venue</th>
-                                <th>Role</th>
-                                <th>Event Date</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-
-                            @foreach (var assignment in Model)
-                            {
-                                <tr>
-
-                                    <td>
-                                        <strong>
-                                            @assignment.Event?.Name
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        @assignment.Event?.Venue?.Name
-                                    </td>
-
-                                    <td>
-                                        @assignment.Role
-                                    </td>
-
-                                    <td>
-                                        @assignment.Event?.StartDateTime.ToString("dd MMM yyyy hh:mm tt")
-                                    </td>
-
-                                    <td>
-
-                                        @if (assignment.Status == "Completed")
-                                        {
-                                            <span class="badge bg-success">
-                                                Completed
-                                            </span>
-                                        }
-                                        else if (assignment.Status == "Accepted")
-                                        {
-                                            <span class="badge bg-primary">
-                                                Accepted
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">
-                                                @assignment.Status
-                                            </span>
-                                        }
-
-                                    </td>
-
-                                    <td>
-                                        <a asp-action="Details"
-                                           asp-route-id="@assignment.Id"
-                                           class="btn btn-sm btn-outline-primary">
-                                            Details
-                                        </a>
-                                    </td>
-
-                                </tr>
-                            }
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-            }
-            else
-            {
-                <div class="text-center py-5">
-
-                    <h5>No assignments found</h5>
-
-                    <p class="text-muted">
-                        You currently don't have any volunteer assignments.
-                    </p>
-
-                </div>
-            }
-
-        </div>
-
-    </div>
+     
 
 </div>

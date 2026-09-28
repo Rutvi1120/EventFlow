@@ -1,4 +1,41 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿document.addEventListener("DOMContentLoaded", function () {
 
-// Write your JavaScript code.
+     
+const elements = document.querySelectorAll(".reveal");
+
+if ("IntersectionObserver" in window) {
+
+    const observer = new IntersectionObserver(
+        function (entries) {
+
+            entries.forEach(function (entry) {
+
+                if (entry.isIntersecting) {
+
+                    entry.target.classList.add("visible");
+
+                    observer.unobserve(entry.target);
+                }
+
+            });
+
+        },
+        {
+            threshold: 0.12
+        }
+    );
+
+    elements.forEach(function (element) {
+        observer.observe(element);
+    });
+
+} else {
+
+    elements.forEach(function (element) {
+        element.classList.add("visible");
+    });
+
+}
+ 
+
+});

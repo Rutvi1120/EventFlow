@@ -4,110 +4,313 @@
     ViewData["Title"] = "Organizer Dashboard";
 }
 
-<h1>Organizer Dashboard</h1>
+<div class="ef-dashboard">
 
-<p>Manage and monitor your events from here.</p>
+     
+    <div class="ef-dashboard-container">
 
-<div class="row">
+        <!-- HEADER -->
+        <div class="ef-dashboard-header">
 
-    <div class="col-md-3 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Total Events</h5>
-                <h2>@ViewBag.TotalEvents</h2>
+            <div>
+                <h1 class="ef-dashboard-title">
+                    Organizer Dashboard
+                </h1>
+
+                <p class="ef-dashboard-subtitle">
+                    Manage your events, volunteers and event activities.
+                </p>
             </div>
-        </div>
-    </div>
 
-    <div class="col-md-3 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Upcoming</h5>
-                <h2>@ViewBag.UpcomingEvents</h2>
-            </div>
-        </div>
-    </div>
+            <div class="ef-dashboard-actions">
 
-    <div class="col-md-3 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Ongoing</h5>
-                <h2>@ViewBag.OngoingEvents</h2>
-            </div>
-        </div>
-    </div>
+                <a asp-controller="Events"
+                   asp-action="Create"
+                   class="ef-dashboard-btn ef-dashboard-btn-primary">
+                    + Create Event
+                </a>
 
-    <div class="col-md-3 mb-3">
-        <div class="card">
-            <div class="card-body">
-                <h5>Delayed</h5>
-                <h2>@ViewBag.DelayedEvents</h2>
             </div>
+
         </div>
+
+
+        <!-- STAT CARDS -->
+        <div class="ef-stat-grid">
+
+            <div class="ef-stat-card">
+
+                <span class="ef-stat-label">
+                    Total Events
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.TotalEvents
+                </div>
+
+                <div class="ef-stat-icon">
+                    ◈
+                </div>
+
+            </div>
+
+
+            <div class="ef-stat-card">
+
+                <span class="ef-stat-label">
+                    Upcoming
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.UpcomingEvents
+                </div>
+
+                <div class="ef-stat-icon">
+                    ◷
+                </div>
+
+            </div>
+
+
+            <div class="ef-stat-card">
+
+                <span class="ef-stat-label">
+                    Ongoing
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.OngoingEvents
+                </div>
+
+                <div class="ef-stat-icon">
+                    ●
+                </div>
+
+            </div>
+
+
+            <div class="ef-stat-card">
+
+                <span class="ef-stat-label">
+                    Volunteers
+                </span>
+
+                <div class="ef-stat-value">
+                    @ViewBag.TotalVolunteerAssignments
+                </div>
+
+                <div class="ef-stat-icon">
+                    +
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MAIN CONTENT -->
+        <div class="ef-dashboard-grid">
+
+            <!-- EVENTS -->
+            <div class="ef-dashboard-panel">
+
+                <div class="ef-panel-header">
+
+                    <h2 class="ef-panel-title">
+                        Upcoming Events
+                    </h2>
+
+                    <a asp-controller="Events"
+                       asp-action="Index"
+                       class="ef-panel-link">
+                        View all →
+                    </a>
+
+                </div>
+
+
+                <div class="ef-event-list">
+
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <div class="ef-event-item">
+
+                                <div class="ef-event-date">
+
+                                    <span class="ef-event-date-day">
+                                        @item.StartDateTime.Day
+                                    </span>
+
+                                    <span class="ef-event-date-month">
+                                        @item.StartDateTime.ToString("MMM")
+                                    </span>
+
+                                </div>
+
+
+                                <div class="ef-event-info">
+
+                                    <h3 class="ef-event-name">
+                                        @item.Name
+                                    </h3>
+
+                                    <div class="ef-event-meta">
+                                        @item.StartDateTime.ToString("dd MMM yyyy, hh:mm tt")
+                                    </div>
+
+                                </div>
+
+
+                                <span class="ef-status
+                                    @(item.Status == "Upcoming"
+                                        ? "ef-status-upcoming"
+                                        : item.Status == "Ongoing"
+                                            ? "ef-status-ongoing"
+                                            : item.Status == "Delayed"
+                                                ? "ef-status-delayed"
+                                                : "ef-status-completed")">
+
+                                    @item.Status
+
+                                </span>
+
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="ef-empty-state">
+
+                            <div class="ef-empty-icon">
+                                +
+                            </div>
+
+                            <p>
+                                No events created yet.
+                            </p>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- QUICK ACTIONS -->
+            <div class="ef-dashboard-panel">
+
+                <div class="ef-panel-header">
+
+                    <h2 class="ef-panel-title">
+                        Quick Actions
+                    </h2>
+
+                </div>
+
+
+                <div class="ef-quick-actions">
+
+                    <a asp-controller="Events"
+                       asp-action="Create"
+                       class="ef-quick-action">
+
+                        <span class="ef-quick-icon">
+                            +
+                        </span>
+
+                        <span class="ef-quick-text">
+
+                            <span class="ef-quick-title">
+                                Create Event
+                            </span>
+
+                            <span class="ef-quick-description">
+                                Plan a new event
+                            </span>
+
+                        </span>
+
+                    </a>
+
+
+                    <a asp-controller="Events"
+                       asp-action="Index"
+                       class="ef-quick-action">
+
+                        <span class="ef-quick-icon">
+                            ◈
+                        </span>
+
+                        <span class="ef-quick-text">
+
+                            <span class="ef-quick-title">
+                                Manage Events
+                            </span>
+
+                            <span class="ef-quick-description">
+                                View and edit events
+                            </span>
+
+                        </span>
+
+                    </a>
+
+
+                    <a asp-controller="Venues"
+                       asp-action="Index"
+                       class="ef-quick-action">
+
+                        <span class="ef-quick-icon">
+                            □
+                        </span>
+
+                        <span class="ef-quick-text">
+
+                            <span class="ef-quick-title">
+                                Manage Venues
+                            </span>
+
+                            <span class="ef-quick-description">
+                                Manage event locations
+                            </span>
+
+                        </span>
+
+                    </a>
+
+
+                    <a asp-controller="Organizer"
+                       asp-action="ManageVolunteers"
+                       class="ef-quick-action">
+
+                        <span class="ef-quick-icon">
+                            +
+                        </span>
+
+                        <span class="ef-quick-text">
+
+                            <span class="ef-quick-title">
+                                Volunteers
+                            </span>
+
+                            <span class="ef-quick-description">
+                                Assign event volunteers
+                            </span>
+
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
+     
 
 </div>
-
-<hr />
-
-<h4>Recent Events</h4>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Event</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Venue</th>
-            <th>Status</th>
-            <th></th>
-        </tr>
-    </thead>
-
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Name</td>
-                <td>@item.StartDateTime</td>
-                <td>@item.EndDateTime</td>
-                <td>@item.Venue?.Name</td>
-                <td>@item.Status</td>
-                <td>
-                    <a asp-controller="Events"
-                       asp-action="Details"
-                       asp-route-id="@item.Id">
-                        Details
-                    </a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<hr />
-
-<h4>Event Management</h4>
-
-<a asp-controller="Events"
-   asp-action="Create"
-   class="btn btn-primary">
-    Create Event
-</a>
-
-<a asp-controller="Events"
-   asp-action="Index"
-   class="btn btn-secondary">
-    Manage Events
-</a>
-
-<a asp-controller="Venues"
-   asp-action="Index"
-   class="btn btn-secondary">
-    Manage Venues
-</a>
-<a asp-controller="Organizer"
-   asp-action="ManageVolunteers"
-   class="btn btn-primary">
-    Manage Volunteers
-</a>

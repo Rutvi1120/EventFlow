@@ -1,31 +1,2552 @@
+ css
 html {
-  font-size: 14px;
+    font-size: 14px;
+    scroll-behavior: smooth;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    overflow-x: hidden;
 }
 
 body {
-  margin-bottom: 60px;
+    background: #ffffff;
+    color: #111827;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+main {
+    width: 100%;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.15rem rgba(109, 93, 252, 0.18);
 }
+
+/* =====================================================
+   EVENTFLOW NAVBAR
+===================================================== */
+
+.ef-navbar-wrapper {
+    position: relative;
+    z-index: 1000;
+    width: 100%;
+}
+
+.ef-navbar {
+    width: 100%;
+    height: 78px;
+    background: rgba(5, 12, 23, 0.96);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.ef-navbar-container {
+    width: min(1240px, calc(100% - 40px));
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* BRAND */
+
+.ef-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    flex-shrink: 0;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+    transition: transform 0.25s ease;
+}
+
+    .ef-brand:hover {
+        transform: translateY(-1px);
+    }
+
+.ef-brand-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6557f5, #a855f7);
+    color: #ffffff;
+    font-size: 19px;
+    font-weight: 800;
+    box-shadow: 0 8px 25px rgba(109, 93, 252, 0.35);
+}
+
+.ef-brand-text {
+    color: #ffffff;
+}
+
+    .ef-brand-text span {
+        color: #9b8cff;
+    }
+
+/* NAV LINKS */
+
+.ef-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    margin-right: 28px;
+}
+
+.ef-nav-link {
+    position: relative;
+    padding: 9px 13px;
+    color: rgba(255, 255, 255, 0.62) !important;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 9px;
+    transition: color 0.25s ease, background 0.25s ease;
+}
+
+    .ef-nav-link:hover {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.07);
+    }
+
+    .ef-nav-link.active {
+        color: #ffffff !important;
+    }
+
+        .ef-nav-link.active::after {
+            content: "";
+            position: absolute;
+            left: 13px;
+            right: 13px;
+            bottom: 3px;
+            height: 2px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #6d5dfc, #a855f7);
+        }
+
+/* AUTH BUTTONS */
+
+.ef-navbar-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.ef-auth-buttons,
+.ef-auth-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .ef-auth-form form {
+        margin: 0;
+    }
+
+.ef-login-btn,
+.ef-register-btn {
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 17px;
+    border-radius: 11px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease, filter 0.25s ease;
+}
+
+/* LOGIN */
+
+.ef-login-btn {
+    min-width: 78px;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.055);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+    .ef-login-btn:hover {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.10);
+        border-color: rgba(139, 124, 255, 0.55);
+        transform: translateY(-2px);
+        box-shadow: 0 9px 25px rgba(0, 0, 0, 0.25);
+    }
+
+/* REGISTER */
+
+.ef-register-btn {
+    min-width: 105px;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #6557f5, #8b5cf6);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 24px rgba(109, 93, 252, 0.30);
+}
+
+    .ef-register-btn:hover {
+        color: #ffffff !important;
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+        box-shadow: 0 13px 34px rgba(109, 93, 252, 0.45);
+    }
+
+.ef-btn-arrow {
+    font-size: 17px;
+    transition: transform 0.25s ease;
+}
+
+.ef-register-btn:hover .ef-btn-arrow {
+    transform: translateX(4px);
+}
+
+.ef-user-name {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 13px;
+}
+
+/* =====================================================
+   HOME PAGE
+===================================================== */
+
+.ef-home {
+    width: 100%;
+    overflow: hidden;
+}
+
+.ef-container {
+    width: min(1180px, calc(100% - 40px));
+    margin: 0 auto;
+}
+
+/* HERO */
+
+.ef-hero {
+    position: relative;
+    min-height: 760px;
+    display: flex;
+    align-items: center;
+    background: #06101d;
+    color: #ffffff;
+    overflow: hidden;
+}
+
+.ef-grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.25;
+    background-image: linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 55px 55px;
+    mask-image: linear-gradient(to bottom, black, transparent);
+}
+
+.ef-hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(5px);
+}
+
+.ef-orb-1 {
+    width: 650px;
+    height: 650px;
+    right: -300px;
+    top: -300px;
+    background: rgba(37, 99, 235, 0.15);
+}
+
+.ef-orb-2 {
+    width: 450px;
+    height: 450px;
+    left: -250px;
+    bottom: -280px;
+    background: rgba(14, 165, 233, 0.09);
+}
+
+.ef-hero-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    align-items: center;
+    gap: 70px;
+    padding: 80px 0;
+}
+
+.ef-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 13px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 30px;
+    background: rgba(255,255,255,0.04);
+    color: #9fb0c5;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.ef-live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 0 5px rgba(56,189,248,0.12);
+    animation: efPulse 2s infinite;
+}
+
+.ef-hero-text h1 {
+    margin: 0;
+    font-size: clamp(55px, 6vw, 82px);
+    line-height: 0.98;
+    letter-spacing: -4.5px;
+    font-weight: 850;
+}
+
+    .ef-hero-text h1 span {
+        color: #60a5fa;
+    }
+
+.ef-hero-text > p {
+    max-width: 600px;
+    margin: 28px 0;
+    color: #9bacbf;
+    font-size: 17px;
+    line-height: 1.75;
+}
+
+.ef-hero-actions {
+    display: flex;
+    gap: 11px;
+    flex-wrap: wrap;
+}
+
+.ef-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 20px;
+    border-radius: 8px;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 700;
+    transition: 0.3s ease;
+}
+
+.ef-btn-light {
+    background: #ffffff;
+    color: #07111f !important;
+}
+
+    .ef-btn-light:hover {
+        color: #07111f !important;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+
+.ef-btn-outline {
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.035);
+    color: #ffffff !important;
+}
+
+    .ef-btn-outline:hover {
+        color: #ffffff !important;
+        background: rgba(255,255,255,0.1);
+        transform: translateY(-3px);
+    }
+
+.ef-trust-row {
+    display: flex;
+    align-items: center;
+    gap: 19px;
+    margin-top: 45px;
+}
+
+    .ef-trust-row div:not(.ef-trust-line) {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .ef-trust-row strong {
+        color: #dbe5f0;
+        font-size: 12px;
+    }
+
+    .ef-trust-row small {
+        color: #617187;
+        font-size: 9px;
+    }
+
+.ef-trust-line {
+    width: 1px;
+    height: 29px;
+    background: rgba(255,255,255,0.12);
+}
+
+/* HERO DASHBOARD MOCKUP */
+
+.ef-hero-visual {
+    position: relative;
+    min-height: 510px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ef-dashboard-mockup {
+    width: 100%;
+    max-width: 440px;
+    padding: 21px;
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 21px;
+    background: rgba(15,29,48,0.88);
+    box-shadow: 0 35px 80px rgba(0,0,0,0.38);
+    backdrop-filter: blur(20px);
+    animation: efFloat 5s ease-in-out infinite;
+}
+
+    .ef-dashboard-mockup .ef-dashboard-header {
+        min-height: auto;
+        padding: 0;
+        margin-bottom: 18px;
+        background: transparent;
+        border: none;
+    }
+
+        .ef-dashboard-mockup .ef-dashboard-header span {
+            color: #60a5fa;
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .ef-dashboard-mockup .ef-dashboard-header h3 {
+            margin: 4px 0 0;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+.ef-window-dots {
+    display: flex;
+    gap: 4px;
+}
+
+    .ef-window-dots i {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #64748b;
+    }
+
+.ef-event-highlight {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    border-radius: 13px;
+    background: #172940;
+}
+
+.ef-event-symbol {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.ef-event-info small {
+    color: #70849c;
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.ef-event-info h4 {
+    margin: 3px 0;
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.ef-event-info p {
+    margin: 0;
+    color: #75879d;
+    font-size: 9px;
+}
+
+.ef-mock-status {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+    padding: 4px 7px;
+    border-radius: 20px;
+    background: rgba(34,197,94,0.1);
+    color: #4ade80;
+    font-size: 7px;
+    font-weight: 700;
+}
+
+.ef-mock-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 9px;
+}
+
+.ef-mock-stat {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px;
+    border-radius: 11px;
+    background: #102036;
+}
+
+.ef-mock-stat-icon {
+    width: 29px;
+    height: 29px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: rgba(96,165,250,0.1);
+    color: #60a5fa;
+}
+
+.ef-mock-stat strong,
+.ef-mock-stat span {
+    display: block;
+}
+
+.ef-mock-stat strong {
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.ef-mock-stat span {
+    margin-top: 1px;
+    color: #647790;
+    font-size: 8px;
+}
+
+.ef-activity {
+    margin-top: 9px;
+    padding: 13px;
+    border-radius: 11px;
+    background: #102036;
+}
+
+.ef-activity-heading {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 9px;
+}
+
+    .ef-activity-heading strong {
+        color: #ffffff;
+        font-size: 10px;
+    }
+
+    .ef-activity-heading span {
+        color: #4ade80;
+        font-size: 8px;
+    }
+
+.ef-activity-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.ef-activity-icon {
+    width: 23px;
+    height: 23px;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    background: rgba(96,165,250,0.1);
+    color: #60a5fa;
+    font-size: 9px;
+}
+
+.ef-activity-item div:nth-child(2) {
+    flex: 1;
+}
+
+.ef-activity-item strong,
+.ef-activity-item small {
+    display: block;
+}
+
+.ef-activity-item strong {
+    color: #ffffff;
+    font-size: 9px;
+}
+
+.ef-activity-item small {
+    color: #647790;
+    font-size: 7px;
+}
+
+.ef-activity-item time {
+    color: #53657b;
+    font-size: 7px;
+}
+
+.ef-floating-card {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 11px;
+    background: rgba(20,36,56,0.9);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+    backdrop-filter: blur(12px);
+}
+
+    .ef-floating-card > span {
+        width: 27px;
+        height: 27px;
+        display: grid;
+        place-items: center;
+        border-radius: 7px;
+        background: rgba(37,99,235,0.15);
+        color: #60a5fa;
+    }
+
+    .ef-floating-card strong,
+    .ef-floating-card small {
+        display: block;
+    }
+
+    .ef-floating-card strong {
+        color: #ffffff;
+        font-size: 9px;
+    }
+
+    .ef-floating-card small {
+        margin-top: 2px;
+        color: #71839a;
+        font-size: 7px;
+    }
+
+.ef-floating-one {
+    top: 48px;
+    right: -25px;
+    animation: efFloatSmall 4s ease-in-out infinite;
+}
+
+.ef-floating-two {
+    bottom: 45px;
+    left: -30px;
+    animation: efFloatSmall 4s ease-in-out infinite 1s;
+}
+
+/* HOME SECTIONS */
+
+.ef-section {
+    padding: 110px 0;
+}
+
+.ef-intro,
+.ef-roles {
+    background: #ffffff;
+}
+
+.ef-heading {
+    max-width: 680px;
+    margin: 0 auto 55px;
+    text-align: center;
+}
+
+.ef-label {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #2563eb;
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 2px;
+}
+
+.ef-heading h2,
+.ef-workflow-copy h2,
+.ef-cta h2 {
+    margin: 0;
+    color: #0f172a;
+    font-size: clamp(36px, 4vw, 52px);
+    line-height: 1.08;
+    letter-spacing: -2.5px;
+    font-weight: 850;
+}
+
+    .ef-heading h2 span,
+    .ef-workflow-copy h2 span,
+    .ef-cta h2 span {
+        color: #2563eb;
+    }
+
+.ef-heading p {
+    max-width: 590px;
+    margin: 18px auto 0;
+    color: #64748b;
+    font-size: 15px;
+    line-height: 1.75;
+}
+
+/* FEATURE CARDS */
+
+.ef-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.ef-feature-card {
+    position: relative;
+    min-height: 310px;
+    padding: 30px;
+    border: 1px solid #e5e7eb;
+    border-radius: 17px;
+    background: #ffffff;
+    transition: 0.35s ease;
+}
+
+    .ef-feature-card:hover {
+        transform: translateY(-9px);
+        border-color: #bfdbfe;
+        box-shadow: 0 25px 50px rgba(15,23,42,0.09);
+    }
+
+.ef-feature-dark {
+    background: #0b1728;
+    border-color: #0b1728;
+}
+
+.ef-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 27px;
+}
+
+.ef-card-icon {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 18px;
+}
+
+.ef-feature-dark .ef-card-icon {
+    background: rgba(96,165,250,0.12);
+    color: #60a5fa;
+}
+
+.ef-card-number {
+    color: #cbd5e1;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.ef-feature-card h3 {
+    margin: 0 0 12px;
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.ef-feature-dark h3 {
+    color: #ffffff;
+}
+
+.ef-feature-card p {
+    margin: 0 0 24px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.ef-feature-dark p {
+    color: #94a3b8;
+}
+
+.ef-feature-card a {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+    .ef-feature-card a span {
+        margin-left: 5px;
+    }
+
+.ef-feature-dark a {
+    color: #60a5fa;
+}
+
+/* WORKFLOW */
+
+.ef-workflow {
+    padding: 110px 0;
+    background: #f7f9fc;
+}
+
+.ef-workflow-grid {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 100px;
+    align-items: center;
+}
+
+.ef-workflow-copy > p {
+    max-width: 470px;
+    margin: 20px 0 28px;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.ef-dark-button {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 12px 18px;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #ffffff !important;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    transition: 0.3s ease;
+}
+
+    .ef-dark-button:hover {
+        color: #ffffff !important;
+        transform: translateY(-3px);
+        background: #1e293b;
+    }
+
+.ef-steps {
+    padding: 10px 0;
+}
+
+.ef-step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.ef-step-number {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border: 1px solid #bfdbfe;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.ef-step h3 {
+    margin: 2px 0 7px;
+    color: #111827;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.ef-step p {
+    max-width: 440px;
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.ef-step-line {
+    width: 1px;
+    height: 38px;
+    margin: 5px 0 5px 24px;
+    background: #cbd5e1;
+}
+
+/* ROLES */
+
+.ef-role-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 13px;
+}
+
+.ef-role-card {
+    position: relative;
+    min-height: 190px;
+    padding: 25px;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    background: #ffffff;
+    transition: 0.3s ease;
+}
+
+    .ef-role-card:hover {
+        transform: translateY(-7px);
+        border-color: #bfdbfe;
+        box-shadow: 0 20px 40px rgba(15,23,42,0.07);
+    }
+
+    .ef-role-card > span {
+        display: grid;
+        place-items: center;
+        width: 39px;
+        height: 39px;
+        margin-bottom: 20px;
+        border-radius: 9px;
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .ef-role-card > small {
+        position: absolute;
+        top: 25px;
+        right: 22px;
+        color: #cbd5e1;
+        font-size: 9px;
+        font-weight: 800;
+    }
+
+    .ef-role-card h3 {
+        margin: 0 0 7px;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .ef-role-card p {
+        margin: 0;
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+/* CTA */
+
+.ef-cta-section {
+    padding: 0 0 100px;
+    background: #ffffff;
+}
+
+.ef-cta {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 58px;
+    border-radius: 22px;
+    background: #07111f;
+    overflow: hidden;
+}
+
+.ef-cta-glow {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    right: 0;
+    bottom: -320px;
+    border-radius: 50%;
+    background: rgba(37,99,235,0.25);
+    filter: blur(80px);
+}
+
+.ef-cta-content {
+    position: relative;
+    z-index: 1;
+}
+
+.ef-cta h2 {
+    color: #ffffff;
+}
+
+    .ef-cta h2 span {
+        color: #60a5fa;
+    }
+
+.ef-cta p {
+    max-width: 550px;
+    margin: 15px 0 0;
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.ef-cta-buttons {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* =====================================================
+   DASHBOARD
+===================================================== */
+
+.ef-dashboard {
+    width: 100%;
+    min-height: calc(100vh - 78px);
+    box-sizing: border-box;
+    padding: 55px 0 75px;
+    background: radial-gradient(circle at 10% 0%, rgba(109,93,252,0.10), transparent 32%), radial-gradient(circle at 90% 5%, rgba(139,92,246,0.08), transparent 30%), #07111f;
+    color: #ffffff;
+}
+
+.ef-dashboard-container {
+    width: min(1200px, calc(100% - 60px));
+    margin: 0 auto;
+}
+
+/* DASHBOARD HEADER */
+
+.ef-dashboard-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    margin-bottom: 32px;
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+.ef-dashboard-title {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.ef-dashboard-subtitle {
+    margin: 8px 0 0;
+    color: rgba(255,255,255,0.52);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* DASHBOARD ACTIONS */
+
+.ef-dashboard-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ef-dashboard-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 43px;
+    padding: 0 18px;
+    border-radius: 11px;
+    text-decoration: none !important;
+    font-size: 13px;
+    font-weight: 700;
+    transition: 0.2s ease;
+}
+
+.ef-dashboard-btn-primary {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #6557f5, #8b5cf6);
+    box-shadow: 0 8px 24px rgba(109,93,252,0.25);
+}
+
+    .ef-dashboard-btn-primary:hover {
+        color: #ffffff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(109,93,252,0.4);
+    }
+
+.ef-dashboard-btn-secondary {
+    color: rgba(255,255,255,0.8) !important;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+}
+
+    .ef-dashboard-btn-secondary:hover {
+        color: #ffffff !important;
+        background: rgba(255,255,255,0.09);
+        transform: translateY(-2px);
+    }
+
+/* STAT GRID */
+
+.ef-stat-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.ef-stat-card {
+    position: relative;
+    min-height: 135px;
+    padding: 23px;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: linear-gradient( 145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035) );
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 18px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: 0.25s ease;
+    animation: efDashboardFade 0.55s ease both;
+}
+
+    .ef-stat-card:nth-child(2) {
+        animation-delay: 0.06s;
+    }
+
+    .ef-stat-card:nth-child(3) {
+        animation-delay: 0.12s;
+    }
+
+    .ef-stat-card:nth-child(4) {
+        animation-delay: 0.18s;
+    }
+
+    .ef-stat-card::after {
+        content: "";
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        right: -35px;
+        bottom: -45px;
+        border-radius: 50%;
+        background: rgba(109,93,252,0.13);
+    }
+
+    .ef-stat-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(139,124,255,0.30);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.20);
+    }
+
+.ef-stat-label {
+    position: relative;
+    z-index: 1;
+    color: rgba(255,255,255,0.48);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.ef-stat-value {
+    position: relative;
+    z-index: 1;
+    margin-top: 10px;
+    color: #ffffff;
+    font-size: 31px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.ef-stat-icon {
+    position: absolute;
+    z-index: 1;
+    top: 20px;
+    right: 20px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    background: rgba(109,93,252,0.15);
+    color: #9b8cff;
+    font-size: 17px;
+}
+
+/* DASHBOARD CONTENT */
+
+.ef-dashboard-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+    gap: 20px;
+}
+
+/* PANELS */
+
+.ef-dashboard-panel {
+    min-width: 0;
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    animation: efDashboardFade 0.55s ease both;
+}
+
+.ef-panel-header {
+    padding: 21px 23px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.ef-panel-title {
+    margin: 0;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 750;
+}
+
+.ef-panel-link {
+    color: #9185ff !important;
+    text-decoration: none !important;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+    .ef-panel-link:hover {
+        color: #b2a9ff !important;
+    }
+
+/* EVENT LIST */
+
+.ef-event-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.ef-event-item {
+    padding: 18px 23px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.055);
+    transition: background 0.2s ease;
+}
+
+    .ef-event-item:last-child {
+        border-bottom: none;
+    }
+
+    .ef-event-item:hover {
+        background: rgba(255,255,255,0.035);
+    }
+
+.ef-event-date {
+    width: 48px;
+    height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: rgba(109,93,252,0.12);
+    border: 1px solid rgba(109,93,252,0.15);
+}
+
+.ef-event-date-day {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.ef-event-date-month {
+    color: #9b8cff;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.ef-event-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.ef-event-name {
+    margin: 0;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ef-event-meta {
+    margin-top: 5px;
+    color: rgba(255,255,255,0.42);
+    font-size: 12px;
+}
+
+/* STATUS */
+
+.ef-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ef-status-upcoming {
+    color: #a99fff;
+    background: rgba(109,93,252,0.13);
+}
+
+.ef-status-ongoing {
+    color: #8ee6bb;
+    background: rgba(46,204,113,0.10);
+}
+
+.ef-status-delayed {
+    color: #ffc978;
+    background: rgba(243,156,18,0.10);
+}
+
+.ef-status-completed {
+    color: #9ba5b7;
+    background: rgba(255,255,255,0.07);
+}
+
+/* QUICK ACTIONS */
+
+.ef-quick-actions {
+    padding: 18px;
+}
+
+.ef-quick-action {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    margin-bottom: 9px;
+    color: rgba(255,255,255,0.75) !important;
+    text-decoration: none !important;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    transition: 0.2s ease;
+}
+
+    .ef-quick-action:last-child {
+        margin-bottom: 0;
+    }
+
+    .ef-quick-action:hover {
+        color: #ffffff !important;
+        background: rgba(109,93,252,0.10);
+        border-color: rgba(109,93,252,0.20);
+        transform: translateX(3px);
+    }
+
+.ef-quick-icon {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 9px;
+    color: #a095ff;
+    background: rgba(109,93,252,0.13);
+}
+
+.ef-quick-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ef-quick-title {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.ef-quick-description {
+    color: rgba(255,255,255,0.38);
+    font-size: 10px;
+}
+
+/* EMPTY */
+
+.ef-empty-state {
+    padding: 45px 20px;
+    text-align: center;
+    color: rgba(255,255,255,0.42);
+}
+
+.ef-empty-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: rgba(109,93,252,0.10);
+    color: #9387ff;
+    font-size: 20px;
+}
+
+.ef-empty-state p {
+    margin: 0;
+    font-size: 13px;
+}
+
+/* =====================================================
+   AUTHENTICATION
+===================================================== */
+
+.ef-auth-page {
+    position: relative;
+    min-height: calc(100vh - 78px);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    overflow: hidden;
+    background: #07111f;
+}
+
+.ef-auth-background {
+    position: absolute;
+    width: 650px;
+    height: 650px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient( circle, rgba(109,93,252,0.16), transparent 65% );
+    pointer-events: none;
+}
+
+.ef-auth-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 455px;
+    box-sizing: border-box;
+    padding: 40px;
+    background: linear-gradient( 145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035) );
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    animation: efAuthAppear 0.55s ease both;
+}
+
+/* AUTH LOGO */
+
+.ef-auth-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 22px;
+}
+
+    .ef-auth-logo .ef-brand-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 15px;
+        font-size: 23px;
+    }
+
+/* AUTH HEADING */
+
+.ef-auth-heading {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+    .ef-auth-heading h1 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 29px;
+        font-weight: 800;
+        letter-spacing: -0.7px;
+    }
+
+    .ef-auth-heading p {
+        margin: 9px 0 0;
+        color: rgba(255,255,255,0.48);
+        font-size: 13px;
+    }
+
+/* INPUT */
+
+.ef-input-group {
+    margin-bottom: 19px;
+}
+
+    .ef-input-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: rgba(255,255,255,0.75);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+.ef-auth-input {
+    width: 100%;
+    height: 49px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    border-radius: 11px;
+    border: 1px solid rgba(255,255,255,0.10);
+    outline: none;
+    background: rgba(0,0,0,0.16);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
+    transition: 0.2s ease;
+}
+
+    .ef-auth-input::placeholder {
+        color: rgba(255,255,255,0.28);
+    }
+
+    .ef-auth-input:focus {
+        color: #ffffff;
+        background: rgba(0,0,0,0.22);
+        border-color: rgba(139,124,255,0.65);
+        box-shadow: 0 0 0 3px rgba(109,93,252,0.10);
+    }
+
+/* LOGIN OPTIONS */
+
+.ef-login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 3px 0 23px;
+}
+
+.ef-remember {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    color: rgba(255,255,255,0.48);
+    font-size: 11px;
+}
+
+    .ef-remember input {
+        accent-color: #7668f8;
+    }
+
+.ef-forgot-link {
+    color: #9a8fff !important;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none !important;
+}
+
+    .ef-forgot-link:hover {
+        color: #b5adff !important;
+    }
+
+/* AUTH SUBMIT */
+
+.ef-auth-submit {
+    width: 100%;
+    height: 49px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: none;
+    border-radius: 11px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #6557f5, #8b5cf6);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+    box-shadow: 0 10px 28px rgba(109,93,252,0.28);
+    transition: 0.25s ease;
+}
+
+    .ef-auth-submit:hover {
+        color: #ffffff;
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+        box-shadow: 0 14px 35px rgba(109,93,252,0.42);
+    }
+
+.ef-submit-arrow {
+    font-size: 17px;
+    transition: transform 0.25s ease;
+}
+
+.ef-auth-submit:hover .ef-submit-arrow {
+    transform: translateX(4px);
+}
+
+/* DIVIDER */
+
+.ef-auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 27px 0 20px;
+    color: rgba(255,255,255,0.30);
+    font-size: 11px;
+}
+
+    .ef-auth-divider::before,
+    .ef-auth-divider::after {
+        content: "";
+        height: 1px;
+        flex: 1;
+        background: rgba(255,255,255,0.08);
+    }
+
+/* REGISTER LINK */
+
+.ef-auth-register-link {
+    width: 100%;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+    border-radius: 11px;
+    color: rgba(255,255,255,0.72) !important;
+    border: 1px solid rgba(255,255,255,0.09);
+    background: rgba(255,255,255,0.035);
+    text-decoration: none !important;
+    font-size: 12px;
+    font-weight: 700;
+    transition: 0.2s ease;
+}
+
+    .ef-auth-register-link span {
+        color: #9b8fff;
+        font-size: 16px;
+        transition: transform 0.2s ease;
+    }
+
+    .ef-auth-register-link:hover {
+        color: #ffffff !important;
+        background: rgba(109,93,252,0.09);
+        border-color: rgba(109,93,252,0.25);
+    }
+
+        .ef-auth-register-link:hover span {
+            transform: translateX(4px);
+        }
+
+/* VALIDATION */
+
+.ef-validation {
+    display: block;
+    margin-top: 5px;
+    color: #ff8f9a;
+    font-size: 10px;
+}
+
+.ef-auth-error {
+    margin-bottom: 18px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    color: #ff9ba5;
+    background: rgba(255,80,100,0.08);
+    border: 1px solid rgba(255,80,100,0.15);
+    font-size: 11px;
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.ef-footer {
+    width: 100%;
+    background: radial-gradient( circle at 20% 0%, rgba(109,93,252,0.10), transparent 35% ), #050b16;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    color: #ffffff;
+}
+
+.ef-footer-container {
+    width: min(1240px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 55px 20px 45px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 80px;
+    box-sizing: border-box;
+}
+
+.ef-footer-main {
+    max-width: 430px;
+}
+
+.ef-footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+    .ef-footer-brand .ef-brand-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        font-size: 16px;
+    }
+
+.ef-footer-main p {
+    margin: 17px 0 0;
+    color: rgba(255,255,255,0.48);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.ef-footer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+    .ef-footer-section h4 {
+        margin: 0 0 8px;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .ef-footer-section a {
+        color: rgba(255,255,255,0.48) !important;
+        text-decoration: none !important;
+        font-size: 13px;
+        transition: 0.2s ease;
+    }
+
+        .ef-footer-section a:hover {
+            color: #9b8cff !important;
+            transform: translateX(3px);
+        }
+
+.ef-footer-bottom {
+    width: min(1184px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 20px 0;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    color: rgba(255,255,255,0.35);
+    font-size: 12px;
+}
+
+/* =====================================================
+   SCROLL / GENERAL ANIMATIONS
+===================================================== */
+
+.reveal {
+    opacity: 0;
+    transform: translateY(25px);
+    transition: opacity 0.75s ease, transform 0.75s ease;
+}
+
+    .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+@keyframes efFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes efFloatSmall {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-7px);
+    }
+}
+
+@keyframes efPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 5px rgba(56,189,248,0.12);
+    }
+
+    50% {
+        box-shadow: 0 0 0 9px rgba(56,189,248,0.02);
+    }
+}
+
+@keyframes efDashboardFade {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes efAuthAppear {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 1000px) {
+
+    .ef-hero-content {
+        grid-template-columns: 1fr;
+        gap: 45px;
+    }
+
+    .ef-hero {
+        min-height: auto;
+    }
+
+    .ef-hero-visual {
+        min-height: 490px;
+    }
+
+    .ef-dashboard-mockup {
+        max-width: 470px;
+    }
+
+    .ef-feature-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ef-feature-card:last-child {
+        grid-column: 1 / -1;
+    }
+
+    .ef-workflow-grid {
+        grid-template-columns: 1fr;
+        gap: 55px;
+    }
+
+    .ef-role-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ef-cta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ef-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ef-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ef-navbar-container {
+        width: calc(100% - 30px);
+    }
+
+    .ef-nav-links {
+        margin-right: 15px;
+    }
+}
+
+@media (max-width: 760px) {
+
+    .ef-navbar {
+        height: auto;
+    }
+
+    .ef-navbar-container {
+        min-height: 72px;
+        flex-wrap: wrap;
+        padding: 12px 10px;
+    }
+
+    .ef-nav-links {
+        order: 3;
+        width: 100%;
+        margin: 8px 0 2px;
+        justify-content: center;
+        overflow-x: auto;
+    }
+
+    .ef-nav-link {
+        white-space: nowrap;
+    }
+
+    .ef-navbar-actions {
+        margin-left: auto;
+    }
+
+    .ef-footer-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+
+    .ef-footer-main {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 650px) {
+
+    .ef-container {
+        width: calc(100% - 28px);
+    }
+
+    .ef-hero-content {
+        padding: 65px 0;
+    }
+
+    .ef-hero-text h1 {
+        font-size: 52px;
+        letter-spacing: -3px;
+    }
+
+    .ef-hero-text > p {
+        font-size: 15px;
+    }
+
+    .ef-trust-row {
+        gap: 10px;
+    }
+
+        .ef-trust-row strong {
+            font-size: 10px;
+        }
+
+        .ef-trust-row small {
+            font-size: 7px;
+        }
+
+    .ef-floating-one {
+        right: -5px;
+    }
+
+    .ef-floating-two {
+        left: -5px;
+    }
+
+    .ef-section,
+    .ef-workflow {
+        padding: 75px 0;
+    }
+
+    .ef-feature-grid,
+    .ef-role-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ef-feature-card:last-child {
+        grid-column: auto;
+    }
+
+    .ef-heading {
+        margin-bottom: 38px;
+    }
+
+    .ef-cta {
+        padding: 35px 25px;
+    }
+
+    .ef-cta-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+
+        .ef-cta-buttons .ef-btn {
+            width: 100%;
+        }
+
+    .ef-dashboard {
+        padding: 35px 0 55px;
+    }
+
+    .ef-dashboard-container {
+        width: calc(100% - 28px);
+    }
+
+    .ef-dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ef-dashboard-actions {
+        width: 100%;
+    }
+
+    .ef-dashboard-btn {
+        flex: 1;
+    }
+
+    .ef-event-item {
+        padding: 15px;
+    }
+
+    .ef-event-date {
+        width: 43px;
+        height: 48px;
+    }
+
+    .ef-footer-container {
+        grid-template-columns: 1fr;
+        padding: 45px 20px;
+    }
+
+    .ef-footer-main {
+        grid-column: auto;
+    }
+
+    .ef-footer-bottom {
+        width: calc(100% - 40px);
+        flex-direction: column;
+        gap: 7px;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .ef-brand-text {
+        display: none;
+    }
+
+    .ef-brand-icon {
+        width: 37px;
+        height: 37px;
+    }
+
+    .ef-auth-buttons,
+    .ef-auth-form {
+        gap: 6px;
+    }
+
+    .ef-login-btn {
+        min-width: 65px;
+        padding: 0 12px;
+    }
+
+    .ef-register-btn {
+        min-width: 82px;
+        padding: 0 12px;
+    }
+
+    .ef-btn-arrow {
+        display: none;
+    }
+
+    .ef-nav-links {
+        justify-content: flex-start;
+    }
+
+    .ef-auth-page {
+        padding: 35px 15px;
+    }
+
+    .ef-auth-card {
+        padding: 30px 22px;
+        border-radius: 20px;
+    }
+
+    .ef-auth-heading h1 {
+        font-size: 25px;
+    }
+}
+ css
+/* =====================================================
+   IDENTITY AUTHENTICATION LAYOUT FIX
+===================================================== */
+/* Remove Bootstrap layout restrictions around Identity pages */
+body:has(.ef-auth-page) {
+    background: #07111f;
+}
+
+body:has(.ef-auth-page) .container,
+body:has(.ef-auth-page) .container-fluid,
+body:has(.ef-auth-page) main {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+body:has(.ef-auth-page) main {
+    padding-bottom: 0 !important;
+}
+
+body:has(.ef-auth-page) .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+body:has(.ef-auth-page) [class*="col-"] {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+
+/* AUTH PAGE */
+
+.ef-auth-page {
+    width: 100%;
+    min-height: calc(100vh - 78px);
+    min-height: calc(100dvh - 78px);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 50px 20px;
+    background: radial-gradient( circle at 50% 40%, rgba(109, 93, 252, 0.10), transparent 40% ), #07111f;
+}
+
+
+/* AUTH CARD */
+
+.ef-auth-card {
+    width: min(100%, 430px);
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 38px;
+    position: relative;
+    z-index: 2;
+    border-radius: 22px;
+    background: linear-gradient( 145deg, rgba(255,255,255,0.085), rgba(255,255,255,0.035) );
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.38), 0 0 0 1px rgba(255,255,255,0.015);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    animation: efAuthAppear 0.55s ease both;
+}
+
+
+/* REGISTER CAN BE SLIGHTLY WIDER */
+
+.ef-register-card {
+    width: min(100%, 460px);
+}
+
+
+/* AUTH BACKGROUND */
+
+.ef-auth-background {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient( circle, rgba(109,93,252,0.18), rgba(109,93,252,0.04) 38%, transparent 70% );
+    pointer-events: none;
+}
+
+
+/* LOGO */
+
+.ef-auth-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 21px;
+}
+
+    .ef-auth-logo .ef-brand {
+        transform: none;
+    }
+
+        .ef-auth-logo .ef-brand:hover {
+            transform: scale(1.04);
+        }
+
+    .ef-auth-logo .ef-brand-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 15px;
+        font-size: 23px;
+        box-shadow: 0 10px 30px rgba(109,93,252,0.35);
+    }
+
+
+/* HEADING */
+
+.ef-auth-heading {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+    .ef-auth-heading h1 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 28px;
+        line-height: 1.2;
+        font-weight: 800;
+        letter-spacing: -0.7px;
+    }
+
+    .ef-auth-heading p {
+        margin: 9px 0 0;
+        color: rgba(255,255,255,0.48);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+
+/* INPUT GROUP */
+
+.ef-input-group {
+    margin-bottom: 17px;
+}
+
+    .ef-input-group label {
+        display: block;
+        margin-bottom: 7px;
+        color: rgba(255,255,255,0.72);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.15px;
+    }
+
+
+/* INPUT */
+
+.ef-auth-input {
+    width: 100%;
+    height: 48px;
+    box-sizing: border-box;
+    padding: 0 14px;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+    outline: none;
+    background: rgba(0,0,0,0.18);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+    .ef-auth-input:hover {
+        border-color: rgba(255,255,255,0.17);
+    }
+
+    .ef-auth-input:focus {
+        border-color: rgba(139,124,255,0.70);
+        background: rgba(0,0,0,0.24);
+        box-shadow: 0 0 0 3px rgba(109,93,252,0.10), 0 7px 20px rgba(0,0,0,0.12);
+    }
+
+    .ef-auth-input::placeholder {
+        color: rgba(255,255,255,0.25);
+    }
+
+
+/* LOGIN OPTIONS */
+
+.ef-login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 2px 0 21px;
+}
+
+.ef-remember {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    color: rgba(255,255,255,0.45);
+    font-size: 11px;
+}
+
+    .ef-remember input {
+        width: 13px;
+        height: 13px;
+        margin: 0;
+        accent-color: #7668f8;
+    }
+
+.ef-forgot-link {
+    color: #9a8fff !important;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: color 0.2s ease;
+}
+
+    .ef-forgot-link:hover {
+        color: #b9b2ff !important;
+    }
+
+
+/* SUBMIT BUTTON */
+
+.ef-auth-submit {
+    width: 100%;
+    height: 49px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    color: #ffffff !important;
+    background: linear-gradient( 135deg, #6557f5, #8b5cf6 );
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+    box-shadow: 0 10px 27px rgba(109,93,252,0.28);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+    .ef-auth-submit:hover {
+        color: #ffffff !important;
+        transform: translateY(-2px);
+        filter: brightness(1.07);
+        box-shadow: 0 15px 35px rgba(109,93,252,0.40);
+    }
+
+    .ef-auth-submit:active {
+        transform: translateY(0);
+    }
+
+.ef-submit-arrow {
+    font-size: 17px;
+    line-height: 1;
+    transition: transform 0.25s ease;
+}
+
+.ef-auth-submit:hover .ef-submit-arrow {
+    transform: translateX(4px);
+}
+
+
+/* DIVIDER */
+
+.ef-auth-divider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin: 24px 0 18px;
+    color: rgba(255,255,255,0.27);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+}
+
+    .ef-auth-divider::before,
+    .ef-auth-divider::after {
+        content: "";
+        height: 1px;
+        flex: 1;
+        background: rgba(255,255,255,0.08);
+    }
+
+
+/* SECONDARY AUTH BUTTON */
+
+.ef-auth-register-link {
+    width: 100%;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.035);
+    color: rgba(255,255,255,0.70) !important;
+    text-decoration: none !important;
+    font-size: 11px;
+    font-weight: 700;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+    .ef-auth-register-link span:last-child {
+        color: #9b8fff;
+        font-size: 16px;
+        transition: transform 0.2s ease;
+    }
+
+    .ef-auth-register-link:hover {
+        color: #ffffff !important;
+        background: rgba(109,93,252,0.09);
+        border-color: rgba(109,93,252,0.25);
+        transform: translateY(-1px);
+    }
+
+        .ef-auth-register-link:hover span:last-child {
+            transform: translateX(4px);
+        }
+
+
+/* VALIDATION */
+
+.ef-validation {
+    display: block;
+    margin-top: 5px;
+    color: #ff8f9a;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.ef-auth-error {
+    margin-bottom: 17px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    color: #ff9ba5;
+    background: rgba(255,80,100,0.08);
+    border: 1px solid rgba(255,80,100,0.15);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+/* REGISTER SPACING */
+
+.ef-register-page .ef-input-group {
+    margin-bottom: 15px;
+}
+
+.ef-register-page .ef-auth-heading {
+    margin-bottom: 25px;
+}
+
+
+/* AUTH ANIMATION */
+
+@keyframes efAuthAppear {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* AUTH MOBILE */
+
+@media (max-width: 600px) {
+
+    .ef-auth-page {
+        min-height: calc(100vh - 72px);
+        min-height: calc(100dvh - 72px);
+        padding: 35px 15px;
+    }
+
+    .ef-auth-card,
+    .ef-register-card {
+        width: 100%;
+        max-width: 440px;
+        padding: 30px 22px;
+        border-radius: 19px;
+    }
+
+    .ef-auth-heading h1 {
+        font-size: 25px;
+    }
+
+    .ef-auth-heading p {
+        font-size: 12px;
+    }
+
+    .ef-auth-background {
+        width: 500px;
+        height: 500px;
+    }
+}
+
+ 
+
+ 

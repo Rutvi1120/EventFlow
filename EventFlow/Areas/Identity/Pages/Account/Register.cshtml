@@ -1,84 +1,86 @@
+
 @page
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="ef-auth-page ef-register-page">
+    <div class="ef-auth-background"></div>
 
-<div class="row">
-    <div class="col-md-4">
+    <div class="ef-auth-card ef-register-card">
+
+        <div class="ef-auth-logo">
+            <a asp-controller="Home" asp-action="Index" class="ef-brand">
+                <span class="ef-brand-icon">E</span>
+            </a>
+        </div>
+
+        <div class="ef-auth-heading">
+            <h1>Create your account</h1>
+            <p>Join EventFlow and manage your events easily</p>
+        </div>
+
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.FullName" class="form-control" autocomplete="name" />
-                <label asp-for="Input.FullName"></label>
-                <span asp-validation-for="Input.FullName" class="text-danger"></span>
+
+            <div asp-validation-summary="ModelOnly"
+                 class="ef-auth-error"
+                 role="alert"></div>
+
+            <div class="ef-input-group">
+                <label asp-for="Input.Email">Email address</label>
+                <input asp-for="Input.Email"
+                       class="ef-auth-input"
+                       autocomplete="username"
+                       placeholder="Enter your email" />
+                <span asp-validation-for="Input.Email"
+                      class="ef-validation"></span>
             </div>
 
-            <div class="form-floating mb-3">
-                <input asp-for="Input.StudentId" class="form-control" />
-                <label asp-for="Input.StudentId"></label>
-                <span asp-validation-for="Input.StudentId" class="text-danger"></span>
-            </div>
-
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Department" class="form-control" />
-                <label asp-for="Input.Department"></label>
-                <span asp-validation-for="Input.Department" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Email</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+            <div class="ef-input-group">
                 <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <input asp-for="Input.Password"
+                       class="ef-auth-input"
+                       autocomplete="new-password"
+                       placeholder="Create a password" />
+                <span asp-validation-for="Input.Password"
+                      class="ef-validation"></span>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+
+            <div class="ef-input-group">
+                <label asp-for="Input.ConfirmPassword">Confirm password</label>
+                <input asp-for="Input.ConfirmPassword"
+                       class="ef-auth-input"
+                       autocomplete="new-password"
+                       placeholder="Confirm your password" />
+                <span asp-validation-for="Input.ConfirmPassword"
+                      class="ef-validation"></span>
             </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+
+            <button id="registerSubmit"
+                    type="submit"
+                    class="ef-auth-submit">
+                <span>Create account</span>
+                <span class="ef-submit-arrow">→</span>
+            </button>
+
         </form>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
-                        </p>
-                    </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
-                        </div>
-                    </form>
-                }
-            }
-        </section>
+
+        <div class="ef-auth-divider">
+            <span>ALREADY HAVE AN ACCOUNT?</span>
+        </div>
+
+        <a asp-page="./Login"
+           asp-route-returnUrl="@Model.ReturnUrl"
+           class="ef-auth-register-link">
+            <span>Sign in to EventFlow</span>
+            <span>→</span>
+        </a>
+
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+ 

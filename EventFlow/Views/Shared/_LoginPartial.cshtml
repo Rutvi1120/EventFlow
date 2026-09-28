@@ -1,26 +1,54 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using EventFlow.Models
 @inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
 
-<ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+    <div class="ef-auth-form">
+
+         
+        <span class="ef-user-name">
+            Hi, @User.Identity?.Name
+        </span>
+
+        <form asp-area="Identity"
+              asp-page="/Account/Logout"
+              asp-route-returnUrl="@Url.Action("Index", "Home")"
+              method="post">
+
+            <button type="submit" class="ef-login-btn">
+                Logout
+            </button>
+
         </form>
-    </li>
+
+    </div>
+ 
+
 }
 else
 {
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
+
+    <div class="ef-auth-buttons">
+
+         
+        <a class="ef-login-btn"
+           asp-area="Identity"
+           asp-page="/Account/Login">
+            Login
+        </a>
+
+        <a class="ef-register-btn"
+           asp-area="Identity"
+           asp-page="/Account/Register">
+
+            <span>Register</span>
+
+            <span class="ef-btn-arrow">→</span>
+
+        </a>
+
+    </div>
+ 
+
 }
-</ul>

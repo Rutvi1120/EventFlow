@@ -13,6 +13,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body p-4">
+
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
                     <span class="badge bg-primary mb-2">
@@ -42,6 +43,7 @@
             </div>
 
             <div class="row g-3 mb-4">
+
                 <div class="col-md-6">
                     <strong>Start</strong>
                     <div>
@@ -83,17 +85,29 @@
                         @Model.ApprovalStatus
                     </div>
                 </div>
+
             </div>
 
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <div class="d-flex flex-wrap gap-2">
-                    <a asp-controller="Registration"
-                       asp-action="Register"
-                       asp-route-eventId="@Model.Id"
-                       class="btn btn-primary">
-                        Register
-                    </a>
+
+                    <form asp-controller="Registration"
+                          asp-action="Register"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="eventId"
+                               value="@Model.Id" />
+
+                        <button type="submit"
+                                class="btn btn-primary">
+                            Register
+                        </button>
+
+                    </form>
 
                     <a asp-controller="Volunteer"
                        asp-action="Apply"
@@ -101,6 +115,7 @@
                        class="btn btn-outline-primary">
                         Volunteer
                     </a>
+
                 </div>
             }
             else
@@ -111,6 +126,7 @@
                     Login to Register
                 </a>
             }
+
         </div>
     </div>
 </div>

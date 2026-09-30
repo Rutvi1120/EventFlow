@@ -6,11 +6,13 @@
     <div class="mb-4">
         <h1>Admin Dashboard</h1>
         <p class="text-muted">
-            Manage users, events, and clubs.
+            Manage users, events, clubs, and venues.
         </p>
     </div>
 
     <div class="row g-4">
+
+        <!-- Users -->
         <div class="col-md-6 col-lg-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
@@ -27,6 +29,7 @@
             </div>
         </div>
 
+        <!-- Events -->
         <div class="col-md-6 col-lg-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
@@ -43,6 +46,7 @@
             </div>
         </div>
 
+        <!-- Clubs -->
         <div class="col-md-6 col-lg-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
@@ -59,6 +63,25 @@
             </div>
         </div>
 
+        <!-- Venues -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Venues</h5>
+                    <p class="text-muted">
+                        Create, edit, and manage event venues.
+                    </p>
+
+                    <a asp-controller="Venue"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Manage Venues
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Events -->
         <div class="col-md-6 col-lg-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
@@ -75,5 +98,6 @@
                 </div>
             </div>
         </div>
+
     </div>
 </div>

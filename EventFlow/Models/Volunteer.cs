@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EventFlow.Models
 {
@@ -7,35 +6,28 @@ namespace EventFlow.Models
     {
         public int Id { get; set; }
 
-        // Volunteer User
         [Required]
         public string VolunteerId { get; set; } = string.Empty;
 
-        [ForeignKey("VolunteerId")]
-        public ApplicationUser VolunteerUser { get; set; } = null!;
+        public ApplicationUser? VolunteerUser { get; set; }
 
-        // Event
         [Required]
         public int EventId { get; set; }
 
-        [ForeignKey("EventId")]
-        public Event Event { get; set; } = null!;
+        public Event? Event { get; set; }
 
-        // Assignment Information
         [Required]
         [StringLength(100)]
         public string Role { get; set; } = string.Empty;
 
-        [StringLength(500)]
+        [StringLength(1000)]
         public string? Notes { get; set; }
 
-        // Status
         [Required]
-        [StringLength(50)]
-        public string Status { get; set; } = "Assigned";
+        [StringLength(30)]
+        public string Status { get; set; } = "Pending";
 
-        // Dates
-        public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? AssignedAt { get; set; }
 
         public DateTime? CompletedAt { get; set; }
     }

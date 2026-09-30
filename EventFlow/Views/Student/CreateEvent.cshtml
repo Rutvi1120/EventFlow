@@ -1,0 +1,144 @@
+﻿@model EventFlow.Models.Event
+
+@{
+    ViewData["Title"] = "Create Student Event";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>Create Student Event</h1>
+        <p class="text-muted">
+            Submit a new event for faculty approval.
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="CreateEvent"
+                          method="post">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name"
+                                   class="form-label">
+                                Event Name
+                            </label>
+
+                            <input asp-for="Name"
+                                   class="form-control" />
+
+                            <span asp-validation-for="Name"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description"
+                                   class="form-label">
+                                Description
+                            </label>
+
+                            <textarea asp-for="Description"
+                                      class="form-control"
+                                      rows="5"></textarea>
+
+                            <span asp-validation-for="Description"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="StartDateTime"
+                                       class="form-label">
+                                    Start Date & Time
+                                </label>
+
+                                <input asp-for="StartDateTime"
+                                       type="datetime-local"
+                                       class="form-control" />
+
+                                <span asp-validation-for="StartDateTime"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EndDateTime"
+                                       class="form-label">
+                                    End Date & Time
+                                </label>
+
+                                <input asp-for="EndDateTime"
+                                       type="datetime-local"
+                                       class="form-control" />
+
+                                <span asp-validation-for="EndDateTime"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="MaxParticipants"
+                                       class="form-label">
+                                    Maximum Participants
+                                </label>
+
+                                <input asp-for="MaxParticipants"
+                                       type="number"
+                                       min="1"
+                                       class="form-control" />
+
+                                <span asp-validation-for="MaxParticipants"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="VenueId"
+                                       class="form-label">
+                                    Venue
+                                </label>
+
+                                <select asp-for="VenueId"
+                                        asp-items="ViewBag.Venues"
+                                        class="form-select">
+                                    <option value="">
+                                        Select Venue
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="VenueId"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit"
+                                    class="btn btn-primary">
+                                Submit Event
+                            </button>
+
+                            <a asp-action="Events"
+                               class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

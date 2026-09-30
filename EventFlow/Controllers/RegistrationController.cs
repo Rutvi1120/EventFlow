@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Controllers
 {
-    [Authorize(Roles = "Participant")]
+    [Authorize]
     public class RegistrationController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,98 +21,76 @@ namespace EventFlow.Controllers
             _userManager = userManager;
         }
 
-        // Register for an event
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(int eventId)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
 
-            if (user == null)
-                return Challenge();
-
-            var eventModel = await _context.Events
-                .Include(e => e.Venue)
-                .FirstOrDefaultAsync(e => e.Id == eventId);
-
-            if (eventModel == null)
-                return NotFound();
-            if (eventModel.StartDateTime <= DateTime.Now)
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                TempData["Message"] =
-                    "You cannot register for an event that has already started.";
-
-                return RedirectToAction(
-                    "Details",
-                    "Events",
-                    new { id = eventId });
+                return Challenge();
             }
-            // Check whether the user is already registered
+
+            var eventItem = await _context.Events
+                .FirstOrDefaultAsync(e =>
+                    e.Id == eventId &&
+                    e.ApprovalStatus == "Approved");
+
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            if (eventItem.EndDateTime <= DateTime.Now)
+            {
+                return BadRequest();
+            }
+
             var alreadyRegistered = await _context.Registrations
                 .AnyAsync(r =>
                     r.EventId == eventId &&
-                    r.UserId == user.Id);
+                    r.UserId == userId);
 
             if (alreadyRegistered)
             {
-                TempData["Message"] = "You are already registered for this event.";
                 return RedirectToAction(
                     "Details",
                     "Events",
                     new { id = eventId });
             }
 
-            // Check whether the user is already on the waitlist
             var alreadyWaitlisted = await _context.WaitlistEntries
                 .AnyAsync(w =>
                     w.EventId == eventId &&
-                    w.UserId == user.Id);
+                    w.UserId == userId);
 
             if (alreadyWaitlisted)
             {
-                TempData["Message"] = "You are already on the waitlist for this event.";
                 return RedirectToAction(
                     "Details",
                     "Events",
                     new { id = eventId });
             }
 
-            // Count current registrations
             var registrationCount = await _context.Registrations
                 .CountAsync(r => r.EventId == eventId);
 
-            // Event has available seats
-            if (registrationCount < eventModel.MaxParticipants)
+            if (registrationCount >= eventItem.MaxParticipants)
             {
-                var registration = new Registration
-                {
-                    EventId = eventId,
-                    UserId = user.Id,
-                    RegisteredAt = DateTime.Now
-                };
-
-                _context.Registrations.Add(registration);
-                await _context.SaveChangesAsync();
-
-                TempData["Message"] =
-                    "You have successfully registered for this event.";
+                return RedirectToAction(
+                    nameof(JoinWaitlist),
+                    new { eventId });
             }
-            else
+
+            _context.Registrations.Add(new Registration
             {
-                // Event is full, so add user to waitlist
-                var waitlistEntry = new WaitlistEntry
-                {
-                    EventId = eventId,
-                    UserId = user.Id,
-                    JoinedAt = DateTime.Now
-                };
+                EventId = eventId,
+                UserId = userId,
+                RegisteredAt = DateTime.UtcNow
+            });
 
-                _context.WaitlistEntries.Add(waitlistEntry);
-                await _context.SaveChangesAsync();
-
-                TempData["Message"] =
-                    "The event is full. You have been added to the waitlist.";
-            }
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(
                 "Details",
@@ -120,26 +98,24 @@ namespace EventFlow.Controllers
                 new { id = eventId });
         }
 
-        // Cancel registration
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelRegistration(int eventId)
+        public async Task<IActionResult> Cancel(int eventId)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
 
-            if (user == null)
+            if (string.IsNullOrWhiteSpace(userId))
+            {
                 return Challenge();
+            }
 
             var registration = await _context.Registrations
                 .FirstOrDefaultAsync(r =>
                     r.EventId == eventId &&
-                    r.UserId == user.Id);
+                    r.UserId == userId);
 
             if (registration == null)
             {
-                TempData["Message"] =
-                    "You are not registered for this event.";
-
                 return RedirectToAction(
                     "Details",
                     "Events",
@@ -147,31 +123,10 @@ namespace EventFlow.Controllers
             }
 
             _context.Registrations.Remove(registration);
+
             await _context.SaveChangesAsync();
 
-            // Move the first waitlisted participant into the event
-            var nextWaitlist = await _context.WaitlistEntries
-                .Where(w => w.EventId == eventId)
-                .OrderBy(w => w.JoinedAt)
-                .FirstOrDefaultAsync();
-
-            if (nextWaitlist != null)
-            {
-                var newRegistration = new Registration
-                {
-                    EventId = nextWaitlist.EventId,
-                    UserId = nextWaitlist.UserId,
-                    RegisteredAt = DateTime.Now
-                };
-
-                _context.Registrations.Add(newRegistration);
-                _context.WaitlistEntries.Remove(nextWaitlist);
-
-                await _context.SaveChangesAsync();
-            }
-
-            TempData["Message"] =
-                "Your registration has been cancelled.";
+            await PromoteWaitlistedUser(eventId);
 
             return RedirectToAction(
                 "Details",
@@ -179,37 +134,76 @@ namespace EventFlow.Controllers
                 new { id = eventId });
         }
 
-        // Leave waitlist
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LeaveWaitlist(int eventId)
+        public async Task<IActionResult> JoinWaitlist(int eventId)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
 
-            if (user == null)
-                return Challenge();
-
-            var waitlistEntry = await _context.WaitlistEntries
-                .FirstOrDefaultAsync(w =>
-                    w.EventId == eventId &&
-                    w.UserId == user.Id);
-
-            if (waitlistEntry == null)
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                TempData["Message"] =
-                    "You are not on the waitlist for this event.";
+                return Challenge();
+            }
 
+            var eventItem = await _context.Events
+                .FirstOrDefaultAsync(e =>
+                    e.Id == eventId &&
+                    e.ApprovalStatus == "Approved");
+
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            if (eventItem.EndDateTime <= DateTime.Now)
+            {
+                return BadRequest();
+            }
+
+            var registrationExists = await _context.Registrations
+                .AnyAsync(r =>
+                    r.EventId == eventId &&
+                    r.UserId == userId);
+
+            if (registrationExists)
+            {
                 return RedirectToAction(
                     "Details",
                     "Events",
                     new { id = eventId });
             }
 
-            _context.WaitlistEntries.Remove(waitlistEntry);
-            await _context.SaveChangesAsync();
+            var waitlistExists = await _context.WaitlistEntries
+                .AnyAsync(w =>
+                    w.EventId == eventId &&
+                    w.UserId == userId);
 
-            TempData["Message"] =
-                "You have been removed from the waitlist.";
+            if (waitlistExists)
+            {
+                return RedirectToAction(
+                    "Details",
+                    "Events",
+                    new { id = eventId });
+            }
+
+            var registrationCount = await _context.Registrations
+                .CountAsync(r => r.EventId == eventId);
+
+            if (registrationCount < eventItem.MaxParticipants)
+            {
+                return RedirectToAction(
+                    nameof(Register),
+                    new { eventId });
+            }
+
+            _context.WaitlistEntries.Add(new WaitlistEntry
+            {
+                EventId = eventId,
+                UserId = userId,
+                JoinedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(
                 "Details",
@@ -217,42 +211,134 @@ namespace EventFlow.Controllers
                 new { id = eventId });
         }
 
-        // My registrations
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LeaveWaitlist(int eventId)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var waitlistEntry = await _context.WaitlistEntries
+                .FirstOrDefaultAsync(w =>
+                    w.EventId == eventId &&
+                    w.UserId == userId);
+
+            if (waitlistEntry != null)
+            {
+                _context.WaitlistEntries.Remove(waitlistEntry);
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(
+                "Details",
+                "Events",
+                new { id = eventId });
+        }
+
         public async Task<IActionResult> MyRegistrations()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
 
-            if (user == null)
+            if (string.IsNullOrWhiteSpace(userId))
+            {
                 return Challenge();
+            }
 
             var registrations = await _context.Registrations
                 .Include(r => r.Event)
                 .ThenInclude(e => e!.Venue)
-                .Where(r => r.UserId == user.Id)
+                .Include(r => r.Event)
+                .ThenInclude(e => e!.Club)
+                .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.RegisteredAt)
                 .ToListAsync();
 
             return View(registrations);
         }
 
-        // My waitlist entries
-        [HttpGet]
         public async Task<IActionResult> MyWaitlist()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
 
-            if (user == null)
+            if (string.IsNullOrWhiteSpace(userId))
+            {
                 return Challenge();
+            }
 
-            var waitlist = await _context.WaitlistEntries
+            var waitlistEntries = await _context.WaitlistEntries
                 .Include(w => w.Event)
                 .ThenInclude(e => e!.Venue)
-                .Where(w => w.UserId == user.Id)
-                .OrderBy(w => w.JoinedAt)
+                .Include(w => w.Event)
+                .ThenInclude(e => e!.Club)
+                .Where(w => w.UserId == userId)
+                .OrderByDescending(w => w.JoinedAt)
                 .ToListAsync();
 
-            return View(waitlist);
+            return View(waitlistEntries);
+        }
+
+        private async Task PromoteWaitlistedUser(int eventId)
+        {
+            var eventItem = await _context.Events
+                .FirstOrDefaultAsync(e => e.Id == eventId);
+
+            if (eventItem == null)
+            {
+                return;
+            }
+
+            if (eventItem.ApprovalStatus != "Approved" ||
+                eventItem.EndDateTime <= DateTime.Now)
+            {
+                return;
+            }
+
+            var registrationCount = await _context.Registrations
+                .CountAsync(r => r.EventId == eventId);
+
+            if (registrationCount >= eventItem.MaxParticipants)
+            {
+                return;
+            }
+
+            var nextEntry = await _context.WaitlistEntries
+                .Where(w => w.EventId == eventId)
+                .OrderBy(w => w.JoinedAt)
+                .FirstOrDefaultAsync();
+
+            if (nextEntry == null)
+            {
+                return;
+            }
+
+            var alreadyRegistered = await _context.Registrations
+                .AnyAsync(r =>
+                    r.EventId == eventId &&
+                    r.UserId == nextEntry.UserId);
+
+            if (alreadyRegistered)
+            {
+                _context.WaitlistEntries.Remove(nextEntry);
+                await _context.SaveChangesAsync();
+
+                return;
+            }
+
+            _context.Registrations.Add(new Registration
+            {
+                EventId = eventId,
+                UserId = nextEntry.UserId,
+                RegisteredAt = DateTime.UtcNow
+            });
+
+            _context.WaitlistEntries.Remove(nextEntry);
+
+            await _context.SaveChangesAsync();
         }
     }
 }

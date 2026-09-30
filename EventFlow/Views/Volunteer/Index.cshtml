@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Volunteer Area";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>Volunteer Area</h1>
+        <p class="text-muted">
+            Manage your volunteer activities.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h4>My Applications</h4>
+
+                    <p class="text-muted">
+                        View your volunteer applications and their current status.
+                    </p>
+
+                    <a asp-action="MyApplications"
+                       class="btn btn-primary">
+                        My Applications
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h4>Browse Events</h4>
+
+                    <p class="text-muted">
+                        Find approved events where you can volunteer.
+                    </p>
+
+                    <a asp-controller="Events"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Browse Events
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

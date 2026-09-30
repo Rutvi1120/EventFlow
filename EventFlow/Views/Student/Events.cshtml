@@ -1,0 +1,100 @@
+﻿@model IEnumerable<EventFlow.Models.Event>
+
+@{
+    ViewData["Title"] = "Student Events";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Student Events</h1>
+            <p class="text-muted mb-0">
+                Student events you have created.
+            </p>
+        </div>
+
+        <a asp-action="CreateEvent"
+           class="btn btn-primary">
+            Create Event
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You have not created any student events.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var eventItem in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                @if (eventItem.ApprovalStatus == "Approved")
+                                {
+                                    <span class="badge bg-success">
+                                        Approved
+                                    </span>
+                                }
+                                else if (eventItem.ApprovalStatus == "Rejected")
+                                {
+                                    <span class="badge bg-danger">
+                                        Rejected
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        Pending
+                                    </span>
+                                }
+                            </div>
+
+                            <h4>
+                                @eventItem.Name
+                            </h4>
+
+                            <p class="text-muted">
+                                @eventItem.Description
+                            </p>
+
+                            <div class="mt-auto">
+                                <div class="mb-2">
+                                    <strong>Date:</strong>
+                                    @eventItem.StartDateTime.ToString("dd MMM yyyy")
+                                </div>
+
+                                <div class="mb-3">
+                                    <strong>Venue:</strong>
+                                    @(eventItem.Venue?.Name ?? "Not specified")
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <a asp-controller="Events"
+                                       asp-action="Details"
+                                       asp-route-id="@eventItem.Id"
+                                       class="btn btn-outline-primary flex-grow-1">
+                                        Details
+                                    </a>
+
+                                    @if (eventItem.ApprovalStatus != "Approved")
+                                    {
+                                        <a asp-action="EditEvent"
+                                           asp-route-id="@eventItem.Id"
+                                           class="btn btn-outline-secondary">
+                                            Edit
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

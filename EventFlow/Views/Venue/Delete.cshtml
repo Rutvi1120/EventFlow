@@ -1,0 +1,75 @@
+@model EventFlow.Models.Venue
+
+@{
+    ViewData["Title"] = "Delete Venue";
+    var hasEvents = ViewBag.HasEvents is bool value && value;
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>Delete Venue</h1>
+        <p class="text-muted">
+            Review the venue before deleting it.
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-4">@Model.Name</h4>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Location</dt>
+                        <dd class="col-sm-8">
+                            @Model.Location
+                        </dd>
+
+                        <dt class="col-sm-4">Capacity</dt>
+                        <dd class="col-sm-8">
+                            @Model.Capacity
+                        </dd>
+                    </dl>
+
+                    @if (hasEvents)
+                    {
+                        <div class="alert alert-warning">
+                            This venue is assigned to one or more events
+                            and cannot be deleted.
+                        </div>
+
+                        <a asp-action="Index"
+                           class="btn btn-outline-secondary">
+                            Back to Venues
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            Are you sure you want to delete this venue?
+                        </div>
+
+                        <form asp-action="Delete"
+                              asp-route-id="@Model.Id"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <div class="d-flex gap-2">
+                                <button type="submit"
+                                        class="btn btn-danger">
+                                    Delete Venue
+                                </button>
+
+                                <a asp-action="Index"
+                                   class="btn btn-outline-secondary">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

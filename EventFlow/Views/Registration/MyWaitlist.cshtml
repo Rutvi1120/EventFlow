@@ -4,81 +4,102 @@
     ViewData["Title"] = "My Waitlist";
 }
 
-<h1>My Waitlist</h1>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-info">
-        You are not currently on any event waitlists.
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>My Waitlist</h1>
+        <p class="text-muted">
+            Events where you are currently waiting for a seat.
+        </p>
     </div>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Event</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Venue</th>
-                <th>Joined At</th>
-                <th></th>
-            </tr>
-        </thead>
 
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.Event?.Name</td>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You are not currently on any event waitlists.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Event Type</th>
+                        <th>Joined On</th>
+                        <th>Event Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
 
-                    <td>
-                        @item.Event?.StartDateTime
-                    </td>
+                <tbody>
+                    @foreach (var waitlistEntry in Model)
+                    {
+                        var eventItem = waitlistEntry.Event;
 
-                    <td>
-                        @item.Event?.EndDateTime
-                    </td>
+                        if (eventItem == null)
+                        {
+                            continue;
+                        }
 
-                    <td>
-                        @item.Event?.Venue?.Name
-                    </td>
+                        <tr>
+                            <td>
+                                <strong>@eventItem.Name</strong>
+                            </td>
 
-                    <td>
-                        @item.JoinedAt
-                    </td>
+                            <td>
+                                <span class="badge bg-primary">
+                                    @eventItem.EventType
+                                </span>
+                            </td>
 
-                    <td>
-                        <a asp-controller="Events"
-                           asp-action="Details"
-                           asp-route-id="@item.EventId"
-                           class="btn btn-sm btn-info">
-                            Details
-                        </a>
+                            <td>
+                                @waitlistEntry.JoinedAt
+                                .ToLocalTime()
+                                .ToString("dd MMM yyyy hh:mm tt")
+                            </td>
 
-                        <form asp-controller="Registration"
-                              asp-action="LeaveWaitlist"
-                              method="post"
-                              style="display:inline;">
+                            <td>
+                                @eventItem.StartDateTime
+                                .ToString("dd MMM yyyy hh:mm tt")
+                            </td>
 
-                            <input type="hidden"
-                                   name="eventId"
-                                   value="@item.EventId" />
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-2">
+                                    @if (eventItem.ApprovalStatus == "Approved")
+                                    {
+                                        <a asp-controller="Events"
+                                           asp-action="Details"
+                                           asp-route-id="@eventItem.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Details
+                                        </a>
+                                    }
 
-                            <button type="submit"
-                                    class="btn btn-sm btn-danger">
-                                Leave Waitlist
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                                    @if (eventItem.EndDateTime > DateTime.Now)
+                                    {
+                                        <form asp-controller="Registration"
+                                              asp-action="LeaveWaitlist"
+                                              method="post">
 
-}
-<a asp-controller="Participant"
-                   asp-action="Dashboard"
-                   class="btn btn-primary">
-                    ← Back to Participant Dashboard
-                </a>
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="eventId"
+                                                   value="@eventItem.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                Leave
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

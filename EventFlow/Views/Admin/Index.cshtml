@@ -1,0 +1,79 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>Admin Dashboard</h1>
+        <p class="text-muted">
+            Manage users, events, and clubs.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Users</h5>
+                    <p class="text-muted">
+                        Approve and manage user accounts.
+                    </p>
+
+                    <a asp-action="Users"
+                       class="btn btn-primary">
+                        Manage Users
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Events</h5>
+                    <p class="text-muted">
+                        Review and manage all events.
+                    </p>
+
+                    <a asp-action="Events"
+                       class="btn btn-primary">
+                        Manage Events
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Clubs</h5>
+                    <p class="text-muted">
+                        Approve and manage clubs.
+                    </p>
+
+                    <a asp-action="Clubs"
+                       class="btn btn-primary">
+                        Manage Clubs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>All Events</h5>
+                    <p class="text-muted">
+                        View the public event list.
+                    </p>
+
+                    <a asp-controller="Events"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        View Events
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

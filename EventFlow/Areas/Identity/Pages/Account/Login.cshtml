@@ -1,87 +1,114 @@
 @page
 @model LoginModel
+
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Sign In";
 }
 
 <div class="ef-auth-page">
-    <div class="ef-auth-background"></div>
-
     <div class="ef-auth-card">
+        <div class="ef-auth-header">
+            <div class="ef-auth-logo">EF</div>
 
-        <div class="ef-auth-logo">
-            <a asp-controller="Home" asp-action="Index" class="ef-brand">
-                <span class="ef-brand-icon">E</span>
-            </a>
-        </div>
-
-        <div class="ef-auth-heading">
             <h1>Welcome back</h1>
-            <p>Sign in to continue to EventFlow</p>
+
+            <p>
+                Sign in to continue to EventFlow.
+            </p>
         </div>
 
-        <form id="account" method="post">
+        @if (TempData["RegistrationSuccess"] != null)
+        {
+            <div class="alert alert-success" role="alert">
+                @TempData["RegistrationSuccess"]
+            </div>
+        }
 
+        <form method="post" class="ef-auth-form">
             <div asp-validation-summary="ModelOnly"
-                 class="ef-auth-error"
+                 class="text-danger"
                  role="alert"></div>
 
-            <div class="ef-input-group">
-                <label asp-for="Input.Email">Email address</label>
+            <div class="ef-form-group">
+                <label asp-for="Input.Email"></label>
+
                 <input asp-for="Input.Email"
-                       class="ef-auth-input"
+                       class="form-control"
                        autocomplete="username"
                        placeholder="Enter your email" />
+
                 <span asp-validation-for="Input.Email"
-                      class="ef-validation"></span>
+                      class="text-danger"></span>
             </div>
 
-            <div class="ef-input-group">
-                <label asp-for="Input.Password">Password</label>
+            <div class="ef-form-group">
+                <label asp-for="Input.Password"></label>
+
                 <input asp-for="Input.Password"
-                       class="ef-auth-input"
+                       class="form-control"
                        autocomplete="current-password"
                        placeholder="Enter your password" />
+
                 <span asp-validation-for="Input.Password"
-                      class="ef-validation"></span>
+                      class="text-danger"></span>
             </div>
 
-            <div class="ef-login-options">
-                <label class="ef-remember">
-                    <input asp-for="Input.RememberMe" />
-                    <span>Remember me</span>
-                </label>
+            <div class="ef-auth-options">
+                <div class="form-check">
+                    <input asp-for="Input.RememberMe"
+                           class="form-check-input" />
 
-                <a asp-page="./ForgotPassword"
-                   class="ef-forgot-link">
+                    <label asp-for="Input.RememberMe"
+                           class="form-check-label">
+                    </label>
+                </div>
+
+                <a asp-page="./ForgotPassword">
                     Forgot password?
                 </a>
             </div>
 
-            <button id="login-submit"
-                    type="submit"
-                    class="ef-auth-submit">
-                <span>Sign in</span>
-                <span class="ef-submit-arrow">→</span>
+            <button type="submit"
+                    class="btn btn-primary ef-auth-submit">
+                Sign In
             </button>
-
         </form>
 
-        <div class="ef-auth-divider">
-            <span>NEW TO EVENTFLOW?</span>
+        @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+        {
+            <div class="ef-auth-divider">
+                <span>or</span>
+            </div>
+
+            <form asp-page="./Login"
+                  asp-page-handler="ExternalLogin"
+                  asp-route-returnUrl="@Model.ReturnUrl"
+                  method="post"
+                  class="ef-external-login">
+
+                @foreach (var provider in Model.ExternalLogins)
+                {
+                    <button type="submit"
+                            class="btn btn-outline-secondary w-100"
+                            name="provider"
+                            value="@provider.Name">
+                        Continue with @provider.DisplayName
+                    </button>
+                }
+            </form>
+        }
+
+        <div class="ef-auth-footer">
+            <span>Don't have an account?</span>
+
+            <a asp-page="./Register"
+               asp-route-returnUrl="@Model.ReturnUrl">
+                Create Account
+            </a>
         </div>
-
-        <a asp-page="./Register"
-           asp-route-returnUrl="@Model.ReturnUrl"
-           class="ef-auth-register-link">
-            <span>Create an account</span>
-            <span>→</span>
-        </a>
-
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
- 

@@ -1,0 +1,478 @@
+﻿using EventFlow.Data;
+using EventFlow.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+
+namespace EventFlow.Controllers
+{
+    [Authorize(Roles = "Faculty")]
+    public class FacultyController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public FacultyController(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager)
+        {
+            _context = context;
+            _userManager = userManager;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(facultyId))
+            {
+                return Challenge();
+            }
+
+            var supervisedClubs = await _context.Clubs
+                .Include(c => c.ClubPresident)
+                .Include(c => c.FacultySupervisor)
+                .Where(c => c.FacultySupervisorId == facultyId)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            var pendingEvents = await _context.Events
+                .Include(e => e.Organizer)
+                .Include(e => e.Club)
+                .Include(e => e.Venue)
+                .Where(e =>
+                    e.ApprovalStatus == "Pending" &&
+                    (
+                        e.EventType == "Student" ||
+                        e.EventType == "College" ||
+                        (
+                            e.EventType == "Club" &&
+                            e.Club != null &&
+                            e.Club.FacultySupervisorId == facultyId
+                        )
+                    ))
+                .OrderBy(e => e.StartDateTime)
+                .ToListAsync();
+
+            var myEvents = await _context.Events
+                .Include(e => e.Club)
+                .Include(e => e.Venue)
+                .Where(e => e.OrganizerId == facultyId)
+                .OrderByDescending(e => e.StartDateTime)
+                .ToListAsync();
+
+            var pendingPresidentRequests = await _userManager.Users
+                .Include(u => u.RequestedClub)
+                .Where(u =>
+                    u.RequestedRole == "ClubPresident" &&
+                    u.IsApproved &&
+                    u.RequestedClubId != null &&
+                    u.RequestedClub != null &&
+                    u.RequestedClub.FacultySupervisorId == facultyId &&
+                    u.RequestedClub.Status == "Approved")
+                .OrderBy(u => u.FullName)
+                .ToListAsync();
+
+            ViewBag.SupervisedClubs = supervisedClubs;
+            ViewBag.PendingEvents = pendingEvents;
+            ViewBag.MyEvents = myEvents;
+            ViewBag.PendingPresidentRequests = pendingPresidentRequests;
+
+            return View();
+        }
+
+        public async Task<IActionResult> Events()
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(facultyId))
+            {
+                return Challenge();
+            }
+
+            var events = await _context.Events
+                .Include(e => e.Organizer)
+                .Include(e => e.Club)
+                .Include(e => e.Venue)
+                .Where(e =>
+                    e.OrganizerId == facultyId ||
+                    (
+                        e.ApprovalStatus == "Pending" &&
+                        (
+                            e.EventType == "Student" ||
+                            e.EventType == "College" ||
+                            (
+                                e.EventType == "Club" &&
+                                e.Club != null &&
+                                e.Club.FacultySupervisorId == facultyId
+                            )
+                        )
+                    ))
+                .OrderByDescending(e => e.StartDateTime)
+                .ToListAsync();
+
+            return View(events);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveEvent(int id)
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(facultyId))
+            {
+                return Challenge();
+            }
+
+            var eventItem = await _context.Events
+                .Include(e => e.Club)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            if (eventItem.ApprovalStatus != "Pending")
+            {
+                return BadRequest();
+            }
+
+            var canApprove = eventItem.EventType switch
+            {
+                "Student" => true,
+                "College" => true,
+                "Club" =>
+                    eventItem.Club != null &&
+                    eventItem.Club.FacultySupervisorId == facultyId,
+                _ => false
+            };
+
+            if (!canApprove)
+            {
+                return Forbid();
+            }
+
+            eventItem.ApprovalStatus = "Approved";
+            eventItem.Status = "Upcoming";
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Events));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectEvent(int id)
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(facultyId))
+            {
+                return Challenge();
+            }
+
+            var eventItem = await _context.Events
+                .Include(e => e.Club)
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            if (eventItem.ApprovalStatus != "Pending")
+            {
+                return BadRequest();
+            }
+
+            var canReject = eventItem.EventType switch
+            {
+                "Student" => true,
+                "College" => true,
+                "Club" =>
+                    eventItem.Club != null &&
+                    eventItem.Club.FacultySupervisorId == facultyId,
+                _ => false
+            };
+
+            if (!canReject)
+            {
+                return Forbid();
+            }
+
+            eventItem.ApprovalStatus = "Rejected";
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Events));
+        }
+
+        public async Task<IActionResult> AllClubs()
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(facultyId))
+            {
+                return Challenge();
+            }
+
+            var clubs = await _context.Clubs
+                .Include(c => c.ClubPresident)
+                .Include(c => c.FacultySupervisor)
+                .Where(c => c.FacultySupervisorId == facultyId)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            return View(clubs);
+        }
+
+        public async Task<IActionResult> ClubDetails(int id)
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(facultyId))
+            {
+                return Challenge();
+            }
+
+            var club = await _context.Clubs
+                .Include(c => c.ClubPresident)
+                .Include(c => c.FacultySupervisor)
+                .Include(c => c.Events)
+                .FirstOrDefaultAsync(c =>
+                    c.Id == id &&
+                    c.FacultySupervisorId == facultyId);
+
+            if (club == null)
+            {
+                return NotFound();
+            }
+
+            var presidentRequests = await _userManager.Users
+                .Where(u =>
+                    u.RequestedRole == "ClubPresident" &&
+                    u.IsApproved &&
+                    u.RequestedClubId == club.Id)
+                .OrderBy(u => u.FullName)
+                .ToListAsync();
+
+            ViewBag.PresidentRequests = presidentRequests;
+
+            return View(club);
+        }
+
+        [HttpGet]
+        public IActionResult CreateClub()
+        {
+            return View(new Club());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateClub(Club model)
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrEmpty(facultyId))
+            {
+                return Unauthorized();
+            }
+
+            ModelState.Remove(nameof(Club.FacultySupervisorId));
+            ModelState.Remove(nameof(Club.ClubPresidentId));
+
+            model.FacultySupervisorId = facultyId;
+            model.ClubPresidentId = null;
+            model.Status = "Pending";
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            _context.Clubs.Add(model);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(AllClubs));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApprovePresident(string userId)
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(facultyId))
+            {
+                return Challenge();
+            }
+
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u =>
+                    u.Id == userId &&
+                    u.RequestedRole == "ClubPresident" &&
+                    u.IsApproved);
+
+            if (user == null || user.RequestedClubId == null)
+            {
+                return NotFound();
+            }
+
+            var club = await _context.Clubs
+                .FirstOrDefaultAsync(c =>
+                    c.Id == user.RequestedClubId.Value &&
+                    c.FacultySupervisorId == facultyId &&
+                    c.Status == "Approved");
+
+            if (club == null)
+            {
+                return Forbid();
+            }
+
+            if (!string.IsNullOrWhiteSpace(club.ClubPresidentId))
+            {
+                TempData["ErrorMessage"] =
+                    "This club already has a club president.";
+
+                return RedirectToAction(
+                    nameof(ClubDetails),
+                    new { id = club.Id });
+            }
+
+            club.ClubPresidentId = user.Id;
+            user.RequestedClubId = null;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                $"{user.FullName} has been assigned as club president.";
+
+            return RedirectToAction(
+                nameof(ClubDetails),
+                new { id = club.Id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectPresident(string userId)
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(facultyId))
+            {
+                return Challenge();
+            }
+
+            var user = await _userManager.Users
+                .Include(u => u.RequestedClub)
+                .FirstOrDefaultAsync(u =>
+                    u.Id == userId &&
+                    u.RequestedRole == "ClubPresident" &&
+                    u.IsApproved);
+
+            if (user == null || user.RequestedClubId == null)
+            {
+                return NotFound();
+            }
+
+            var club = await _context.Clubs
+                .FirstOrDefaultAsync(c =>
+                    c.Id == user.RequestedClubId.Value &&
+                    c.FacultySupervisorId == facultyId &&
+                    c.Status == "Approved");
+
+            if (club == null)
+            {
+                return Forbid();
+            }
+
+            user.RequestedClubId = null;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                $"{user.FullName}'s club president request was rejected.";
+
+            return RedirectToAction(
+                nameof(ClubDetails),
+                new { id = club.Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CreateEvent()
+        {
+            await LoadVenues();
+
+            return View(new Event
+            {
+                EventType = "College",
+                ApprovalStatus = "Approved",
+                Status = "Upcoming"
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateEvent(Event eventItem)
+        {
+            var facultyId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(facultyId))
+            {
+                return Challenge();
+            }
+
+            eventItem.OrganizerId = facultyId;
+            eventItem.EventType = "College";
+            eventItem.ApprovalStatus = "Approved";
+            eventItem.Status = "Upcoming";
+            eventItem.ClubId = null;
+            eventItem.ClubName = null;
+
+            if (eventItem.EndDateTime <= eventItem.StartDateTime)
+            {
+                ModelState.AddModelError(
+                    nameof(Event.EndDateTime),
+                    "End time must be later than start time.");
+            }
+
+            var venueExists = await _context.Venues
+                .AnyAsync(v => v.Id == eventItem.VenueId);
+
+            if (!venueExists)
+            {
+                ModelState.AddModelError(
+                    nameof(Event.VenueId),
+                    "The selected venue does not exist.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                await LoadVenues();
+                return View(eventItem);
+            }
+
+            _context.Events.Add(eventItem);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Events));
+        }
+
+        private async Task LoadVenues()
+        {
+            var venues = await _context.Venues
+                .OrderBy(v => v.Name)
+                .ToListAsync();
+
+            ViewBag.Venues = new SelectList(
+                venues,
+                "Id",
+                "Name");
+        }
+    }
+}

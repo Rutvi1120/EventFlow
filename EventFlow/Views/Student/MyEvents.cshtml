@@ -1,0 +1,117 @@
+﻿@model IEnumerable<EventFlow.Models.Event>
+
+@{
+    ViewData["Title"] = "My Student Events";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>My Student Events</h1>
+            <p class="text-muted mb-0">
+                Manage the student events you have created.
+            </p>
+        </div>
+
+        <a asp-action="CreateEvent"
+           class="btn btn-primary">
+            Create Event
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You have not created any student events.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Participants</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var eventItem in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@eventItem.Name</strong>
+                            </td>
+
+                            <td>
+                                @eventItem.StartDateTime.ToString("dd MMM yyyy hh:mm tt")
+                            </td>
+
+                            <td>
+                                @if (eventItem.ApprovalStatus == "Approved")
+                                {
+                                    <span class="badge bg-success">
+                                        Approved
+                                    </span>
+                                }
+                                else if (eventItem.ApprovalStatus == "Rejected")
+                                {
+                                    <span class="badge bg-danger">
+                                        Rejected
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        Pending
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @eventItem.Registrations.Count /
+                                @eventItem.MaxParticipants
+                            </td>
+
+                            <td>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a asp-controller="Events"
+                                       asp-action="Details"
+                                       asp-route-id="@eventItem.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Details
+                                    </a>
+
+                                    @if (eventItem.ApprovalStatus != "Approved")
+                                    {
+                                        <a asp-action="EditEvent"
+                                           asp-route-id="@eventItem.Id"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            Edit
+                                        </a>
+
+                                        <form asp-action="DeleteEvent"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@eventItem.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

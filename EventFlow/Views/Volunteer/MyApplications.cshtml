@@ -1,0 +1,83 @@
+﻿
+@model IEnumerable<EventFlow.Models.Volunteer>
+
+@{
+    ViewData["Title"] = "My Volunteer Applications";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>My Volunteer Applications</h1>
+        <p class="text-muted">
+            View your volunteer applications and assignments.
+        </p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You have not submitted any volunteer applications.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Assigned</th>
+                        <th>Completed</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var assignment in Model)
+                    {
+                        <tr>
+                            <td>
+                                @(assignment.Event?.Name ?? "Unknown event")
+                            </td>
+
+                            <td>
+                                @assignment.Role
+                            </td>
+
+                            <td>
+                                @assignment.Status
+                            </td>
+
+                            <td>
+                                @if (assignment.AssignedAt.HasValue)
+                                {
+                                    @assignment.AssignedAt.Value.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        Not assigned
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (assignment.CompletedAt.HasValue)
+                                {
+                                    @assignment.CompletedAt.Value.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        Not completed
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,100 @@
+﻿@model IEnumerable<EventFlow.Models.Club>
+
+@{
+    ViewData["Title"] = "My Clubs";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>My Clubs</h1>
+            <p class="text-muted mb-0">
+                Clubs you supervise.
+            </p>
+        </div>
+
+        <a asp-action="CreateClub"
+           class="btn btn-primary">
+            Create Club
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You have not created any clubs yet.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var club in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-2">
+                                @if (club.Status == "Approved")
+                                {
+                                    <span class="badge bg-success">
+                                        Approved
+                                    </span>
+                                }
+                                else if (club.Status == "Rejected")
+                                {
+                                    <span class="badge bg-danger">
+                                        Rejected
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        Pending Approval
+                                    </span>
+                                }
+                            </div>
+
+                            <h4>@club.Name</h4>
+
+                            <p class="text-muted">
+                                @(club.Description ?? "No description available.")
+                            </p>
+
+                            <div class="mb-3">
+                                <strong>Department:</strong>
+                                @(club.Department ?? "Not specified")
+                            </div>
+
+                            <div class="mb-3">
+                                <strong>Club President:</strong>
+                                @(club.ClubPresident?.FullName ?? "Not assigned")
+                            </div>
+
+                            <div class="mt-auto">
+                                <a asp-action="ClubDetails"
+                                   asp-route-id="@club.Id"
+                                   class="btn btn-primary w-100">
+                                    View Club
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

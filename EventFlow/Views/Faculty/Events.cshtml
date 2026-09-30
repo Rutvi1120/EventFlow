@@ -1,0 +1,152 @@
+﻿@model IEnumerable<EventFlow.Models.Event>
+
+@{
+    ViewData["Title"] = "Faculty Events";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Faculty Event Management</h1>
+            <p class="text-muted mb-0">
+                Review events you can approve and manage your own events.
+            </p>
+        </div>
+
+        <a asp-action="CreateEvent"
+           class="btn btn-primary">
+            Create College Event
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No events are currently available.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Type</th>
+                        <th>Organizer</th>
+                        <th>Date</th>
+                        <th>Venue</th>
+                        <th>Approval</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var eventItem in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@eventItem.Name</strong>
+
+                                @if (eventItem.Club != null)
+                                {
+                                    <div class="small text-muted">
+                                        @eventItem.Club.Name
+                                    </div>
+                                }
+                            </td>
+
+                            <td>
+                                <span class="badge bg-primary">
+                                    @eventItem.EventType
+                                </span>
+                            </td>
+
+                            <td>
+                                @(eventItem.Organizer?.FullName
+                                    ?? "Unknown")
+                            </td>
+
+                            <td>
+                                @eventItem.StartDateTime
+                                .ToString("dd MMM yyyy")
+                                <div class="small text-muted">
+                                    @eventItem.StartDateTime
+                                    .ToString("hh:mm tt")
+                                </div>
+                            </td>
+
+                            <td>
+                                @(eventItem.Venue?.Name
+                                    ?? "Not specified")
+                            </td>
+
+                            <td>
+                                @if (eventItem.ApprovalStatus == "Approved")
+                                {
+                                    <span class="badge bg-success">
+                                        Approved
+                                    </span>
+                                }
+                                else if (eventItem.ApprovalStatus == "Rejected")
+                                {
+                                    <span class="badge bg-danger">
+                                        Rejected
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        Pending
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a asp-controller="Events"
+                                       asp-action="Details"
+                                       asp-route-id="@eventItem.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Details
+                                    </a>
+
+                                    @if (eventItem.ApprovalStatus == "Pending")
+                                    {
+                                        <form asp-action="ApproveEvent"
+                                              method="post">
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@eventItem.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-success">
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="RejectEvent"
+                                              method="post">
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@eventItem.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

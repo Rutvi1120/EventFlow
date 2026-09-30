@@ -1,0 +1,198 @@
+﻿@{
+    ViewData["Title"] = "Faculty Dashboard";
+
+    var supervisedClubs =
+        ViewBag.SupervisedClubs as IEnumerable<EventFlow.Models.Club>
+        ?? Enumerable.Empty<EventFlow.Models.Club>();
+
+    var pendingEvents =
+        ViewBag.PendingEvents as IEnumerable<EventFlow.Models.Event>
+        ?? Enumerable.Empty<EventFlow.Models.Event>();
+
+    var myEvents =
+        ViewBag.MyEvents as IEnumerable<EventFlow.Models.Event>
+        ?? Enumerable.Empty<EventFlow.Models.Event>();
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>Faculty Dashboard</h1>
+        <p class="text-muted mb-0">
+            Manage college events, approvals, and supervised clubs.
+        </p>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Pending Approvals</h5>
+                    <div class="display-6 mb-3">
+                        @pendingEvents.Count()
+                    </div>
+
+                    <a asp-action="Events"
+                       class="btn btn-primary">
+                        Review Events
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>My Clubs</h5>
+                    <div class="display-6 mb-3">
+                        @supervisedClubs.Count()
+                    </div>
+
+                    <a asp-action="AllClubs"
+                       class="btn btn-primary">
+                        View Clubs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>My Events</h5>
+                    <div class="display-6 mb-3">
+                        @myEvents.Count()
+                    </div>
+
+                    <a asp-action="Events"
+                       class="btn btn-primary">
+                        View Events
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Create Event</h5>
+                    <p class="text-muted">
+                        Create a college-wide event.
+                    </p>
+
+                    <a asp-action="CreateEvent"
+                       class="btn btn-primary">
+                        Create Event
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Pending Event Approvals</h5>
+                </div>
+
+                <div class="card-body">
+                    @if (!pendingEvents.Any())
+                    {
+                        <div class="alert alert-info mb-0">
+                            There are no events waiting for your approval.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach (var eventItem in pendingEvents.Take(5))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>
+                                                    @eventItem.Name
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                <span class="badge bg-primary">
+                                                    @eventItem.EventType
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                @eventItem.StartDateTime
+                                                .ToString("dd MMM yyyy")
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+                            <a asp-action="Events"
+                               class="btn btn-outline-primary">
+                                View All
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Supervised Clubs</h5>
+                </div>
+
+                <div class="card-body">
+                    @if (!supervisedClubs.Any())
+                    {
+                        <div class="alert alert-info mb-0">
+                            No approved clubs are assigned to you.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var club in supervisedClubs.Take(5))
+                            {
+                                <a asp-action="ClubDetails"
+                                   asp-route-id="@club.Id"
+                                   class="list-group-item list-group-item-action">
+                                    <div class="fw-semibold">
+                                        @club.Name
+                                    </div>
+
+                                    <small class="text-muted">
+                                        @(club.ClubPresident?.FullName
+                                            ?? "No president")
+                                    </small>
+                                </a>
+                            }
+                        </div>
+
+                        <div class="mt-3">
+                            <a asp-action="AllClubs"
+                               class="btn btn-outline-primary">
+                                View All Clubs
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

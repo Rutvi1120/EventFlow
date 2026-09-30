@@ -1,0 +1,80 @@
+﻿@{
+    ViewData["Title"] = "Club President Dashboard";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>Club President Dashboard</h1>
+        <p class="text-muted">
+            Manage your club and its events.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>My Clubs</h5>
+                    <p class="text-muted">
+                        View the clubs you manage.
+                    </p>
+
+                    <a asp-action="AllClubs"
+                       class="btn btn-primary">
+                        My Clubs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>My Events</h5>
+                    <p class="text-muted">
+                        Manage events organized by your club.
+                    </p>
+
+                    <a asp-action="Events"
+                       class="btn btn-primary">
+                        My Events
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Browse Events</h5>
+                    <p class="text-muted">
+                        Discover approved college events.
+                    </p>
+
+                    <a asp-controller="Events"
+                       asp-action="Index"
+                       class="btn btn-primary">
+                        Browse Events
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Volunteers</h5>
+                    <p class="text-muted">
+                        Manage volunteers for your club events.
+                    </p>
+
+                    <a asp-controller="Volunteer"
+                       asp-action="MyApplications"
+                       class="btn btn-primary">
+                        Volunteer Area
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

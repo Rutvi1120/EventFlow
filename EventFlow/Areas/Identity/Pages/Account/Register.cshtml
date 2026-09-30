@@ -1,86 +1,245 @@
-
 @page
-@model RegisterModel
+@model EventFlow.Areas.Identity.Pages.Account.RegisterModel
+
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Create Account";
 }
 
-<div class="ef-auth-page ef-register-page">
-    <div class="ef-auth-background"></div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <span class="badge bg-primary mb-3">
+                            EventFlow
+                        </span>
 
-    <div class="ef-auth-card ef-register-card">
+                        <h1 class="h2 fw-bold">
+                            Create Your Account
+                        </h1>
 
-        <div class="ef-auth-logo">
-            <a asp-controller="Home" asp-action="Index" class="ef-brand">
-                <span class="ef-brand-icon">E</span>
-            </a>
-        </div>
+                        <p class="text-muted mb-0">
+                            Join EventFlow to participate in college activities.
+                        </p>
+                    </div>
 
-        <div class="ef-auth-heading">
-            <h1>Create your account</h1>
-            <p>Join EventFlow and manage your events easily</p>
-        </div>
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
 
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Input.FullName"
+                                       class="form-label">
+                                    Full Name
+                                </label>
 
-            <div asp-validation-summary="ModelOnly"
-                 class="ef-auth-error"
-                 role="alert"></div>
+                                <input asp-for="Input.FullName"
+                                       class="form-control"
+                                       autocomplete="name" />
 
-            <div class="ef-input-group">
-                <label asp-for="Input.Email">Email address</label>
-                <input asp-for="Input.Email"
-                       class="ef-auth-input"
-                       autocomplete="username"
-                       placeholder="Enter your email" />
-                <span asp-validation-for="Input.Email"
-                      class="ef-validation"></span>
+                                <span asp-validation-for="Input.FullName"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.Email"
+                                       class="form-label">
+                                    Email
+                                </label>
+
+                                <input asp-for="Input.Email"
+                                       class="form-control"
+                                       autocomplete="email" />
+
+                                <span asp-validation-for="Input.Email"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.AccountType"
+                                       class="form-label">
+                                    Account Type
+                                </label>
+
+                                <select asp-for="Input.AccountType"
+                                        class="form-select"
+                                        id="accountType">
+                                    <option value="Student">
+                                        Student
+                                    </option>
+                                    <option value="Faculty">
+                                        Faculty
+                                    </option>
+                                    <option value="ClubPresident">
+                                        Club President
+                                    </option>
+                                </select>
+
+                                <span asp-validation-for="Input.AccountType"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6"
+                                 id="studentIdGroup">
+                                <label asp-for="Input.StudentId"
+                                       class="form-label">
+                                    Student ID
+                                </label>
+
+                                <input asp-for="Input.StudentId"
+                                       class="form-control" />
+
+                                <span asp-validation-for="Input.StudentId"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.Department"
+                                       class="form-label">
+                                    Department
+                                </label>
+
+                                <input asp-for="Input.Department"
+                                       class="form-control" />
+
+                                <span asp-validation-for="Input.Department"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6"
+                                 id="clubGroup">
+                                <label asp-for="Input.RequestedClubId"
+                                       class="form-label">
+                                    Club
+                                </label>
+
+                                <select asp-for="Input.RequestedClubId"
+                                        class="form-select">
+                                    <option value="">
+                                        Select an approved club
+                                    </option>
+
+                                    @foreach (var club in Model.ApprovedClubs)
+                                    {
+                                        <option value="@club.Id">
+                                            @club.Name
+                                        </option>
+                                    }
+                                </select>
+
+                                <span asp-validation-for="Input.RequestedClubId"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.Password"
+                                       class="form-label">
+                                    Password
+                                </label>
+
+                                <input asp-for="Input.Password"
+                                       class="form-control"
+                                       autocomplete="new-password" />
+
+                                <span asp-validation-for="Input.Password"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Input.ConfirmPassword"
+                                       class="form-label">
+                                    Confirm Password
+                                </label>
+
+                                <input asp-for="Input.ConfirmPassword"
+                                       class="form-control"
+                                       autocomplete="new-password" />
+
+                                <span asp-validation-for="Input.ConfirmPassword"
+                                      class="text-danger">
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-4"
+                             id="accountInfo">
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary w-100 mt-3">
+                            Create Account
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <span class="text-muted">
+                            Already have an account?
+                        </span>
+
+                        <a asp-area="Identity"
+                           asp-page="/Account/Login"
+                           class="text-decoration-none">
+                            Sign in
+                        </a>
+                    </div>
+                </div>
             </div>
-
-            <div class="ef-input-group">
-                <label asp-for="Input.Password">Password</label>
-                <input asp-for="Input.Password"
-                       class="ef-auth-input"
-                       autocomplete="new-password"
-                       placeholder="Create a password" />
-                <span asp-validation-for="Input.Password"
-                      class="ef-validation"></span>
-            </div>
-
-            <div class="ef-input-group">
-                <label asp-for="Input.ConfirmPassword">Confirm password</label>
-                <input asp-for="Input.ConfirmPassword"
-                       class="ef-auth-input"
-                       autocomplete="new-password"
-                       placeholder="Confirm your password" />
-                <span asp-validation-for="Input.ConfirmPassword"
-                      class="ef-validation"></span>
-            </div>
-
-            <button id="registerSubmit"
-                    type="submit"
-                    class="ef-auth-submit">
-                <span>Create account</span>
-                <span class="ef-submit-arrow">→</span>
-            </button>
-
-        </form>
-
-        <div class="ef-auth-divider">
-            <span>ALREADY HAVE AN ACCOUNT?</span>
         </div>
-
-        <a asp-page="./Login"
-           asp-route-returnUrl="@Model.ReturnUrl"
-           class="ef-auth-register-link">
-            <span>Sign in to EventFlow</span>
-            <span>→</span>
-        </a>
-
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const accountType = document.getElementById("accountType");
+        const studentIdGroup = document.getElementById("studentIdGroup");
+        const clubGroup = document.getElementById("clubGroup");
+        const studentIdInput = document.getElementById("Input_StudentId");
+        const clubSelect = document.getElementById("Input_RequestedClubId");
+        const accountInfo = document.getElementById("accountInfo");
+
+        function updateAccountFields() {
+            const type = accountType.value;
+
+            studentIdGroup.style.display =
+                type === "Student" ? "" : "none";
+
+            clubGroup.style.display =
+                type === "ClubPresident" ? "" : "none";
+
+            if (type !== "Student") {
+                studentIdInput.value = "";
+            }
+
+            if (type !== "ClubPresident") {
+                clubSelect.value = "";
+            }
+
+            if (type === "Student") {
+                accountInfo.textContent =
+                    "Student accounts are activated immediately.";
+            } else if (type === "Faculty") {
+                accountInfo.textContent =
+                    "Faculty accounts require administrator approval.";
+            } else {
+                accountInfo.textContent =
+                    "Club President accounts require administrator approval and must select an approved club.";
+            }
+        }
+
+        accountType.addEventListener("change", updateAccountFields);
+
+        updateAccountFields();
+    </script>
 }
- 

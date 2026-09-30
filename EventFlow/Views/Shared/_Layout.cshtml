@@ -1,159 +1,119 @@
 ﻿<!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-     
     <title>@ViewData["Title"] - EventFlow</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/EventFlow.styles.css" asp-append-version="true" />
-     
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
 </head>
 
 <body>
-
-     
-    <!-- NAVBAR -->
-    <header class="ef-navbar-wrapper">
-        <nav class="ef-navbar">
-
-            <div class="ef-navbar-container">
-
-                <!-- Logo -->
-                <a class="ef-brand"
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand"
                    asp-controller="Home"
                    asp-action="Index">
-
-                    <span class="ef-brand-icon">E</span>
-
-                    <span class="ef-brand-text">
-                        Event<span>Flow</span>
-                    </span>
-
+                    EventFlow
                 </a>
 
-                <!-- Navigation -->
-                <div class="ef-nav-links">
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-                    <a href="#home" class="ef-nav-link active">
-                        Home
-                    </a>
+                <div class="collapse navbar-collapse"
+                     id="mainNavigation">
 
-                    <a href="#features" class="ef-nav-link">
-                        Features
-                    </a>
+                    <ul class="navbar-nav me-auto">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Events"
+                                   asp-action="Index">
+                                    Events
+                                </a>
+                            </li>
 
-                    <a href="#workflow" class="ef-nav-link">
-                        How It Works
-                    </a>
+                            @if (User.IsInRole("Student"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       asp-controller="Student"
+                                       asp-action="Index">
+                                        Student
+                                    </a>
+                                </li>
+                            }
 
-                    <a href="#roles" class="ef-nav-link">
-                        Roles
-                    </a>
+                            @if (User.IsInRole("Faculty"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       asp-controller="Faculty"
+                                       asp-action="Index">
+                                        Faculty
+                                    </a>
+                                </li>
+                            }
 
-                </div>
+                            @if (User.IsInRole("ClubPresident"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       asp-controller="ClubPresident"
+                                       asp-action="Index">
+                                        Club
+                                    </a>
+                                </li>
+                            }
 
-                <!-- Authentication -->
-                <div class="ef-navbar-actions">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       asp-controller="Admin"
+                                       asp-action="Index">
+                                        Admin
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
+
                     <partial name="_LoginPartial" />
                 </div>
-
             </div>
-
         </nav>
     </header>
 
-
-    <!-- PAGE CONTENT -->
-    <main role="main">
+    <main class="min-vh-100">
         @RenderBody()
     </main>
 
-
-    <!-- FOOTER -->
-    <footer class="ef-footer">
-
-        <div class="ef-footer-container">
-
-            <div class="ef-footer-main">
-
-                <a class="ef-footer-brand"
-                   asp-controller="Home"
-                   asp-action="Index">
-
-                    <span class="ef-brand-icon">E</span>
-
-                    <span class="ef-brand-text">
-                        Event<span>Flow</span>
-                    </span>
-
-                </a>
-
-                <p>
-                    A simple and powerful event coordination platform
-                    designed to make planning and managing events easier.
-                </p>
-
-            </div>
-
-
-            <div class="ef-footer-section">
-
-                <h4>Platform</h4>
-
-                <a href="#features">Features</a>
-                <a href="#workflow">How It Works</a>
-                <a href="#roles">Roles</a>
-
-            </div>
-
-
-            <div class="ef-footer-section">
-
-                <h4>Account</h4>
-
-                <a asp-area="Identity"
-                   asp-page="/Account/Login">
-                    Login
-                </a>
-
-                <a asp-area="Identity"
-                   asp-page="/Account/Register">
-                    Register
-                </a>
-
-            </div>
-
+    <footer class="border-top py-3">
+        <div class="container text-muted">
+            &copy; @DateTime.Now.Year - EventFlow
         </div>
-
-
-        <div class="ef-footer-bottom">
-
-            <span>
-                © 2026 EventFlow
-            </span>
-
-            <span>
-                Event Coordination & Management System
-            </span>
-
-        </div>
-
     </footer>
 
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
-     
-
 </body>
 </html>
-partial

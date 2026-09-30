@@ -1,145 +1,136 @@
-
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using EventFlow.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
-using EventFlow.Models;
+using System.ComponentModel.DataAnnotations;
 
-namespace EventFlow.Areas.Identity.Pages.Account;
-
-public class LoginModel : PageModel
+namespace EventFlow.Areas.Identity.Pages.Account
 {
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ILogger<LoginModel> _logger;
-
-    public LoginModel(
-        SignInManager<ApplicationUser> signInManager,
-        UserManager<ApplicationUser> userManager,
-        ILogger<LoginModel> logger)
+    public class LoginModel : PageModel
     {
-        _signInManager = signInManager;
-        _userManager = userManager;
-        _logger = logger;
-    }
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<LoginModel> _logger;
 
-    [BindProperty]
-    public InputModel Input { get; set; } = default!;
-
-    public IList<AuthenticationScheme>? ExternalLogins { get; set; }
-
-    public string? ReturnUrl { get; set; }
-
-    [TempData]
-    public string? ErrorMessage { get; set; }
-
-    public class InputModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = default!;
-
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = default!;
-
-        [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
-    }
-
-    public async Task OnGetAsync(string? returnUrl = null)
-    {
-        if (!string.IsNullOrEmpty(ErrorMessage))
+        public LoginModel(
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            ILogger<LoginModel> logger)
         {
-            ModelState.AddModelError(string.Empty, ErrorMessage);
+            _signInManager = signInManager;
+            _userManager = userManager;
+            _logger = logger;
         }
 
-        returnUrl ??= Url.Content("~/");
+        [BindProperty]
+        public InputModel Input { get; set; } = new();
 
-        await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        public IList<AuthenticationScheme> ExternalLogins { get; set; }
+            = new List<AuthenticationScheme>();
 
-        ExternalLogins =
-            (await _signInManager.GetExternalAuthenticationSchemesAsync())
-            .ToList();
+        public string? ReturnUrl { get; set; }
 
-        ReturnUrl = returnUrl;
-    }
+        [TempData]
+        public string? ErrorMessage { get; set; }
 
-    public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
-    {
-        returnUrl ??= Url.Content("~/");
-
-        ExternalLogins =
-            (await _signInManager.GetExternalAuthenticationSchemesAsync())
-            .ToList();
-
-        if (ModelState.IsValid)
+        public class InputModel
         {
-            var result = await _signInManager.PasswordSignInAsync(
-                Input.Email,
-                Input.Password,
-                Input.RememberMe,
-                lockoutOnFailure: false);
+            [Required]
+            [EmailAddress]
+            public string Email { get; set; } = string.Empty;
 
-            Console.WriteLine(
-                $"LOGIN RESULT: Succeeded={result.Succeeded}");
+            [Required]
+            [DataType(DataType.Password)]
+            public string Password { get; set; } = string.Empty;
 
-            Console.WriteLine(
-                $"LOGIN RESULT: NotAllowed={result.IsNotAllowed}");
+            [Display(Name = "Remember me")]
+            public bool RememberMe { get; set; }
+        }
 
-            Console.WriteLine(
-                $"LOGIN RESULT: LockedOut={result.IsLockedOut}");
+        public async Task OnGetAsync(string? returnUrl = null)
+        {
+            if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    ErrorMessage);
+            }
 
-            Console.WriteLine(
-                $"LOGIN RESULT: RequiresTwoFactor={result.RequiresTwoFactor}");
+            returnUrl ??= Url.Content("~/");
+
+            await HttpContext.SignOutAsync(
+                IdentityConstants.ExternalScheme);
+
+            ExternalLogins =
+                (await _signInManager
+                    .GetExternalAuthenticationSchemesAsync())
+                .ToList();
+
+            ReturnUrl = returnUrl;
+        }
+
+        public async Task<IActionResult> OnPostAsync(
+            string? returnUrl = null)
+        {
+            returnUrl ??= Url.Content("~/");
+
+            ExternalLogins =
+                (await _signInManager
+                    .GetExternalAuthenticationSchemesAsync())
+                .ToList();
+
+            if (!ModelState.IsValid)
+            {
+                ReturnUrl = returnUrl;
+                return Page();
+            }
+
+            var user =
+                await _userManager.FindByEmailAsync(
+                    Input.Email.Trim());
+
+            if (user == null)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Invalid email or password.");
+
+                ReturnUrl = returnUrl;
+                return Page();
+            }
+
+            if (!user.IsApproved)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Your account is awaiting administrator approval.");
+
+                ReturnUrl = returnUrl;
+                return Page();
+            }
+
+            var result =
+                await _signInManager.PasswordSignInAsync(
+                    user,
+                    Input.Password,
+                    Input.RememberMe,
+                    lockoutOnFailure: true);
 
             if (result.Succeeded)
             {
-                _logger.LogInformation("User logged in.");
-
-                var user = await _userManager.FindByEmailAsync(Input.Email);
-
-                if (user != null)
-                {
-                    if (await _userManager.IsInRoleAsync(user, "Admin"))
-                    {
-                        return RedirectToAction(
-                            "Dashboard",
-                            "Admin");
-                    }
-
-                    if (await _userManager.IsInRoleAsync(user, "Organizer"))
-                    {
-                        return RedirectToAction(
-                            "Dashboard",
-                            "Organizer");
-                    }
-
-                    if (await _userManager.IsInRoleAsync(user, "Participant"))
-                    {
-                        return RedirectToAction(
-                            "Dashboard",
-                            "Participant");
-                    }
-
-                    if (await _userManager.IsInRoleAsync(user, "Volunteer"))
-                    {
-                        return RedirectToAction(
-                            "Dashboard",
-                            "Volunteer");
-                    }
-                }
+                _logger.LogInformation(
+                    "User logged in.");
 
                 return LocalRedirect(returnUrl);
+            }
+
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning(
+                    "User account locked out.");
+
+                return RedirectToPage("./Lockout");
             }
 
             if (result.RequiresTwoFactor)
@@ -153,23 +144,36 @@ public class LoginModel : PageModel
                     });
             }
 
-            if (result.IsLockedOut)
-            {
-                _logger.LogWarning("User account locked out.");
+            ModelState.AddModelError(
+                string.Empty,
+                "Invalid email or password.");
 
-                return RedirectToPage("./Lockout");
-            }
-            else
-            {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Invalid login attempt.");
-
-                return Page();
-            }
+            ReturnUrl = returnUrl;
+            return Page();
         }
 
-        return Page();
+        public IActionResult OnPostExternalLogin(
+            string provider,
+            string? returnUrl = null)
+        {
+            var redirectUrl =
+                Url.Page(
+                    "./ExternalLogin",
+                    pageHandler: "Callback",
+                    values: new
+                    {
+                        ReturnUrl = returnUrl
+                    });
+
+            var properties =
+                _signInManager
+                    .ConfigureExternalAuthenticationProperties(
+                        provider,
+                        redirectUrl);
+
+            return new ChallengeResult(
+                provider,
+                properties);
+        }
     }
 }
-

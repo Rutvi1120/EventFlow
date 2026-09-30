@@ -1,0 +1,78 @@
+﻿@model IEnumerable<EventFlow.Models.Event>
+
+@{
+    ViewData["Title"] = "My Events";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>My Events</h1>
+            <p class="text-muted mb-0">
+                Events you have organized.
+            </p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You have not organized any events yet.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Venue</th>
+                        <th>Approval</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var eventItem in Model)
+                    {
+                        <tr>
+                            <td>@eventItem.Name</td>
+
+                            <td>
+                                @eventItem.EventType
+                            </td>
+
+                            <td>
+                                @eventItem.StartDateTime.ToString("dd MMM yyyy")
+                            </td>
+
+                            <td>
+                                @(eventItem.Venue?.Name ?? "Not specified")
+                            </td>
+
+                            <td>
+                                @eventItem.ApprovalStatus
+                            </td>
+
+                            <td>
+                                @eventItem.Status
+                            </td>
+
+                            <td>
+                                <a asp-action="Details"
+                                   asp-route-id="@eventItem.Id"
+                                   class="btn btn-sm btn-outline-primary">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

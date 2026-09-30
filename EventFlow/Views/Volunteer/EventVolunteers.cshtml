@@ -1,0 +1,196 @@
+﻿@model IEnumerable<EventFlow.Models.Volunteer>
+
+@{
+    ViewData["Title"] = "Event Volunteers";
+    var eventItem = ViewBag.Event as EventFlow.Models.Event;
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        @if (eventItem != null && eventItem.ApprovalStatus == "Approved")
+        {
+            <a asp-controller="Events"
+               asp-action="Details"
+               asp-route-id="@eventItem.Id"
+               class="text-decoration-none">
+                ← Back to Event
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Volunteer"
+               asp-action="Index"
+               class="text-decoration-none">
+                ← Back to Volunteer Area
+            </a>
+        }
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Event Volunteers</h1>
+
+            @if (eventItem != null)
+            {
+                <p class="text-muted mb-0">
+                    @eventItem.Name
+                </p>
+            }
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No volunteer applications have been submitted for this event.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Volunteer</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var volunteer in Model)
+                    {
+                        <tr>
+                            <td>
+                                @(volunteer.VolunteerUser?.FullName
+                                    ?? "Unknown")
+                            </td>
+
+                            <td>
+                                @volunteer.Role
+                            </td>
+
+                            <td>
+                                @if (volunteer.Status == "Accepted")
+                                {
+                                    <span class="badge bg-success">
+                                        Accepted
+                                    </span>
+                                }
+                                else if (volunteer.Status == "Rejected")
+                                {
+                                    <span class="badge bg-danger">
+                                        Rejected
+                                    </span>
+                                }
+                                else if (volunteer.Status == "Completed")
+                                {
+                                    <span class="badge bg-primary">
+                                        Completed
+                                    </span>
+                                }
+                                else if (volunteer.Status == "Assigned")
+                                {
+                                    <span class="badge bg-info text-dark">
+                                        Assigned
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        Pending
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @(string.IsNullOrWhiteSpace(volunteer.Notes)
+                                    ? "—"
+                                    : volunteer.Notes)
+                            </td>
+
+                            <td>
+                                <div class="d-flex gap-2">
+                                    @if (volunteer.Status == "Pending")
+                                    {
+                                        <form asp-controller="Volunteer"
+                                              asp-action="Assign"
+                                              method="post">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@volunteer.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-success">
+                                                Assign
+                                            </button>
+                                        </form>
+
+                                        <form asp-controller="Volunteer"
+                                              asp-action="Reject"
+                                              method="post">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@volunteer.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    }
+
+                                    @if (volunteer.Status == "Assigned")
+                                    {
+                                        <form asp-controller="Volunteer"
+                                              asp-action="Reject"
+                                              method="post">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@volunteer.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    }
+
+                                    @if (volunteer.Status == "Accepted")
+                                    {
+                                        <form asp-controller="Volunteer"
+                                              asp-action="Complete"
+                                              method="post">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@volunteer.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-primary">
+                                                Complete
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -4,90 +4,103 @@ using Microsoft.AspNetCore.Identity;
 
 namespace EventFlow.Data
 {
-    public class RoleSeeder
+    public static class RoleSeeder
     {
-        public static async Task SeedRolesAsync(
-            RoleManager<IdentityRole> roleManager,
-            UserManager<ApplicationUser> userManager)
+        private static readonly string[] Roles =
         {
-            string[] roles =
-            {
-                "Admin",
-                "Organizer",
-                "Participant",
-                "Volunteer"
-            };
+            "Admin",
+            "Student",
+            "Faculty",
+            "ClubPresident"
+        };
 
-            foreach (var role in roles)
+        private const string AdminEmail = "admin@gmail.com";
+        private const string AdminPassword = "Admin@123";
+
+        public static async Task SeedAsync(
+            IServiceProvider serviceProvider,
+            IConfiguration configuration)
+        {
+            var roleManager =
+                serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            var userManager =
+                serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+            foreach (var role in Roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
-                    await roleManager.CreateAsync(
+                    var result = await roleManager.CreateAsync(
                         new IdentityRole(role));
+
+                    if (!result.Succeeded)
+                    {
+                        throw new InvalidOperationException(
+                            $"Failed to create role '{role}': " +
+                            string.Join(", ",
+                                result.Errors.Select(e => e.Description)));
+                    }
                 }
             }
 
-            string adminEmail = "admin@gmail.com";
-            string adminPassword = "Admin12@123";
-
-            var admin = await userManager.FindByEmailAsync(adminEmail);
+            var admin = await userManager.FindByEmailAsync(AdminEmail);
 
             if (admin == null)
             {
                 admin = new ApplicationUser
                 {
-                    UserName = adminEmail,
-                    Email = adminEmail,
+                    UserName = AdminEmail,
+                    Email = AdminEmail,
                     EmailConfirmed = true,
-                    FullName = "EventFlow Admin"
+                    FullName = "System Administrator",
+                    IsApproved = true
                 };
 
-                var result = await userManager.CreateAsync(
-                    admin,
-                    adminPassword);
-
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(
+                var createResult =
+                    await userManager.CreateAsync(
                         admin,
-                        "Admin");
-                }
-                else
+                        AdminPassword);
+
+                if (!createResult.Succeeded)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine(
-                            $"ADMIN CREATE ERROR: {error.Code} - {error.Description}");
-                    }
+                    throw new InvalidOperationException(
+                        "Failed to create administrator account: " +
+                        string.Join(", ",
+                            createResult.Errors.Select(e => e.Description)));
                 }
             }
-            else
+
+            if (!await userManager.IsInRoleAsync(admin, "Admin"))
             {
-                var token =
-                    await userManager.GeneratePasswordResetTokenAsync(admin);
+                var roleResult =
+                    await userManager.AddToRoleAsync(admin, "Admin");
 
-                var result =
-                    await userManager.ResetPasswordAsync(
-                        admin,
-                        token,
-                        adminPassword);
-
-                if (!result.Succeeded)
+                if (!roleResult.Succeeded)
                 {
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine(
-                            $"ADMIN PASSWORD RESET ERROR: {error.Code} - {error.Description}");
-                    }
+                    throw new InvalidOperationException(
+                        "Failed to assign Admin role: " +
+                        string.Join(", ",
+                            roleResult.Errors.Select(e => e.Description)));
                 }
+            }
 
-                if (!await userManager.IsInRoleAsync(admin, "Admin"))
+            if (!admin.IsApproved)
+            {
+                admin.IsApproved = true;
+
+                var updateResult =
+                    await userManager.UpdateAsync(admin);
+
+                if (!updateResult.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(
-                        admin,
-                        "Admin");
+                    throw new InvalidOperationException(
+                        "Failed to approve administrator account: " +
+                        string.Join(", ",
+                            updateResult.Errors.Select(e => e.Description)));
                 }
             }
         }
     }
 }
+

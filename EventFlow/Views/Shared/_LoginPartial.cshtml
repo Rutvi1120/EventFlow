@@ -1,54 +1,84 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using EventFlow.Models
 @inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 
-@if (SignInManager.IsSignedIn(User))
-{
-    <div class="ef-auth-form">
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
 
-         
-        <span class="ef-user-name">
-            Hi, @User.Identity?.Name
-        </span>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle"
+               href="#"
+               role="button"
+               data-bs-toggle="dropdown"
+               aria-expanded="false">
+                @(currentUser?.FullName ?? User.Identity?.Name)
+            </a>
 
-        <form asp-area="Identity"
-              asp-page="/Account/Logout"
-              asp-route-returnUrl="@Url.Action("Index", "Home")"
-              method="post">
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item"
+                       asp-controller="Registration"
+                       asp-action="MyRegistrations">
+                        My Registrations
+                    </a>
+                </li>
 
-            <button type="submit" class="ef-login-btn">
-                Logout
-            </button>
+                <li>
+                    <a class="dropdown-item"
+                       asp-controller="Registration"
+                       asp-action="MyWaitlist">
+                        My Waitlist
+                    </a>
+                </li>
 
-        </form>
+                <li>
+                    <a class="dropdown-item"
+                       asp-controller="Volunteer"
+                       asp-action="MyApplications">
+                        My Volunteer Applications
+                    </a>
+                </li>
 
-    </div>
- 
+                <li>
+                    <hr class="dropdown-divider" />
+                </li>
 
-}
-else
-{
+                <li>
+                    <form asp-area="Identity"
+                          asp-page="/Account/Logout"
+                          asp-route-returnUrl="/"
+                          method="post">
 
-    <div class="ef-auth-buttons">
+                        @Html.AntiForgeryToken()
 
-         
-        <a class="ef-login-btn"
-           asp-area="Identity"
-           asp-page="/Account/Login">
-            Login
-        </a>
+                        <button type="submit"
+                                class="dropdown-item">
+                            Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link"
+               asp-area="Identity"
+               asp-page="/Account/Register">
+                Register
+            </a>
+        </li>
 
-        <a class="ef-register-btn"
-           asp-area="Identity"
-           asp-page="/Account/Register">
-
-            <span>Register</span>
-
-            <span class="ef-btn-arrow">→</span>
-
-        </a>
-
-    </div>
- 
-
-}
+        <li class="nav-item">
+            <a class="nav-link"
+               asp-area="Identity"
+               asp-page="/Account/Login">
+                Login
+            </a>
+        </li>
+    }
+</ul>

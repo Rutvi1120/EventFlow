@@ -1,515 +1,78 @@
 ﻿@{
-    ViewData["Title"] = "EventFlow";
+    ViewData["Title"] = "Home";
 }
 
-<div class="ef-home">
-
-     
-    <!-- HERO -->
-    <section class="ef-hero">
-
-        <div class="ef-hero-orb ef-orb-1"></div>
-        <div class="ef-hero-orb ef-orb-2"></div>
-        <div class="ef-grid"></div>
-
-        <div class="ef-container">
-
-            <div class="ef-hero-content">
-
-                <div class="ef-hero-text">
-
-                    <div class="ef-eyebrow">
-                        <span class="ef-live-dot"></span>
-                        CAMPUS EVENT MANAGEMENT
-                    </div>
-
-                    <h1>
-                        Plan.
-                        <span>Organize.</span>
-                        <br />
-                        Experience.
-                    </h1>
-
-                    <p>
-                        Everything you need to plan, manage and deliver
-                        unforgettable campus events — all in one place.
-                    </p>
-
-                    <div class="ef-hero-actions">
-
-                        <a asp-controller="Events"
-                           asp-action="Index"
-                           class="ef-btn ef-btn-light">
-                            Explore Events
-                            <span>→</span>
-                        </a>
-
-                        <a asp-area="Identity"
-                           asp-page="/Account/Register"
-                           class="ef-btn ef-btn-outline">
-                            Get Started
-                        </a>
-
-                    </div>
-
-                    <div class="ef-trust-row">
-                        <div>
-                            <strong>One Platform</strong>
-                            <small>Everything connected</small>
-                        </div>
-
-                        <div class="ef-trust-line"></div>
-
-                        <div>
-                            <strong>Four Roles</strong>
-                            <small>One campus community</small>
-                        </div>
-
-                        <div class="ef-trust-line"></div>
-
-                        <div>
-                            <strong>One Flow</strong>
-                            <small>From plan to execution</small>
-                        </div>
-                    </div>
-
-                </div>
-
-
-                <!-- DASHBOARD MOCKUP -->
-                <div class="ef-hero-visual">
-
-                    <div class="ef-dashboard">
-
-                        <div class="ef-dashboard-header">
-
-                            <div>
-                                <span>EVENTFLOW</span>
-                                <h3>Event Overview</h3>
-                            </div>
-
-                            <div class="ef-window-dots">
-                                <i></i>
-                                <i></i>
-                                <i></i>
-                            </div>
-
-                        </div>
-
-
-                        <div class="ef-event-highlight">
-
-                            <div class="ef-event-symbol">
-                                ★
-                            </div>
-
-                            <div class="ef-event-info">
-                                <small>UPCOMING EVENT</small>
-                                <h4>Tech Fest 2026</h4>
-                                <p>Campus Auditorium · Today</p>
-                            </div>
-
-                            <div class="ef-status">
-                                Upcoming
-                            </div>
-
-                        </div>
-
-
-                        <div class="ef-stat-grid">
-
-                            <div class="ef-stat">
-                                <div class="ef-stat-icon">◈</div>
-                                <div>
-                                    <strong>24</strong>
-                                    <span>Events</span>
-                                </div>
-                            </div>
-
-                            <div class="ef-stat">
-                                <div class="ef-stat-icon">♙</div>
-                                <div>
-                                    <strong>86</strong>
-                                    <span>Volunteers</span>
-                                </div>
-                            </div>
-
-                            <div class="ef-stat">
-                                <div class="ef-stat-icon">⌂</div>
-                                <div>
-                                    <strong>12</strong>
-                                    <span>Venues</span>
-                                </div>
-                            </div>
-
-                            <div class="ef-stat">
-                                <div class="ef-stat-icon">✓</div>
-                                <div>
-                                    <strong>94%</strong>
-                                    <span>Completed</span>
-                                </div>
-                            </div>
-
-                        </div>
-
-
-                        <div class="ef-activity">
-
-                            <div class="ef-activity-heading">
-                                <strong>Recent Activity</strong>
-                                <span>Live</span>
-                            </div>
-
-                            <div class="ef-activity-item">
-                                <div class="ef-activity-icon">✓</div>
-
-                                <div>
-                                    <strong>Volunteer assigned</strong>
-                                    <small>Registration Desk</small>
-                                </div>
-
-                                <time>2m</time>
-                            </div>
-
-                            <div class="ef-activity-item">
-                                <div class="ef-activity-icon">⌂</div>
-
-                                <div>
-                                    <strong>Venue confirmed</strong>
-                                    <small>Tech Fest 2026</small>
-                                </div>
-
-                                <time>15m</time>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="ef-floating-card ef-floating-one">
-                        <span>✓</span>
-                        <div>
-                            <strong>Event Ready</strong>
-                            <small>All tasks completed</small>
-                        </div>
-                    </div>
-
-                    <div class="ef-floating-card ef-floating-two">
-                        <span>♙</span>
-                        <div>
-                            <strong>12 Volunteers</strong>
-                            <small>Assigned successfully</small>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- INTRO -->
-    <section class="ef-section ef-intro">
-
-        <div class="ef-container">
-
-            <div class="ef-heading reveal">
-
-                <span class="ef-label">ONE PLATFORM</span>
-
-                <h2>
-                    Everything your campus event
-                    <span>needs.</span>
-                </h2>
-
-                <p>
-                    EventFlow connects event planning, people, venues
-                    and participation into one simple workflow.
-                </p>
-
-            </div>
-
-
-            <div class="ef-feature-grid">
-
-                <div class="ef-feature-card reveal">
-
-                    <div class="ef-card-top">
-                        <span class="ef-card-icon">◈</span>
-                        <span class="ef-card-number">01</span>
-                    </div>
-
-                    <h3>Event Management</h3>
-
-                    <p>
-                        Create and manage events with dates, venues,
-                        capacity and real-time status information.
-                    </p>
-
-                    <a asp-controller="Events"
-                       asp-action="Index">
-                        Explore Events <span>→</span>
-                    </a>
-
-                </div>
-
-
-                <div class="ef-feature-card ef-feature-dark reveal">
-
-                    <div class="ef-card-top">
-                        <span class="ef-card-icon">♙</span>
-                        <span class="ef-card-number">02</span>
-                    </div>
-
-                    <h3>Volunteer Coordination</h3>
-
-                    <p>
-                        Assign volunteers to events, define their
-                        responsibilities and keep assignments organized.
-                    </p>
-
-                    <a asp-controller="Organizer"
-                       asp-action="ManageVolunteers">
-                        Coordinate Volunteers <span>→</span>
-                    </a>
-
-                </div>
-
-
-                <div class="ef-feature-card reveal">
-
-                    <div class="ef-card-top">
-                        <span class="ef-card-icon">⌂</span>
-                        <span class="ef-card-number">03</span>
-                    </div>
-
-                    <h3>Venue Management</h3>
-
-                    <p>
-                        Manage campus venues and prevent scheduling
-                        conflicts before they become a problem.
-                    </p>
-
-                    <a asp-controller="Venues"
-                       asp-action="Index">
-                        Manage Venues <span>→</span>
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- WORKFLOW -->
-    <section class="ef-workflow">
-
-        <div class="ef-container">
-
-            <div class="ef-workflow-grid">
-
-                <div class="ef-workflow-copy reveal">
-
-                    <span class="ef-label">HOW IT WORKS</span>
-
-                    <h2>
-                        From the first idea
-                        <span>to event day.</span>
-                    </h2>
-
-                    <p>
-                        Keep your entire event workflow organized.
-                        Create the event, coordinate the people and
-                        make the experience happen.
-                    </p>
-
-                    <a asp-controller="Events"
-                       asp-action="Index"
-                       class="ef-dark-button">
-                        Start Exploring <span>→</span>
-                    </a>
-
-                </div>
-
-
-                <div class="ef-steps">
-
-                    <div class="ef-step reveal">
-
-                        <div class="ef-step-number">
-                            01
-                        </div>
-
-                        <div>
-                            <h3>Create</h3>
-                            <p>
-                                Set up your event with its schedule,
-                                venue and capacity.
-                            </p>
-                        </div>
-
-                    </div>
-
-
-                    <div class="ef-step-line"></div>
-
-
-                    <div class="ef-step reveal">
-
-                        <div class="ef-step-number">
-                            02
-                        </div>
-
-                        <div>
-                            <h3>Organize</h3>
-                            <p>
-                                Coordinate volunteers, venues and
-                                responsibilities.
-                            </p>
-                        </div>
-
-                    </div>
-
-
-                    <div class="ef-step-line"></div>
-
-
-                    <div class="ef-step reveal">
-
-                        <div class="ef-step-number">
-                            03
-                        </div>
-
-                        <div>
-                            <h3>Experience</h3>
-                            <p>
-                                Keep everything on track and give
-                                participants a better event experience.
-                            </p>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ROLES -->
-    <section class="ef-section ef-roles">
-
-        <div class="ef-container">
-
-            <div class="ef-heading reveal">
-
-                <span class="ef-label">ONE CAMPUS COMMUNITY</span>
-
-                <h2>
-                    Built for
-                    <span>everyone.</span>
-                </h2>
-
-                <p>
-                    Every person involved in an event has a role.
-                    EventFlow brings them together.
-                </p>
-
-            </div>
-
-
-            <div class="ef-role-grid">
-
-                <div class="ef-role-card reveal">
-                    <span>◆</span>
-                    <small>01</small>
-                    <h3>Admin</h3>
-                    <p>Manage users and system roles.</p>
-                </div>
-
-                <div class="ef-role-card reveal">
-                    <span>◈</span>
-                    <small>02</small>
-                    <h3>Organizer</h3>
-                    <p>Create events and coordinate teams.</p>
-                </div>
-
-                <div class="ef-role-card reveal">
-                    <span>♙</span>
-                    <small>03</small>
-                    <h3>Volunteer</h3>
-                    <p>Handle assigned event responsibilities.</p>
-                </div>
-
-                <div class="ef-role-card reveal">
-                    <span>◎</span>
-                    <small>04</small>
-                    <h3>Participant</h3>
-                    <p>Discover and join campus events.</p>
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- CTA -->
-    <section class="ef-cta-section">
-
-        <div class="ef-container">
-
-            <div class="ef-cta reveal">
-
-                <div class="ef-cta-glow"></div>
-
-                <div class="ef-cta-content">
-
-                    <span class="ef-label">READY WHEN YOU ARE</span>
-
-                    <h2>
-                        Make your next event
-                        <span>flow.</span>
-                    </h2>
-
-                    <p>
-                        Bring planning, people and participation together
-                        with EventFlow.
-                    </p>
-
-                </div>
-
-                <div class="ef-cta-buttons">
-
+<div class="container py-5">
+    <div class="row align-items-center min-vh-75">
+        <div class="col-lg-7">
+            <span class="badge bg-primary mb-3">
+                College Event Management
+            </span>
+
+            <h1 class="display-4 fw-bold mb-3">
+                Welcome to EventFlow
+            </h1>
+
+            <p class="lead text-muted mb-4">
+                Discover college events, organize activities,
+                manage clubs, register for events, and volunteer
+                for activities across the campus.
+            </p>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-controller="Events"
+                   asp-action="Index"
+                   class="btn btn-primary btn-lg">
+                    Explore Events
+                </a>
+
+                @if (User.Identity?.IsAuthenticated != true)
+                {
                     <a asp-area="Identity"
                        asp-page="/Account/Register"
-                       class="ef-btn ef-btn-light">
-                        Get Started →
+                       class="btn btn-outline-primary btn-lg">
+                        Create Account
                     </a>
-
-                    <a asp-controller="Events"
-                       asp-action="Index"
-                       class="ef-btn ef-btn-outline">
-                        View Events
-                    </a>
-
-                </div>
-
+                }
             </div>
-
         </div>
 
-    </section>
-     
+        <div class="col-lg-5 mt-5 mt-lg-0">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h3 class="mb-4">
+                        EventFlow
+                    </h3>
 
+                    <div class="mb-3">
+                        <h5>Discover</h5>
+                        <p class="text-muted mb-0">
+                            Find approved college events and activities.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h5>Organize</h5>
+                        <p class="text-muted mb-0">
+                            Create student, club, and college events.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h5>Participate</h5>
+                        <p class="text-muted mb-0">
+                            Register for events or join the waitlist.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h5>Volunteer</h5>
+                        <p class="text-muted mb-0">
+                            Apply for volunteer roles at events.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

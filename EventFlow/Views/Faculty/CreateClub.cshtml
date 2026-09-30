@@ -1,0 +1,69 @@
+﻿@model EventFlow.Models.Club
+
+@{
+    ViewData["Title"] = "Create Club";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>Create Club</h1>
+        <p class="text-muted">
+            Create a club for admin approval.
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-controller="Faculty" asp-action="CreateClub" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Club Name</label>
+                            <input asp-for="Name"
+                                   class="form-control"
+                                   placeholder="Enter club name" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Enter club description"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Department" class="form-label">Department</label>
+                            <input asp-for="Department"
+                                   class="form-control"
+                                   placeholder="Enter department" />
+                            <span asp-validation-for="Department" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                Create Club
+                            </button>
+
+                            <a asp-controller="Faculty"
+                               asp-action="Clubs"
+                               class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

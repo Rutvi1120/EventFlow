@@ -16,6 +16,6 @@ namespace EventFlow.Models
 
         public ApplicationUser? User { get; set; }
 
-        public DateTime JoinedAt { get; set; } = DateTime.Now;
+        public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     }
 }

@@ -1,0 +1,121 @@
+﻿@model IEnumerable<EventFlow.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>User Management</h1>
+        <p class="text-muted">
+            Review and manage registered accounts.
+        </p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No users were found.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Requested Role</th>
+                        <th>Approval</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@user.FullName</strong>
+                            </td>
+
+                            <td>
+                                @user.Email
+                            </td>
+
+                            <td>
+                                @(user.Department ?? "—")
+                            </td>
+
+                            <td>
+                                @(user.RequestedRole ?? "—")
+                            </td>
+
+                            <td>
+                                @if (user.IsApproved)
+                                {
+                                    <span class="badge bg-success">
+                                        Approved
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        Pending
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="d-flex gap-2">
+                                    @if (!user.IsApproved)
+                                    {
+                                        <form asp-action="ApproveUser"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@user.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-success">
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="RejectUser"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@user.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="RejectUser"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@user.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                Disable
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

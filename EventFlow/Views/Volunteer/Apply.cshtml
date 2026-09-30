@@ -1,0 +1,144 @@
+﻿@model EventFlow.Models.Volunteer
+
+@{
+    ViewData["Title"] = "Volunteer Application";
+    var eventItem = ViewBag.Event as EventFlow.Models.Event;
+}
+
+<div class="container py-4">
+    @if (eventItem == null)
+    {
+        <div class="alert alert-danger">
+            The event could not be loaded.
+        </div>
+    }
+    else
+    {
+        <div class="mb-4">
+            <a asp-controller="Events"
+               asp-action="Details"
+               asp-route-id="@eventItem.Id"
+               class="text-decoration-none">
+                ← Back to Event
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h1 class="mb-2">Volunteer Application</h1>
+
+                        <p class="text-muted mb-4">
+                            Apply to volunteer for
+                            <strong>@eventItem.Name</strong>.
+                        </p>
+
+                        <form asp-action="Apply"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input asp-for="EventId"
+                                   type="hidden" />
+
+                            <div asp-validation-summary="ModelOnly"
+                                 class="text-danger mb-3">
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Role"
+                                       class="form-label">
+                                    Volunteer Role
+                                </label>
+
+                                <input asp-for="Role"
+                                       class="form-control"
+                                       maxlength="100"
+                                       placeholder="Enter the role you would like to perform" />
+
+                                <span asp-validation-for="Role"
+                                      class="text-danger">
+                                </span>
+
+                                <div class="form-text">
+                                    Enter the role you would like to perform.
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label asp-for="Notes"
+                                       class="form-label">
+                                    Notes
+                                </label>
+
+                                <textarea asp-for="Notes"
+                                          class="form-control"
+                                          rows="5"
+                                          maxlength="1000"
+                                          placeholder="Add any relevant information"></textarea>
+
+                                <span asp-validation-for="Notes"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit"
+                                        class="btn btn-primary">
+                                    Submit Application
+                                </button>
+
+                                <a asp-controller="Events"
+                                   asp-action="Details"
+                                   asp-route-id="@eventItem.Id"
+                                   class="btn btn-outline-secondary">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 mt-4 mt-lg-0">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <span class="badge bg-primary mb-2">
+                            @eventItem.EventType
+                        </span>
+
+                        <h4>@eventItem.Name</h4>
+
+                        <p class="text-muted">
+                            @eventItem.Description
+                        </p>
+
+                        <hr />
+
+                        <div class="mb-2">
+                            <strong>Date:</strong>
+                            @eventItem.StartDateTime
+                            .ToString("dd MMM yyyy")
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Time:</strong>
+                            @eventItem.StartDateTime
+                            .ToString("hh:mm tt")
+                        </div>
+
+                        <div>
+                            <strong>Venue:</strong>
+                            @(eventItem.Venue?.Name ?? "Not specified")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

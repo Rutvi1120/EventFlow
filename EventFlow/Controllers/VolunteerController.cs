@@ -3,11 +3,12 @@ using EventFlow.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Controllers
 {
-    [Authorize(Roles = "Volunteer")]
+    [Authorize]
     public class VolunteerController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,199 +22,371 @@ namespace EventFlow.Controllers
             _userManager = userManager;
         }
 
-        // GET: Volunteer/Dashboard
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Index()
         {
-            var currentUser = await _userManager.GetUserAsync(User);
-
-            if (currentUser == null)
-                return Challenge();
-
-            var assignments = await _context.Volunteers
-                .Include(v => v.Event)
-                .ThenInclude(e => e.Venue)
-                .Where(v => v.VolunteerId == currentUser.Id)
-                .OrderBy(v => v.Event.StartDateTime)
+            var events = await _context.Events
+                .Include(e => e.Venue)
+                .Include(e => e.Club)
+                .Where(e =>
+                    e.ApprovalStatus == "Approved" &&
+                    e.EndDateTime >= DateTime.Now)
+                .OrderBy(e => e.StartDateTime)
                 .ToListAsync();
 
-            ViewBag.TotalAssignments = assignments.Count;
-
-            ViewBag.ActiveAssignments = assignments.Count(v =>
-                v.Status == "Assigned" ||
-                v.Status == "Accepted");
-
-            ViewBag.CompletedAssignments = assignments.Count(v =>
-                v.Status == "Completed");
-
-            ViewBag.UpcomingAssignments = assignments.Count(v =>
-                v.Event.StartDateTime > DateTime.Now);
-
-            return View(assignments);
+            return View(events);
         }
 
-
-        // GET: Volunteer/Assignment
-        public async Task<IActionResult> Assignment()
+        [HttpGet]
+        public async Task<IActionResult> Apply(int eventId)
         {
-            var currentUser = await _userManager.GetUserAsync(User);
+            var eventItem = await _context.Events
+                .Include(e => e.Venue)
+                .FirstOrDefaultAsync(e =>
+                    e.Id == eventId &&
+                    e.ApprovalStatus == "Approved");
 
-            if (currentUser == null)
-                return Challenge();
-
-            var assignments = await _context.Volunteers
-                .Include(v => v.Event)
-                .ThenInclude(e => e.Venue)
-                .Where(v => v.VolunteerId == currentUser.Id)
-                .OrderBy(v => v.Event.StartDateTime)
-                .ToListAsync();
-
-            return View(assignments);
-        }
-
-
-        // POST: Volunteer/AcceptAssignment
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AcceptAssignment(int id)
-        {
-            var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-                return Challenge();
-
-            var assignment = await _context.Volunteers
-                .FirstOrDefaultAsync(v =>
-                    v.Id == id &&
-                    v.VolunteerId == user.Id);
-
-            if (assignment == null)
-                return NotFound();
-
-            if (assignment.Status != "Assigned")
+            if (eventItem == null)
             {
-                TempData["Error"] =
-                    "This assignment can no longer be accepted.";
-
-                return RedirectToAction(nameof(Assignment));
+                return NotFound();
             }
 
-            assignment.Status = "Accepted";
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var existingApplication = await _context.Volunteers
+                .AnyAsync(v =>
+                    v.EventId == eventId &&
+                    v.VolunteerId == userId);
+
+            if (existingApplication)
+            {
+                return RedirectToAction(nameof(MyApplications));
+            }
+
+            ViewBag.Event = eventItem;
+
+            var model = new Volunteer
+            {
+                EventId = eventId,
+                VolunteerId = userId,
+                Status = "Pending"
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Apply(Volunteer model)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var eventItem = await _context.Events
+                .FirstOrDefaultAsync(e =>
+                    e.Id == model.EventId &&
+                    e.ApprovalStatus == "Approved");
+
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            var existingApplication = await _context.Volunteers
+                .AnyAsync(v =>
+                    v.EventId == model.EventId &&
+                    v.VolunteerId == userId);
+
+            if (existingApplication)
+            {
+                return RedirectToAction(nameof(MyApplications));
+            }
+
+            model.VolunteerId = userId;
+            model.Status = "Pending";
+            model.AssignedAt = null;
+            model.CompletedAt = null;
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Event = eventItem;
+                return View(model);
+            }
+
+            _context.Volunteers.Add(model);
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] =
-                "Volunteer assignment accepted successfully.";
-
-            return RedirectToAction(nameof(Assignment));
+            return RedirectToAction(nameof(MyApplications));
         }
 
-
-        // POST: Volunteer/RejectAssignment
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RejectAssignment(int id)
+        public async Task<IActionResult> MyApplications()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
 
-            if (user == null)
-                return Challenge();
-
-            var assignment = await _context.Volunteers
-                .FirstOrDefaultAsync(v =>
-                    v.Id == id &&
-                    v.VolunteerId == user.Id);
-
-            if (assignment == null)
-                return NotFound();
-
-            if (assignment.Status != "Assigned")
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                TempData["Error"] =
-                    "This assignment can no longer be rejected.";
-
-                return RedirectToAction(nameof(Assignment));
+                return Challenge();
             }
 
-            assignment.Status = "Rejected";
+            var applications = await _context.Volunteers
+                .Include(v => v.Event)
+                .ThenInclude(e => e!.Venue)
+                .Where(v => v.VolunteerId == userId)
+                .OrderByDescending(v => v.Event!.StartDateTime)
+                .ToListAsync();
 
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] =
-                "Volunteer assignment rejected.";
-
-            return RedirectToAction(nameof(Assignment));
+            return View(applications);
         }
 
-
-        // GET: Volunteer/Details/5
-        // GET: Volunteer/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [Authorize(Roles = "Admin,Faculty,ClubPresident")]
+        public async Task<IActionResult> EventVolunteers(int eventId)
         {
-            if (id == null)
+            var eventItem = await _context.Events
+                .Include(e => e.Club)
+                .FirstOrDefaultAsync(e => e.Id == eventId);
+
+            if (eventItem == null)
+            {
                 return NotFound();
+            }
 
-            var currentUser = await _userManager.GetUserAsync(User);
+            var currentUserId = _userManager.GetUserId(User);
 
-            if (currentUser == null)
+            if (string.IsNullOrWhiteSpace(currentUserId))
+            {
                 return Challenge();
+            }
 
-            var assignment = await _context.Volunteers
-                .Include(v => v.Event)
-                .ThenInclude(e => e.Venue)
+            if (User.IsInRole("Faculty"))
+            {
+                var isSupervisor = await _context.Clubs
+                    .AnyAsync(c =>
+                        c.Id == eventItem.ClubId &&
+                        c.FacultySupervisorId == currentUserId);
+
+                var isCollegeEvent = eventItem.EventType == "College";
+
+                if (!isSupervisor && !isCollegeEvent)
+                {
+                    return Forbid();
+                }
+            }
+
+            if (User.IsInRole("ClubPresident"))
+            {
+                var isClubPresident = await _context.Clubs
+                    .AnyAsync(c =>
+                        c.Id == eventItem.ClubId &&
+                        c.ClubPresidentId == currentUserId);
+
+                if (!isClubPresident)
+                {
+                    return Forbid();
+                }
+            }
+
+            var volunteers = await _context.Volunteers
                 .Include(v => v.VolunteerUser)
-                .FirstOrDefaultAsync(v =>
-                    v.Id == id &&
-                    v.VolunteerId == currentUser.Id);
+                .Where(v => v.EventId == eventId)
+                .OrderBy(v => v.Status)
+                .ThenBy(v => v.VolunteerUser!.FullName)
+                .ToListAsync();
 
-            if (assignment == null)
-            {
-                TempData["Error"] = "Volunteer assignment not found.";
-                return RedirectToAction(nameof(Assignment));
-            }
+            ViewBag.Event = eventItem;
 
-            return View("Details", assignment);
+            return View(volunteers);
         }
 
-
-        // POST: Volunteer/MarkCompleted
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MarkCompleted(int id)
+        [Authorize(Roles = "Admin,Faculty,ClubPresident")]
+        public async Task<IActionResult> Assign(int id)
         {
-            var currentUser = await _userManager.GetUserAsync(User);
+            var volunteer = await _context.Volunteers
+                .Include(v => v.Event)
+                .FirstOrDefaultAsync(v => v.Id == id);
 
-            if (currentUser == null)
-                return Challenge();
-
-            var assignment = await _context.Volunteers
-                .FirstOrDefaultAsync(v =>
-                    v.Id == id &&
-                    v.VolunteerId == currentUser.Id);
-
-            if (assignment == null)
-                return NotFound();
-
-            if (assignment.Status != "Accepted")
+            if (volunteer == null)
             {
-                TempData["Error"] =
-                    "Only accepted assignments can be marked as completed.";
-
-                return RedirectToAction(
-                    nameof(Details),
-                    new { id });
+                return NotFound();
             }
 
-            assignment.Status = "Completed";
-            assignment.CompletedAt = DateTime.UtcNow;
+            if (!await CanManageEventVolunteers(volunteer.Event))
+            {
+                return Forbid();
+            }
+
+            volunteer.Status = "Assigned";
+            volunteer.AssignedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
-
-            TempData["Success"] =
-                "Assignment marked as completed successfully.";
 
             return RedirectToAction(
-                nameof(Details),
-                new { id });
+                nameof(EventVolunteers),
+                new { eventId = volunteer.EventId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Faculty,ClubPresident")]
+        public async Task<IActionResult> Reject(int id)
+        {
+            var volunteer = await _context.Volunteers
+                .Include(v => v.Event)
+                .FirstOrDefaultAsync(v => v.Id == id);
+
+            if (volunteer == null)
+            {
+                return NotFound();
+            }
+
+            if (!await CanManageEventVolunteers(volunteer.Event))
+            {
+                return Forbid();
+            }
+
+            volunteer.Status = "Rejected";
+            volunteer.AssignedAt = null;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(
+                nameof(EventVolunteers),
+                new { eventId = volunteer.EventId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Accept(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var volunteer = await _context.Volunteers
+                .FirstOrDefaultAsync(v =>
+                    v.Id == id &&
+                    v.VolunteerId == userId);
+
+            if (volunteer == null)
+            {
+                return NotFound();
+            }
+
+            if (volunteer.Status != "Assigned")
+            {
+                return BadRequest();
+            }
+
+            volunteer.Status = "Accepted";
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(MyApplications));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Complete(int id)
+        {
+            var volunteer = await _context.Volunteers
+                .Include(v => v.Event)
+                .FirstOrDefaultAsync(v => v.Id == id);
+
+            if (volunteer == null)
+            {
+                return NotFound();
+            }
+
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Challenge();
+            }
+
+            var canManage = await CanManageEventVolunteers(volunteer.Event);
+
+            if (volunteer.VolunteerId != userId && !canManage)
+            {
+                return Forbid();
+            }
+
+            if (volunteer.Status != "Accepted")
+            {
+                return BadRequest();
+            }
+
+            volunteer.Status = "Completed";
+            volunteer.CompletedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            if (volunteer.VolunteerId == userId)
+            {
+                return RedirectToAction(nameof(MyApplications));
+            }
+
+            return RedirectToAction(
+                nameof(EventVolunteers),
+                new { eventId = volunteer.EventId });
+        }
+
+        private async Task<bool> CanManageEventVolunteers(Event? eventItem)
+        {
+            if (eventItem == null)
+            {
+                return false;
+            }
+
+            if (User.IsInRole("Admin"))
+            {
+                return true;
+            }
+
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return false;
+            }
+
+            if (User.IsInRole("Faculty"))
+            {
+                if (eventItem.EventType == "College")
+                {
+                    return true;
+                }
+
+                if (eventItem.ClubId.HasValue)
+                {
+                    return await _context.Clubs.AnyAsync(c =>
+                        c.Id == eventItem.ClubId.Value &&
+                        c.FacultySupervisorId == userId);
+                }
+            }
+
+            if (User.IsInRole("ClubPresident") &&
+                eventItem.ClubId.HasValue)
+            {
+                return await _context.Clubs.AnyAsync(c =>
+                    c.Id == eventItem.ClubId.Value &&
+                    c.ClubPresidentId == userId);
+            }
+
+            return false;
         }
     }
 }

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <NuGetAudit>false</NuGetAudit>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-EventFlow-51e8ee0b-4b20-41b6-b3fd-5f47f42310e3</UserSecretsId>
   </PropertyGroup>

@@ -1,0 +1,113 @@
+﻿@model IEnumerable<EventFlow.Models.Club>
+
+@{
+    ViewData["Title"] = "Club Management";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h1>Club Management</h1>
+        <p class="text-muted">
+            Review and manage college clubs.
+        </p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No clubs were found.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Club</th>
+                        <th>Department</th>
+                        <th>President</th>
+                        <th>Faculty Supervisor</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var club in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@club.Name</strong>
+                            </td>
+
+                            <td>
+                                @(club.Department ?? "—")
+                            </td>
+
+                            <td>
+                                @(club.ClubPresident?.FullName ?? "Not assigned")
+                            </td>
+
+                            <td>
+                                @(club.FacultySupervisor?.FullName ?? "Not assigned")
+                            </td>
+
+                            <td>
+                                @if (club.Status == "Approved")
+                                {
+                                    <span class="badge bg-success">
+                                        Approved
+                                    </span>
+                                }
+                                else if (club.Status == "Rejected")
+                                {
+                                    <span class="badge bg-danger">
+                                        Rejected
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        Pending
+                                    </span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (club.Status == "Pending")
+                                {
+                                    <div class="d-flex gap-2">
+                                        <form asp-action="ApproveClub"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@club.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-success">
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="RejectClub"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@club.Id" />
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

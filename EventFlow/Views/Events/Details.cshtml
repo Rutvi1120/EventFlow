@@ -2,37 +2,45 @@
 
 @{
     ViewData["Title"] = "Event Details";
+
+    bool isAuthenticated = User.Identity?.IsAuthenticated == true;
+    bool isStudent = User.IsInRole("Student");
+
+    bool isRegistered = ViewBag.IsRegistered == true;
+    bool isWaitlisted = ViewBag.IsWaitlisted == true;
+    int registeredCount = ViewBag.RegisteredCount ?? 0;
+    int seatsLeft = ViewBag.SeatsLeft ?? 0;
+    string? myVolunteerStatus = ViewBag.MyVolunteerStatus as string;
+
+    bool isFull = seatsLeft <= 0;
 }
 
 <div class="container py-4">
+
     <div class="mb-4">
         <a asp-action="Index" class="btn btn-outline-secondary">
             Back to Events
         </a>
     </div>
 
+    <partial name="_Alerts" />
+
     <div class="card shadow-sm">
         <div class="card-body p-4">
 
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
-                    <span class="badge bg-primary mb-2">
-                        @Model.EventType
-                    </span>
+                    <span class="badge bg-primary mb-2">@Model.EventType</span>
 
                     <h1 class="mb-2">@Model.Name</h1>
 
                     @if (Model.Club != null)
                     {
-                        <p class="text-muted mb-0">
-                            Club: @Model.Club.Name
-                        </p>
+                        <p class="text-muted mb-0">Club: @Model.Club.Name</p>
                     }
                 </div>
 
-                <span class="badge bg-success">
-                    @Model.Status
-                </span>
+                <partial name="_EventStatusBadge" model="Model" />
             </div>
 
             <hr />
@@ -46,85 +54,145 @@
 
                 <div class="col-md-6">
                     <strong>Start</strong>
-                    <div>
-                        @Model.StartDateTime.ToString("dd MMM yyyy hh:mm tt")
-                    </div>
+                    <div>@Model.StartDateTime.ToString("dd MMM yyyy hh:mm tt")</div>
                 </div>
 
                 <div class="col-md-6">
                     <strong>End</strong>
-                    <div>
-                        @Model.EndDateTime.ToString("dd MMM yyyy hh:mm tt")
-                    </div>
+                    <div>@Model.EndDateTime.ToString("dd MMM yyyy hh:mm tt")</div>
                 </div>
 
                 <div class="col-md-6">
                     <strong>Venue</strong>
-                    <div>
-                        @(Model.Venue?.Name ?? "Not specified")
-                    </div>
+                    <div>@(Model.Venue?.Name ?? "Not specified")</div>
                 </div>
 
                 <div class="col-md-6">
-                    <strong>Maximum Participants</strong>
+                    <strong>Seats</strong>
                     <div>
-                        @Model.MaxParticipants
+                        @registeredCount / @Model.MaxParticipants registered
+                        @if (!Model.HasStarted)
+                        {
+                            if (isFull)
+                            {
+                                <span class="badge bg-danger ms-1">Full</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success ms-1">@seatsLeft left</span>
+                            }
+                        }
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <strong>Organizer</strong>
-                    <div>
-                        @(Model.Organizer?.FullName ?? "Not specified")
-                    </div>
+                    <div>@(Model.Organizer?.FullName ?? "Not specified")</div>
                 </div>
 
                 <div class="col-md-6">
                     <strong>Approval</strong>
-                    <div>
-                        @Model.ApprovalStatus
-                    </div>
+                    <div>@Model.ApprovalStatus</div>
                 </div>
 
             </div>
 
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <div class="d-flex flex-wrap gap-2">
-
-                    <form asp-controller="Registration"
-                          asp-action="Register"
-                          method="post">
-
-                        @Html.AntiForgeryToken()
-
-                        <input type="hidden"
-                               name="eventId"
-                               value="@Model.Id" />
-
-                        <button type="submit"
-                                class="btn btn-primary">
-                            Register
-                        </button>
-
-                    </form>
-
-                    <a asp-controller="Volunteer"
-                       asp-action="Apply"
-                       asp-route-eventId="@Model.Id"
-                       class="btn btn-outline-primary">
-                        Volunteer
-                    </a>
-
-                </div>
-            }
-            else
+            @if (!isAuthenticated)
             {
                 <a asp-area="Identity"
                    asp-page="/Account/Login"
                    class="btn btn-primary">
                     Login to Register
                 </a>
+            }
+            else
+            {
+                <div class="d-flex flex-wrap align-items-center gap-2">
+
+                    @* ---------- REGISTRATION ---------- *@
+                    @if (Model.HasEnded)
+                    {
+                        <span class="badge bg-secondary fs-6">This event has ended</span>
+                    }
+                    else if (isRegistered)
+                    {
+                        <span class="badge bg-success fs-6">You are registered</span>
+
+                        <form asp-controller="Registration"
+                              asp-action="Cancel"
+                              method="post"
+                              onsubmit="return confirm('Cancel your registration?');">
+                            <input type="hidden" name="eventId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-danger">
+                                Cancel Registration
+                            </button>
+                        </form>
+                    }
+                    else if (isWaitlisted)
+                    {
+                        <span class="badge bg-warning text-dark fs-6">You are on the waitlist</span>
+
+                        <form asp-controller="Registration"
+                              asp-action="LeaveWaitlist"
+                              method="post">
+                            <input type="hidden" name="eventId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-danger">
+                                Leave Waitlist
+                            </button>
+                        </form>
+                    }
+                    else if (Model.HasStarted)
+                    {
+                        <span class="badge bg-info text-dark fs-6">
+                            Registration closed - event in progress
+                        </span>
+                    }
+                    else if (isFull)
+                    {
+                        <form asp-controller="Registration"
+                              asp-action="JoinWaitlist"
+                              method="post">
+                            <input type="hidden" name="eventId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-warning">
+                                Event Full - Join Waitlist
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-controller="Registration"
+                              asp-action="Register"
+                              method="post">
+                            <input type="hidden" name="eventId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-primary">
+                                Register
+                            </button>
+                        </form>
+                    }
+
+                    @* ---------- VOLUNTEERING (students only) ---------- *@
+                    @if (isStudent)
+                    {
+                        if (myVolunteerStatus != null)
+                        {
+                            <a asp-controller="Volunteer"
+                               asp-action="MyApplications"
+                               class="btn btn-outline-secondary">
+                                Volunteer application: @myVolunteerStatus
+                            </a>
+                        }
+                        else if (!Model.HasEnded)
+                        {
+                            <a asp-controller="Volunteer"
+                               asp-action="Apply"
+                               asp-route-eventId="@Model.Id"
+                               class="btn btn-outline-success">
+                                Apply as Volunteer
+                            </a>
+                        }
+                    }
+
+                </div>
             }
 
         </div>

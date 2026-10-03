@@ -1,21 +1,39 @@
-﻿@model IEnumerable<EventFlow.Models.Registration>
+@model IEnumerable<EventFlow.Models.Registration>
 
 @{
     ViewData["Title"] = "My Registrations";
 }
 
 <div class="container py-4">
-    <div class="mb-4">
-        <h1>My Registrations</h1>
-        <p class="text-muted">
-            Events you are registered for.
-        </p>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h1 class="mb-1">My Registrations</h1>
+            <p class="text-muted mb-0">Events you are registered for.</p>
+        </div>
+
+        <a asp-controller="Registration"
+           asp-action="MyWaitlist"
+           class="btn btn-outline-secondary">
+            My Waitlist
+        </a>
     </div>
+
+    <partial name="_Alerts" />
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info">
-            You are not registered for any events.
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="display-6 mb-3">🎟️</div>
+                <h4>No registrations yet</h4>
+                <p class="text-muted">You are not registered for any events.</p>
+                <a asp-controller="Events"
+                   asp-action="Index"
+                   class="btn btn-primary">
+                    Browse Events
+                </a>
+            </div>
         </div>
     }
     else
@@ -33,29 +51,47 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 shadow-sm">
                         <div class="card-body d-flex flex-column">
-                            <span class="badge bg-primary align-self-start mb-2">
-                                @eventItem.EventType
-                            </span>
 
-                            <h4>
-                                @eventItem.Name
-                            </h4>
+                            <div class="mb-2 d-flex flex-wrap gap-1">
+                                <span class="badge bg-primary">@eventItem.EventType</span>
 
-                            <p class="text-muted">
-                                @eventItem.Description
-                            </p>
+                                @if (eventItem.HasEnded)
+                                {
+                                    <span class="badge bg-secondary">Attended / Ended</span>
+                                }
+                                else if (eventItem.HasStarted)
+                                {
+                                    <span class="badge bg-info text-dark">Ongoing</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Registered</span>
+                                }
+                            </div>
+
+                            <h4>@eventItem.Name</h4>
+
+                            <p class="text-muted">@eventItem.Description</p>
 
                             <div class="mt-auto">
-                                <div class="mb-2">
+                                <div class="mb-1">
                                     <strong>Date:</strong>
-                                    @eventItem.StartDateTime
-                                    .ToString("dd MMM yyyy")
+                                    @eventItem.StartDateTime.ToString("dd MMM yyyy")
                                 </div>
 
-                                <div class="mb-3">
+                                <div class="mb-1">
                                     <strong>Time:</strong>
-                                    @eventItem.StartDateTime
-                                    .ToString("hh:mm tt")
+                                    @eventItem.StartDateTime.ToString("hh:mm tt")
+                                </div>
+
+                                <div class="mb-1">
+                                    <strong>Venue:</strong>
+                                    @(eventItem.Venue?.Name ?? "Not specified")
+                                </div>
+
+                                <div class="mb-3 text-muted small">
+                                    Registered on
+                                    @registration.RegisteredAt.ToLocalTime().ToString("dd MMM yyyy")
                                 </div>
 
                                 <div class="d-flex gap-2">
@@ -66,20 +102,14 @@
                                         Details
                                     </a>
 
-                                    @if (eventItem.EndDateTime > DateTime.Now)
+                                    @if (!eventItem.HasEnded)
                                     {
                                         <form asp-controller="Registration"
                                               asp-action="Cancel"
-                                              method="post">
-
-                                            @Html.AntiForgeryToken()
-
-                                            <input type="hidden"
-                                                   name="eventId"
-                                                   value="@eventItem.Id" />
-
-                                            <button type="submit"
-                                                    class="btn btn-outline-danger">
+                                              method="post"
+                                              onsubmit="return confirm('Cancel your registration?');">
+                                            <input type="hidden" name="eventId" value="@eventItem.Id" />
+                                            <button type="submit" class="btn btn-outline-danger">
                                                 Cancel
                                             </button>
                                         </form>
@@ -92,4 +122,5 @@
             }
         </div>
     }
+
 </div>

@@ -18,12 +18,7 @@
         </a>
     </div>
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">
-            @TempData["Error"]
-        </div>
-    }
+    <partial name="_Alerts" />
 
     @if (!Model.Any())
     {

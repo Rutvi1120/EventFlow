@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EventFlow.Models
 {
@@ -60,5 +61,35 @@ namespace EventFlow.Models
 
         public ICollection<Volunteer> Volunteers { get; set; }
             = new List<Volunteer>();
+
+        // -------------------------------------------------
+        // Computed lifecycle helpers (not stored in the DB).
+        // ApprovalStatus = review state (Pending/Approved/Rejected)
+        // Status         = stored legacy value ("Upcoming")
+        // LifecycleStatus combines them with the clock:
+        //   Pending Approval -> Rejected | Upcoming -> Ongoing -> Completed
+        // -------------------------------------------------
+
+        [NotMapped]
+        public bool HasStarted => DateTime.Now >= StartDateTime;
+
+        [NotMapped]
+        public bool HasEnded => DateTime.Now >= EndDateTime;
+
+        [NotMapped]
+        public bool IsApproved => ApprovalStatus == "Approved";
+
+        [NotMapped]
+        public string LifecycleStatus
+        {
+            get
+            {
+                if (ApprovalStatus == "Rejected") return "Rejected";
+                if (ApprovalStatus != "Approved") return "Pending Approval";
+                if (HasEnded) return "Completed";
+                if (HasStarted) return "Ongoing";
+                return "Upcoming";
+            }
+        }
     }
 }

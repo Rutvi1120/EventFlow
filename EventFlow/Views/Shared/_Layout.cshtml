@@ -35,7 +35,7 @@
                      id="mainNavigation">
 
                     <ul class="navbar-nav me-auto">
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (User.Identity?.IsAuthenticated != true)
                         {
                             <li class="nav-item">
                                 <a class="nav-link"
@@ -44,50 +44,75 @@
                                     Events
                                 </a>
                             </li>
-
-                            @if (User.IsInRole("Student"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link"
-                                       asp-controller="Student"
-                                       asp-action="Index">
-                                        Student
-                                    </a>
-                                </li>
-                            }
-
-                            @if (User.IsInRole("Faculty"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link"
-                                       asp-controller="Faculty"
-                                       asp-action="Index">
-                                        Faculty
-                                    </a>
-                                </li>
-                            }
-
-                            @if (User.IsInRole("ClubPresident"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link"
-                                       asp-controller="ClubPresident"
-                                       asp-action="Index">
-                                        Club
-                                    </a>
-                                </li>
-                            }
-
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link"
-                                       asp-controller="Admin"
-                                       asp-action="Index">
-                                        Admin
-                                    </a>
-                                </li>
-                            }
+                        }
+                        else if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Index">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Users">Users</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Events">Events</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Venue" asp-action="Index">Venues</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Volunteer" asp-action="Manage">Volunteers</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Admin" asp-action="Clubs">Clubs</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Role" asp-action="Index">Roles</a>
+                            </li>
+                        }
+                        else if (User.IsInRole("Faculty"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Faculty" asp-action="Index">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Volunteer" asp-action="Manage">Volunteer Management</a>
+                            </li>
+                        }
+                        else if (User.IsInRole("ClubPresident"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="ClubPresident" asp-action="Index">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="ClubPresident" asp-action="Events">Club Events</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Volunteer" asp-action="Manage">Volunteer Management</a>
+                            </li>
+                        }
+                        else if (User.IsInRole("Student"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Student" asp-action="Index">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Volunteer" asp-action="Index">Volunteer</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Volunteer" asp-action="MyApplications">My Applications</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                            </li>
                         }
                     </ul>
 

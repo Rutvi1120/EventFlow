@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Faculty Dashboard";
 
     var supervisedClubs =
@@ -12,85 +12,88 @@
     var myEvents =
         ViewBag.MyEvents as IEnumerable<EventFlow.Models.Event>
         ?? Enumerable.Empty<EventFlow.Models.Event>();
+
+    var pendingVolunteerApplications =
+        ViewBag.PendingVolunteerApplications as IEnumerable<EventFlow.Models.Volunteer>
+        ?? Enumerable.Empty<EventFlow.Models.Volunteer>();
+
+    int pendingVolunteerCount = ViewBag.PendingVolunteerCount ?? 0;
 }
 
 <div class="container py-4">
+
     <div class="mb-4">
         <h1>Faculty Dashboard</h1>
         <p class="text-muted mb-0">
-            Manage college events, approvals, and supervised clubs.
+            Manage college events, approvals, supervised clubs, and volunteers.
         </p>
     </div>
 
+    <partial name="_Alerts" />
+
     <div class="row g-4 mb-4">
-        <div class="col-md-6 col-lg-3">
+
+        <div class="col-md-6 col-lg-4 col-xl">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
-                    <h5>Pending Approvals</h5>
-                    <div class="display-6 mb-3">
-                        @pendingEvents.Count()
-                    </div>
+                    <h5>Pending Event Approvals</h5>
+                    <div class="display-6 mb-3">@pendingEvents.Count()</div>
+                    <a asp-action="Events" class="btn btn-primary">Review Events</a>
+                </div>
+            </div>
+        </div>
 
-                    <a asp-action="Events"
-                       class="btn btn-primary">
-                        Review Events
+        <div class="col-md-6 col-lg-4 col-xl">
+            <div class="card shadow-sm h-100 @(pendingVolunteerCount > 0 ? "border-warning" : "")">
+                <div class="card-body">
+                    <h5>Pending Volunteer Applications</h5>
+                    <div class="display-6 mb-3">@pendingVolunteerCount</div>
+                    <a asp-controller="Volunteer"
+                       asp-action="Manage"
+                       class="btn btn-warning">
+                        Manage Volunteers
                     </a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4 col-xl">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
                     <h5>My Clubs</h5>
-                    <div class="display-6 mb-3">
-                        @supervisedClubs.Count()
-                    </div>
-
-                    <a asp-action="AllClubs"
-                       class="btn btn-primary">
-                        View Clubs
-                    </a>
+                    <div class="display-6 mb-3">@supervisedClubs.Count()</div>
+                    <a asp-action="AllClubs" class="btn btn-primary">View Clubs</a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4 col-xl">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
                     <h5>My Events</h5>
-                    <div class="display-6 mb-3">
-                        @myEvents.Count()
-                    </div>
-
-                    <a asp-action="Events"
-                       class="btn btn-primary">
-                        View Events
-                    </a>
+                    <div class="display-6 mb-3">@myEvents.Count()</div>
+                    <a asp-action="Events" class="btn btn-primary">View Events</a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4 col-xl">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
                     <h5>Create Event</h5>
-                    <p class="text-muted">
-                        Create a college-wide event.
-                    </p>
-
-                    <a asp-action="CreateEvent"
-                       class="btn btn-primary">
-                        Create Event
-                    </a>
+                    <p class="text-muted">Create a college-wide event.</p>
+                    <a asp-action="CreateEvent" class="btn btn-primary">Create Event</a>
                 </div>
             </div>
         </div>
+
     </div>
 
     <div class="row g-4">
+
         <div class="col-lg-7">
-            <div class="card shadow-sm">
+
+            <div class="card shadow-sm mb-4">
                 <div class="card-header">
                     <h5 class="mb-0">Pending Event Approvals</h5>
                 </div>
@@ -113,26 +116,84 @@
                                         <th>Date</th>
                                     </tr>
                                 </thead>
-
                                 <tbody>
                                     @foreach (var eventItem in pendingEvents.Take(5))
                                     {
                                         <tr>
+                                            <td><strong>@eventItem.Name</strong></td>
                                             <td>
-                                                <strong>
-                                                    @eventItem.Name
-                                                </strong>
+                                                <span class="badge bg-primary">@eventItem.EventType</span>
                                             </td>
+                                            <td>@eventItem.StartDateTime.ToString("dd MMM yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
 
+                        <div class="mt-3">
+                            <a asp-action="Events" class="btn btn-outline-primary">View All</a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Volunteer Applications</h5>
+                    <span class="badge bg-warning text-dark">@pendingVolunteerCount pending</span>
+                </div>
+
+                <div class="card-body">
+                    @if (!pendingVolunteerApplications.Any())
+                    {
+                        <div class="alert alert-light border mb-0">
+                            No pending volunteer applications.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Event</th>
+                                        <th>Role</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var volunteer in pendingVolunteerApplications.Take(8))
+                                    {
+                                        <tr>
                                             <td>
-                                                <span class="badge bg-primary">
-                                                    @eventItem.EventType
-                                                </span>
+                                                <div class="fw-semibold">
+                                                    @(volunteer.VolunteerUser?.FullName ?? "Unknown")
+                                                </div>
+                                                <small class="text-muted">@volunteer.VolunteerUser?.Email</small>
                                             </td>
-
                                             <td>
-                                                @eventItem.StartDateTime
-                                                .ToString("dd MMM yyyy")
+                                                <div class="fw-semibold">@volunteer.Event?.Name</div>
+                                                @if (volunteer.Event != null)
+                                                {
+                                                    <small class="text-muted">
+                                                        @volunteer.Event.StartDateTime.ToString("dd MMM yyyy, hh:mm tt")
+                                                    </small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @(string.IsNullOrWhiteSpace(volunteer.Role)
+                                                    ? "Not specified"
+                                                    : volunteer.Role)
+                                            </td>
+                                            <td class="text-end">
+                                                <a asp-controller="Volunteer"
+                                                   asp-action="EventVolunteers"
+                                                   asp-route-eventId="@volunteer.EventId"
+                                                   class="btn btn-sm btn-primary">
+                                                    Review
+                                                </a>
                                             </td>
                                         </tr>
                                     }
@@ -141,14 +202,16 @@
                         </div>
 
                         <div class="mt-3">
-                            <a asp-action="Events"
+                            <a asp-controller="Volunteer"
+                               asp-action="Manage"
                                class="btn btn-outline-primary">
-                                View All
+                                Volunteer Management
                             </a>
                         </div>
                     }
                 </div>
             </div>
+
         </div>
 
         <div class="col-lg-5">
@@ -172,27 +235,21 @@
                                 <a asp-action="ClubDetails"
                                    asp-route-id="@club.Id"
                                    class="list-group-item list-group-item-action">
-                                    <div class="fw-semibold">
-                                        @club.Name
-                                    </div>
-
+                                    <div class="fw-semibold">@club.Name</div>
                                     <small class="text-muted">
-                                        @(club.ClubPresident?.FullName
-                                            ?? "No president")
+                                        @(club.ClubPresident?.FullName ?? "No president")
                                     </small>
                                 </a>
                             }
                         </div>
 
                         <div class="mt-3">
-                            <a asp-action="AllClubs"
-                               class="btn btn-outline-primary">
-                                View All Clubs
-                            </a>
+                            <a asp-action="AllClubs" class="btn btn-outline-primary">View All Clubs</a>
                         </div>
                     }
                 </div>
             </div>
         </div>
+
     </div>
 </div>

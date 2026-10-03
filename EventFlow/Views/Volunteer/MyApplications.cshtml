@@ -1,4 +1,3 @@
-﻿
 @model IEnumerable<EventFlow.Models.Volunteer>
 
 @{
@@ -6,78 +5,148 @@
 }
 
 <div class="container py-4">
-    <div class="mb-4">
-        <h1>My Volunteer Applications</h1>
-        <p class="text-muted">
-            View your volunteer applications and assignments.
-        </p>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div>
+            <h1 class="mb-1">My Volunteer Applications</h1>
+            <p class="text-muted mb-0">
+                Track your applications and volunteer assignments.
+            </p>
+        </div>
+
+        <a asp-controller="Volunteer"
+           asp-action="Index"
+           class="btn btn-success">
+            Browse Volunteer Events
+        </a>
     </div>
+
+    <partial name="_Alerts" />
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info">
-            You have not submitted any volunteer applications.
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="display-6 mb-3">📝</div>
+                <h4>No applications yet</h4>
+                <p class="text-muted">
+                    You have not applied to volunteer for any event.
+                </p>
+                <a asp-controller="Volunteer"
+                   asp-action="Index"
+                   class="btn btn-success">
+                    Browse Events
+                </a>
+            </div>
         </div>
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Event</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Assigned</th>
-                        <th>Completed</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var assignment in Model)
-                    {
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td>
-                                @(assignment.Event?.Name ?? "Unknown event")
-                            </td>
-
-                            <td>
-                                @assignment.Role
-                            </td>
-
-                            <td>
-                                @assignment.Status
-                            </td>
-
-                            <td>
-                                @if (assignment.AssignedAt.HasValue)
-                                {
-                                    @assignment.AssignedAt.Value.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")
-                                }
-                                else
-                                {
-                                    <span class="text-muted">
-                                        Not assigned
-                                    </span>
-                                }
-                            </td>
-
-                            <td>
-                                @if (assignment.CompletedAt.HasValue)
-                                {
-                                    @assignment.CompletedAt.Value.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")
-                                }
-                                else
-                                {
-                                    <span class="text-muted">
-                                        Not completed
-                                    </span>
-                                }
-                            </td>
+                            <th class="ps-4">Event</th>
+                            <th>Date</th>
+                            <th>Venue</th>
+                            <th>Role</th>
+                            <th>Notes</th>
+                            <th>Status</th>
+                            <th class="pe-4">Action</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var application in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-semibold">
+                                        @(application.Event?.Name ?? "Unknown event")
+                                    </div>
+                                    @if (application.Event?.Club != null)
+                                    {
+                                        <small class="text-muted">
+                                            @application.Event.Club.Name
+                                        </small>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (application.Event != null)
+                                    {
+                                        <div>@application.Event.StartDateTime.ToString("dd MMM yyyy")</div>
+                                        <small class="text-muted">
+                                            @application.Event.StartDateTime.ToString("hh:mm tt")
+                                        </small>
+                                    }
+                                </td>
+
+                                <td>@(application.Event?.Venue?.Name ?? "Not specified")</td>
+
+                                <td>@application.Role</td>
+
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(application.Notes))
+                                    {
+                                        <span class="text-muted">&mdash;</span>
+                                    }
+                                    else
+                                    {
+                                        @application.Notes
+                                    }
+                                </td>
+
+                                <td>
+                                    <partial name="_VolunteerStatusBadge" model="application.Status" />
+                                </td>
+
+                                <td class="pe-4">
+                                    @if (application.Status == EventFlow.Models.VolunteerStatus.Accepted)
+                                    {
+                                        <form asp-controller="Volunteer"
+                                              asp-action="Complete"
+                                              method="post"
+                                              onsubmit="return confirm('Mark this volunteer work as completed?');">
+                                            <input type="hidden" name="id" value="@application.Id" />
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                Mark Completed
+                                            </button>
+                                        </form>
+
+                                        @if (application.AssignedAt.HasValue)
+                                        {
+                                            <small class="text-muted d-block mt-1">
+                                                Accepted @application.AssignedAt.Value.ToLocalTime().ToString("dd MMM yyyy")
+                                            </small>
+                                        }
+                                    }
+                                    else if (application.Status == EventFlow.Models.VolunteerStatus.Pending)
+                                    {
+                                        <span class="text-muted">Waiting for approval</span>
+                                    }
+                                    else if (application.Status == EventFlow.Models.VolunteerStatus.Rejected)
+                                    {
+                                        <span class="text-danger">Application rejected</span>
+                                    }
+                                    else if (application.Status == EventFlow.Models.VolunteerStatus.Completed)
+                                    {
+                                        <span class="text-primary">
+                                            Completed
+                                            @if (application.CompletedAt.HasValue)
+                                            {
+                                                <span>on @application.CompletedAt.Value.ToLocalTime().ToString("dd MMM yyyy")</span>
+                                            }
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
+
 </div>

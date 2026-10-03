@@ -1,0 +1,24 @@
+@{
+    var alertTypes = new[]
+    {
+        (Key: "SuccessMessage", Css: "success"),
+        (Key: "ErrorMessage", Css: "danger"),
+        (Key: "InfoMessage", Css: "info"),
+        (Key: "Error", Css: "danger")
+    };
+}
+
+@foreach (var alertType in alertTypes)
+{
+    if (TempData[alertType.Key] is string alertMessage &&
+        !string.IsNullOrWhiteSpace(alertMessage))
+    {
+        <div class="alert alert-@alertType.Css alert-dismissible fade show" role="alert">
+            @alertMessage
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+        </div>
+    }
+}

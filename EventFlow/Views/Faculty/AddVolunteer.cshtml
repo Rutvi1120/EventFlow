@@ -1,7 +1,7 @@
-@model EventFlow.Models.VolunteerApplyViewModel
+@model EventFlow.Models.AddVolunteerViewModel
 
 @{
-    ViewData["Title"] = "Apply as Volunteer";
+    ViewData["Title"] = "Add Volunteer";
 
     var eventItem = Model.Event;
 }
@@ -10,9 +10,10 @@
 
     <div class="mb-4">
         <a asp-controller="Volunteer"
-           asp-action="Index"
+           asp-action="EventVolunteers"
+           asp-route-eventId="@Model.EventId"
            class="text-decoration-none">
-            &larr; Back to Volunteer Events
+            &larr; Back to Volunteer List
         </a>
     </div>
 
@@ -24,25 +25,18 @@
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
 
-                    <h2 class="mb-1">Volunteer Application</h2>
+                    <h2 class="mb-1">Add Volunteer</h2>
+                    <p class="text-muted mb-4">
+                        Add a student directly. They are accepted immediately and no further approval is needed.
+                    </p>
 
                     @if (eventItem != null)
                     {
-                        <p class="text-muted mb-4">
-                            Apply to volunteer for <strong>@eventItem.Name</strong>
-                        </p>
-
                         <div class="alert alert-light border">
                             <div><strong>Event:</strong> @eventItem.Name</div>
                             <div>
                                 <strong>Date:</strong>
-                                @eventItem.StartDateTime.ToString("dd MMM yyyy")
-                            </div>
-                            <div>
-                                <strong>Time:</strong>
-                                @eventItem.StartDateTime.ToString("hh:mm tt")
-                                -
-                                @eventItem.EndDateTime.ToString("hh:mm tt")
+                                @eventItem.StartDateTime.ToString("dd MMM yyyy, hh:mm tt")
                             </div>
                             <div>
                                 <strong>Venue:</strong>
@@ -60,18 +54,36 @@
 
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                    <form asp-controller="Volunteer"
-                          asp-action="Apply"
+                    @if (!Model.Students.Any())
+                    {
+                        <div class="alert alert-warning">
+                            There are no students left to add. Every registered student already
+                            has an application or assignment for this event.
+                        </div>
+                    }
+
+                    <form asp-controller="@Model.FormController"
+                          asp-action="AddVolunteer"
                           method="post">
 
                         <input type="hidden" asp-for="EventId" />
+
+                        <div class="mb-3">
+                            <label asp-for="VolunteerId" class="form-label">Student</label>
+                            <select asp-for="VolunteerId"
+                                    asp-items="Model.Students"
+                                    class="form-select">
+                                <option value="">-- Select Student --</option>
+                            </select>
+                            <span asp-validation-for="VolunteerId" class="text-danger"></span>
+                        </div>
 
                         <div class="mb-3">
                             <label asp-for="Role" class="form-label">Volunteer Role</label>
                             <input asp-for="Role"
                                    class="form-control"
                                    maxlength="100"
-                                   placeholder="Example: Registration desk, Coordinator, Photography" />
+                                   placeholder="Example: Coordinator, Registration, Photography" />
                             <span asp-validation-for="Role" class="text-danger"></span>
                         </div>
 
@@ -81,17 +93,20 @@
                                       class="form-control"
                                       rows="4"
                                       maxlength="1000"
-                                      placeholder="Anything the organizer should know about your application"></textarea>
+                                      placeholder="Optional notes about this volunteer"></textarea>
                             <span asp-validation-for="Notes" class="text-danger"></span>
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                Submit Application
+                            <button type="submit"
+                                    class="btn btn-success"
+                                    disabled="@(!Model.Students.Any())">
+                                Add Volunteer
                             </button>
 
                             <a asp-controller="Volunteer"
-                               asp-action="Index"
+                               asp-action="EventVolunteers"
+                               asp-route-eventId="@Model.EventId"
                                class="btn btn-outline-secondary">
                                 Cancel
                             </a>

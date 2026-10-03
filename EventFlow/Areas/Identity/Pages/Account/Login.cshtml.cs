@@ -86,9 +86,11 @@ namespace EventFlow.Areas.Identity.Pages.Account
                 return Page();
             }
 
+            var email = Input.Email.Trim();
+
+            // FIND USER
             var user =
-                await _userManager.FindByEmailAsync(
-                    Input.Email.Trim());
+                await _userManager.FindByEmailAsync(email);
 
             if (user == null)
             {
@@ -100,6 +102,7 @@ namespace EventFlow.Areas.Identity.Pages.Account
                 return Page();
             }
 
+            // CHECK APPROVAL
             if (!user.IsApproved)
             {
                 ModelState.AddModelError(
@@ -110,6 +113,7 @@ namespace EventFlow.Areas.Identity.Pages.Account
                 return Page();
             }
 
+            // LOGIN
             var result =
                 await _signInManager.PasswordSignInAsync(
                     user,
@@ -120,11 +124,37 @@ namespace EventFlow.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 _logger.LogInformation(
-                    "User logged in.");
+                    "User {Email} logged in successfully.",
+                    email);
 
-                return LocalRedirect(returnUrl);
+                if (await _userManager.IsInRoleAsync(user, "Admin"))
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
+
+                if (await _userManager.IsInRoleAsync(user, "Student"))
+                {
+                    return RedirectToAction("Index", "Student");
+                }
+
+                if (await _userManager.IsInRoleAsync(user, "Faculty"))
+                {
+                    return RedirectToAction("Index", "Faculty");
+                }
+
+                if (await _userManager.IsInRoleAsync(user, "ClubPresident"))
+                {
+                    return RedirectToAction("Index", "ClubPresident");
+                }
+
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Your account does not have a valid application role.");
+
+                return Page();
             }
 
+            // ACCOUNT LOCKED
             if (result.IsLockedOut)
             {
                 _logger.LogWarning(
@@ -133,6 +163,7 @@ namespace EventFlow.Areas.Identity.Pages.Account
                 return RedirectToPage("./Lockout");
             }
 
+            // TWO FACTOR AUTHENTICATION
             if (result.RequiresTwoFactor)
             {
                 return RedirectToPage(
@@ -144,11 +175,13 @@ namespace EventFlow.Areas.Identity.Pages.Account
                     });
             }
 
+            // INVALID PASSWORD
             ModelState.AddModelError(
                 string.Empty,
                 "Invalid email or password.");
 
             ReturnUrl = returnUrl;
+
             return Page();
         }
 

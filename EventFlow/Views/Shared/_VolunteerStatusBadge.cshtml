@@ -1,0 +1,20 @@
+@model string
+
+@switch (Model)
+{
+    case "Pending":
+        <span class="badge bg-warning text-dark">Pending</span>
+        break;
+    case "Accepted":
+        <span class="badge bg-success">Accepted</span>
+        break;
+    case "Rejected":
+        <span class="badge bg-danger">Rejected</span>
+        break;
+    case "Completed":
+        <span class="badge bg-primary">Completed</span>
+        break;
+    default:
+        <span class="badge bg-secondary">@Model</span>
+        break;
+}

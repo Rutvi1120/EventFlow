@@ -1,0 +1,201 @@
+@model List<EventFlow.Models.VolunteerManageRow>
+
+@{
+    ViewData["Title"] = "Volunteer Management";
+
+    var isAdmin = User.IsInRole("Admin");
+    var canAdd = User.IsInRole("Faculty") || User.IsInRole("ClubPresident");
+    var addController = User.IsInRole("Faculty") ? "Faculty" : "ClubPresident";
+
+    var upcoming = Model.Where(r => !r.HasEnded).OrderBy(r => r.StartDateTime).ToList();
+    var past = Model.Where(r => r.HasEnded).OrderByDescending(r => r.StartDateTime).ToList();
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+        <h1 class="fw-bold mb-1">Volunteer Management</h1>
+        <p class="text-muted mb-0">
+            @if (isAdmin)
+            {
+                <span>Monitor volunteer activity across all events.</span>
+            }
+            else
+            {
+                <span>Review applications and manage volunteers for the events you are responsible for.</span>
+            }
+        </p>
+    </div>
+
+    <partial name="_Alerts" />
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Pending applications</div>
+                    <div class="display-6">@Model.Sum(r => r.Pending)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Accepted volunteers</div>
+                    <div class="display-6">@Model.Sum(r => r.Accepted)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Completed</div>
+                    <div class="display-6">@Model.Sum(r => r.Completed)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Rejected</div>
+                    <div class="display-6">@Model.Sum(r => r.Rejected)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="display-6 mb-3">👥</div>
+                <h4>No events to manage</h4>
+                <p class="text-muted mb-0">
+                    There are no approved events that you can manage volunteers for yet.
+                </p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h4 class="mb-3">Upcoming &amp; ongoing events</h4>
+
+        @if (!upcoming.Any())
+        {
+            <div class="alert alert-light border">No upcoming events.</div>
+        }
+        else
+        {
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Event</th>
+                                <th>Date</th>
+                                <th>Venue</th>
+                                <th>Volunteers</th>
+                                <th class="pe-4 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in upcoming)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-semibold">@row.Name</div>
+                                        <span class="badge bg-primary">@row.EventType</span>
+                                        @if (!string.IsNullOrWhiteSpace(row.ClubName))
+                                        {
+                                            <small class="text-muted ms-1">@row.ClubName</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @row.StartDateTime.ToString("dd MMM yyyy")
+                                        <div class="small text-muted">
+                                            @row.StartDateTime.ToString("hh:mm tt")
+                                        </div>
+                                    </td>
+                                    <td>@(row.VenueName ?? "Not specified")</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark" title="Pending">@row.Pending pending</span>
+                                        <span class="badge bg-success" title="Accepted">@row.Accepted accepted</span>
+                                        <span class="badge bg-primary" title="Completed">@row.Completed completed</span>
+                                        <span class="badge bg-danger" title="Rejected">@row.Rejected rejected</span>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <div class="d-flex gap-2 justify-content-end flex-wrap">
+                                            <a asp-controller="Volunteer"
+                                               asp-action="EventVolunteers"
+                                               asp-route-eventId="@row.EventId"
+                                               class="btn btn-sm btn-primary">
+                                                Manage Volunteers
+                                            </a>
+
+                                            @if (canAdd)
+                                            {
+                                                <a asp-controller="@addController"
+                                                   asp-action="AddVolunteer"
+                                                   asp-route-eventId="@row.EventId"
+                                                   class="btn btn-sm btn-success">
+                                                    + Add Volunteer
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        @if (past.Any())
+        {
+            <h4 class="mb-3">Past events</h4>
+
+            <div class="card border-0 shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Event</th>
+                                <th>Date</th>
+                                <th>Volunteers</th>
+                                <th class="pe-4 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in past)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-semibold">@row.Name</div>
+                                        <span class="badge bg-primary">@row.EventType</span>
+                                    </td>
+                                    <td>@row.StartDateTime.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">@row.Pending pending</span>
+                                        <span class="badge bg-success">@row.Accepted accepted</span>
+                                        <span class="badge bg-primary">@row.Completed completed</span>
+                                        <span class="badge bg-danger">@row.Rejected rejected</span>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <a asp-controller="Volunteer"
+                                           asp-action="EventVolunteers"
+                                           asp-route-eventId="@row.EventId"
+                                           class="btn btn-sm btn-outline-primary">
+                                            View Volunteers
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+
+</div>

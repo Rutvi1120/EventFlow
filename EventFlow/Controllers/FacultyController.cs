@@ -1,5 +1,6 @@
 ﻿using EventFlow.Data;
 using EventFlow.Models;
+using EventFlow.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,13 +14,16 @@ namespace EventFlow.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly VolunteerManagementService _volunteerService;
 
         public FacultyController(
             ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            VolunteerManagementService volunteerService)
         {
             _context = context;
             _userManager = userManager;
+            _volunteerService = volunteerService;
         }
 
         public async Task<IActionResult> Index()
@@ -27,9 +31,7 @@ namespace EventFlow.Controllers
             var facultyId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(facultyId))
-            {
                 return Challenge();
-            }
 
             var supervisedClubs = await _context.Clubs
                 .Include(c => c.ClubPresident)
@@ -63,6 +65,20 @@ namespace EventFlow.Controllers
                 .OrderByDescending(e => e.StartDateTime)
                 .ToListAsync();
 
+            // -------------------------------------------------
+            // PENDING VOLUNTEER APPLICATIONS
+            // -------------------------------------------------
+
+            var pendingVolunteerApplications =
+                await _volunteerService.ManageableVolunteers(User)
+                    .Include(v => v.VolunteerUser)
+                    .Include(v => v.Event)
+                    .ThenInclude(e => e!.Club)
+                    .Where(v => v.Status == VolunteerStatus.Pending)
+                    .OrderBy(v => v.Event!.StartDateTime)
+                    .ThenBy(v => v.VolunteerUser!.FullName)
+                    .ToListAsync();
+
             var pendingPresidentRequests = await _userManager.Users
                 .Include(u => u.RequestedClub)
                 .Where(u =>
@@ -80,17 +96,26 @@ namespace EventFlow.Controllers
             ViewBag.MyEvents = myEvents;
             ViewBag.PendingPresidentRequests = pendingPresidentRequests;
 
+            // Volunteer applications
+            ViewBag.PendingVolunteerApplications =
+                pendingVolunteerApplications;
+
+            ViewBag.PendingVolunteerCount =
+                pendingVolunteerApplications.Count;
+
             return View();
         }
+
+        // -----------------------------------------------------
+        // EVENTS
+        // -----------------------------------------------------
 
         public async Task<IActionResult> Events()
         {
             var facultyId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(facultyId))
-            {
                 return Challenge();
-            }
 
             var events = await _context.Events
                 .Include(e => e.Organizer)
@@ -113,8 +138,21 @@ namespace EventFlow.Controllers
                 .OrderByDescending(e => e.StartDateTime)
                 .ToListAsync();
 
+            var eventIds = events.Select(e => e.Id).ToList();
+
+            var manageableIds = await _volunteerService.ManageableEvents(User)
+                .Where(e => eventIds.Contains(e.Id))
+                .Select(e => e.Id)
+                .ToListAsync();
+
+            ViewBag.ManageableEventIds = new HashSet<int>(manageableIds);
+
             return View(events);
         }
+
+        // -----------------------------------------------------
+        // APPROVE EVENT
+        // -----------------------------------------------------
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -123,46 +161,47 @@ namespace EventFlow.Controllers
             var facultyId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(facultyId))
-            {
                 return Challenge();
-            }
 
             var eventItem = await _context.Events
                 .Include(e => e.Club)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (eventItem == null)
-            {
                 return NotFound();
-            }
 
             if (eventItem.ApprovalStatus != "Pending")
-            {
                 return BadRequest();
-            }
 
             var canApprove = eventItem.EventType switch
             {
                 "Student" => true,
                 "College" => true,
+
                 "Club" =>
                     eventItem.Club != null &&
                     eventItem.Club.FacultySupervisorId == facultyId,
+
                 _ => false
             };
 
             if (!canApprove)
-            {
                 return Forbid();
-            }
 
             eventItem.ApprovalStatus = "Approved";
             eventItem.Status = "Upcoming";
 
             await _context.SaveChangesAsync();
 
+            TempData["SuccessMessage"] =
+                "Event approved successfully.";
+
             return RedirectToAction(nameof(Events));
         }
+
+        // -----------------------------------------------------
+        // REJECT EVENT
+        // -----------------------------------------------------
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -171,54 +210,53 @@ namespace EventFlow.Controllers
             var facultyId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(facultyId))
-            {
                 return Challenge();
-            }
 
             var eventItem = await _context.Events
                 .Include(e => e.Club)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (eventItem == null)
-            {
                 return NotFound();
-            }
 
             if (eventItem.ApprovalStatus != "Pending")
-            {
                 return BadRequest();
-            }
 
             var canReject = eventItem.EventType switch
             {
                 "Student" => true,
                 "College" => true,
+
                 "Club" =>
                     eventItem.Club != null &&
                     eventItem.Club.FacultySupervisorId == facultyId,
+
                 _ => false
             };
 
             if (!canReject)
-            {
                 return Forbid();
-            }
 
             eventItem.ApprovalStatus = "Rejected";
 
             await _context.SaveChangesAsync();
 
+            TempData["SuccessMessage"] =
+                "Event rejected successfully.";
+
             return RedirectToAction(nameof(Events));
         }
+
+        // -----------------------------------------------------
+        // CLUBS
+        // -----------------------------------------------------
 
         public async Task<IActionResult> AllClubs()
         {
             var facultyId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(facultyId))
-            {
                 return Challenge();
-            }
 
             var clubs = await _context.Clubs
                 .Include(c => c.ClubPresident)
@@ -235,9 +273,7 @@ namespace EventFlow.Controllers
             var facultyId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(facultyId))
-            {
                 return Challenge();
-            }
 
             var club = await _context.Clubs
                 .Include(c => c.ClubPresident)
@@ -248,9 +284,7 @@ namespace EventFlow.Controllers
                     c.FacultySupervisorId == facultyId);
 
             if (club == null)
-            {
                 return NotFound();
-            }
 
             var presidentRequests = await _userManager.Users
                 .Where(u =>
@@ -277,10 +311,8 @@ namespace EventFlow.Controllers
         {
             var facultyId = _userManager.GetUserId(User);
 
-            if (string.IsNullOrEmpty(facultyId))
-            {
+            if (string.IsNullOrWhiteSpace(facultyId))
                 return Unauthorized();
-            }
 
             ModelState.Remove(nameof(Club.FacultySupervisorId));
             ModelState.Remove(nameof(Club.ClubPresidentId));
@@ -290,15 +322,21 @@ namespace EventFlow.Controllers
             model.Status = "Pending";
 
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
             _context.Clubs.Add(model);
+
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Club created and submitted for approval.";
 
             return RedirectToAction(nameof(AllClubs));
         }
+
+        // -----------------------------------------------------
+        // CLUB PRESIDENT
+        // -----------------------------------------------------
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -307,9 +345,7 @@ namespace EventFlow.Controllers
             var facultyId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(facultyId))
-            {
                 return Challenge();
-            }
 
             var user = await _userManager.Users
                 .FirstOrDefaultAsync(u =>
@@ -318,9 +354,7 @@ namespace EventFlow.Controllers
                     u.IsApproved);
 
             if (user == null || user.RequestedClubId == null)
-            {
                 return NotFound();
-            }
 
             var club = await _context.Clubs
                 .FirstOrDefaultAsync(c =>
@@ -329,9 +363,7 @@ namespace EventFlow.Controllers
                     c.Status == "Approved");
 
             if (club == null)
-            {
                 return Forbid();
-            }
 
             if (!string.IsNullOrWhiteSpace(club.ClubPresidentId))
             {
@@ -363,9 +395,7 @@ namespace EventFlow.Controllers
             var facultyId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(facultyId))
-            {
                 return Challenge();
-            }
 
             var user = await _userManager.Users
                 .Include(u => u.RequestedClub)
@@ -375,9 +405,7 @@ namespace EventFlow.Controllers
                     u.IsApproved);
 
             if (user == null || user.RequestedClubId == null)
-            {
                 return NotFound();
-            }
 
             var club = await _context.Clubs
                 .FirstOrDefaultAsync(c =>
@@ -386,9 +414,7 @@ namespace EventFlow.Controllers
                     c.Status == "Approved");
 
             if (club == null)
-            {
                 return Forbid();
-            }
 
             user.RequestedClubId = null;
 
@@ -401,6 +427,10 @@ namespace EventFlow.Controllers
                 nameof(ClubDetails),
                 new { id = club.Id });
         }
+
+        // -----------------------------------------------------
+        // CREATE COLLEGE EVENT
+        // -----------------------------------------------------
 
         [HttpGet]
         public async Task<IActionResult> CreateEvent()
@@ -422,9 +452,7 @@ namespace EventFlow.Controllers
             var facultyId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(facultyId))
-            {
                 return Challenge();
-            }
 
             eventItem.OrganizerId = facultyId;
             eventItem.EventType = "College";
@@ -440,14 +468,21 @@ namespace EventFlow.Controllers
                     "End time must be later than start time.");
             }
 
-            var venueExists = await _context.Venues
-                .AnyAsync(v => v.Id == eventItem.VenueId);
+            var venue = await _context.Venues
+                .FirstOrDefaultAsync(v =>
+                    v.Id == eventItem.VenueId);
 
-            if (!venueExists)
+            if (venue == null)
             {
                 ModelState.AddModelError(
                     nameof(Event.VenueId),
                     "The selected venue does not exist.");
+            }
+            else if (eventItem.MaxParticipants > venue.Capacity)
+            {
+                ModelState.AddModelError(
+                    nameof(Event.MaxParticipants),
+                    $"This venue can accommodate only {venue.Capacity} participants.");
             }
 
             if (!ModelState.IsValid)
@@ -460,8 +495,127 @@ namespace EventFlow.Controllers
 
             await _context.SaveChangesAsync();
 
+            TempData["SuccessMessage"] =
+                "College event created successfully.";
+
             return RedirectToAction(nameof(Events));
         }
+
+        // =====================================================
+        // VOLUNTEER MANAGEMENT - DIRECT ADD
+        // (Faculty adds a student; status is Accepted immediately)
+        // =====================================================
+
+        // GET: Faculty/AddVolunteer?eventId=5
+        [HttpGet]
+        public async Task<IActionResult> AddVolunteer(int eventId)
+        {
+            var (access, eventItem) =
+                await _volunteerService.CheckDirectAddAccessAsync(eventId, User);
+
+            var blocked = DirectAddRedirect(access, eventId);
+
+            if (blocked != null)
+            {
+                return blocked;
+            }
+
+            return View(await BuildAddVolunteerModelAsync(
+                eventItem!,
+                new AddVolunteerViewModel { EventId = eventId }));
+        }
+
+        // POST: Faculty/AddVolunteer
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddVolunteer(AddVolunteerViewModel model)
+        {
+            var (access, eventItem) =
+                await _volunteerService.CheckDirectAddAccessAsync(model.EventId, User);
+
+            var blocked = DirectAddRedirect(access, model.EventId);
+
+            if (blocked != null)
+            {
+                return blocked;
+            }
+
+            if (ModelState.IsValid)
+            {
+                var result = await _volunteerService
+                    .AddVolunteerDirectlyAsync(eventItem!, model);
+
+                switch (result)
+                {
+                    case DirectAddResult.Success:
+                        TempData["SuccessMessage"] =
+                            "Volunteer added successfully. The student can see the assignment now.";
+
+                        return RedirectToAction(
+                            "EventVolunteers",
+                            "Volunteer",
+                            new { eventId = model.EventId });
+
+                    case DirectAddResult.Duplicate:
+                        ModelState.AddModelError(
+                            nameof(model.VolunteerId),
+                            "This student is already a volunteer (or has applied) for this event.");
+                        break;
+
+                    default:
+                        ModelState.AddModelError(
+                            nameof(model.VolunteerId),
+                            "Please select a valid student.");
+                        break;
+                }
+            }
+
+            return View(await BuildAddVolunteerModelAsync(eventItem!, model));
+        }
+
+        private IActionResult? DirectAddRedirect(DirectAddAccess access, int eventId)
+        {
+            switch (access)
+            {
+                case DirectAddAccess.EventNotFound:
+                    return NotFound();
+
+                case DirectAddAccess.NotAuthorized:
+                    TempData["ErrorMessage"] =
+                        "You are not authorized to manage volunteers for this event.";
+
+                    return RedirectToAction("Manage", "Volunteer");
+
+                case DirectAddAccess.EventUnavailable:
+                    TempData["ErrorMessage"] =
+                        "Volunteers can only be added to approved events that have not ended.";
+
+                    return RedirectToAction(
+                        "EventVolunteers",
+                        "Volunteer",
+                        new { eventId });
+
+                default:
+                    return null;
+            }
+        }
+
+        private async Task<AddVolunteerViewModel> BuildAddVolunteerModelAsync(
+            Event eventItem,
+            AddVolunteerViewModel model)
+        {
+            model.EventId = eventItem.Id;
+            model.Event = eventItem;
+            model.FormController = "Faculty";
+            model.Students =
+                await _volunteerService.GetStudentOptionsAsync(eventItem.Id);
+
+            return model;
+        }
+
+        // -----------------------------------------------------
+        // VENUES
+        // -----------------------------------------------------
 
         private async Task LoadVenues()
         {

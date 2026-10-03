@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Club Events";
+
+    var manageableIds =
+        ViewBag.ManageableEventIds as HashSet<int> ?? new HashSet<int>();
 }
 
 <div class="container py-4">
@@ -13,6 +16,8 @@
             </p>
         </div>
     </div>
+
+    <partial name="_Alerts" />
 
     @if (!Model.Any())
     {
@@ -89,6 +94,17 @@
                                            asp-route-id="@eventItem.Id"
                                            class="btn btn-sm btn-outline-primary">
                                             Details
+                                        </a>
+                                    }
+
+                                    @if (eventItem.ApprovalStatus == "Approved" &&
+                                         manageableIds.Contains(eventItem.Id))
+                                    {
+                                        <a asp-controller="Volunteer"
+                                           asp-action="EventVolunteers"
+                                           asp-route-eventId="@eventItem.Id"
+                                           class="btn btn-sm btn-outline-success">
+                                            Volunteers
                                         </a>
                                     }
 

@@ -1,5 +1,4 @@
-﻿
-using EventFlow.Models;
+﻿using EventFlow.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace EventFlow.Data
@@ -27,6 +26,10 @@ namespace EventFlow.Data
             var userManager =
                 serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
+            // ==========================================
+            // CREATE ROLES
+            // ==========================================
+
             foreach (var role in Roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
@@ -38,13 +41,24 @@ namespace EventFlow.Data
                     {
                         throw new InvalidOperationException(
                             $"Failed to create role '{role}': " +
-                            string.Join(", ",
-                                result.Errors.Select(e => e.Description)));
+                            string.Join(
+                                ", ",
+                                result.Errors.Select(
+                                    e => e.Description)));
                     }
                 }
             }
 
-            var admin = await userManager.FindByEmailAsync(AdminEmail);
+            // ==========================================
+            // FIND ADMIN USER
+            // ==========================================
+
+            var admin =
+                await userManager.FindByEmailAsync(AdminEmail);
+
+            // ==========================================
+            // CREATE ADMIN IF IT DOES NOT EXIST
+            // ==========================================
 
             if (admin == null)
             {
@@ -54,7 +68,8 @@ namespace EventFlow.Data
                     Email = AdminEmail,
                     EmailConfirmed = true,
                     FullName = "System Administrator",
-                    IsApproved = true
+                    IsApproved = true,
+                    RequestedRole = "Admin"
                 };
 
                 var createResult =
@@ -66,41 +81,61 @@ namespace EventFlow.Data
                 {
                     throw new InvalidOperationException(
                         "Failed to create administrator account: " +
-                        string.Join(", ",
-                            createResult.Errors.Select(e => e.Description)));
+                        string.Join(
+                            ", ",
+                            createResult.Errors.Select(
+                                e => e.Description)));
                 }
             }
 
-            if (!await userManager.IsInRoleAsync(admin, "Admin"))
+            // ==========================================
+            // MAKE SURE ADMIN IS APPROVED
+            // ==========================================
+
+            if (!admin.IsApproved)
+            {
+                admin.IsApproved = true;
+            }
+
+            admin.EmailConfirmed = true;
+            admin.RequestedRole = "Admin";
+
+            var updateResult =
+                await userManager.UpdateAsync(admin);
+
+            if (!updateResult.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    "Failed to update administrator account: " +
+                    string.Join(
+                        ", ",
+                        updateResult.Errors.Select(
+                            e => e.Description)));
+            }
+
+            // ==========================================
+            // MAKE SURE ADMIN HAS ADMIN ROLE
+            // ==========================================
+
+            if (!await userManager.IsInRoleAsync(
+                admin,
+                "Admin"))
             {
                 var roleResult =
-                    await userManager.AddToRoleAsync(admin, "Admin");
+                    await userManager.AddToRoleAsync(
+                        admin,
+                        "Admin");
 
                 if (!roleResult.Succeeded)
                 {
                     throw new InvalidOperationException(
                         "Failed to assign Admin role: " +
-                        string.Join(", ",
-                            roleResult.Errors.Select(e => e.Description)));
-                }
-            }
-
-            if (!admin.IsApproved)
-            {
-                admin.IsApproved = true;
-
-                var updateResult =
-                    await userManager.UpdateAsync(admin);
-
-                if (!updateResult.Succeeded)
-                {
-                    throw new InvalidOperationException(
-                        "Failed to approve administrator account: " +
-                        string.Join(", ",
-                            updateResult.Errors.Select(e => e.Description)));
+                        string.Join(
+                            ", ",
+                            roleResult.Errors.Select(
+                                e => e.Description)));
                 }
             }
         }
     }
 }
-

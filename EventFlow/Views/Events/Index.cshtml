@@ -12,6 +12,8 @@
         </p>
     </div>
 
+    <partial name="_Alerts" />
+
     @if (!Model.Any())
     {
         <div class="alert alert-info">
@@ -31,9 +33,7 @@
                                     @eventItem.EventType
                                 </span>
 
-                                <span class="badge bg-success">
-                                    @eventItem.Status
-                                </span>
+                                <partial name="_EventStatusBadge" model="eventItem" />
                             </div>
 
                             <h4 class="card-title">

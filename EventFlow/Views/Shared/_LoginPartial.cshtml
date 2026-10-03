@@ -34,13 +34,16 @@
                     </a>
                 </li>
 
-                <li>
-                    <a class="dropdown-item"
-                       asp-controller="Volunteer"
-                       asp-action="MyApplications">
-                        My Volunteer Applications
-                    </a>
-                </li>
+                @if (User.IsInRole("Student"))
+                {
+                    <li>
+                        <a class="dropdown-item"
+                           asp-controller="Volunteer"
+                           asp-action="MyApplications">
+                            My Volunteer Applications
+                        </a>
+                    </li>
+                }
 
                 <li>
                     <hr class="dropdown-divider" />

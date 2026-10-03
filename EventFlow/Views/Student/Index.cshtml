@@ -1,5 +1,18 @@
 ﻿@{
     ViewData["Title"] = "Student Dashboard";
+
+    var volunteerAssignments =
+        ViewBag.VolunteerAssignments as IEnumerable<EventFlow.Models.Volunteer>
+        ?? Enumerable.Empty<EventFlow.Models.Volunteer>();
+
+    var pendingCount = volunteerAssignments.Count(v =>
+        v.Status == EventFlow.Models.VolunteerStatus.Pending);
+
+    var acceptedCount = volunteerAssignments.Count(v =>
+        v.Status == EventFlow.Models.VolunteerStatus.Accepted);
+
+    var completedCount = volunteerAssignments.Count(v =>
+        v.Status == EventFlow.Models.VolunteerStatus.Completed);
 }
 
 <div class="container py-4">
@@ -9,6 +22,8 @@
             Manage your events, registrations, and volunteer activities.
         </p>
     </div>
+
+    <partial name="_Alerts" />
 
     <div class="row g-4">
         <div class="col-md-6 col-lg-3">
@@ -78,5 +93,70 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <h4 class="mt-5 mb-3">Volunteering</h4>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <span class="badge bg-success mb-2">Opportunities</span>
+                    <h5>Browse Volunteer Events</h5>
+                    <p class="text-muted">
+                        Find approved upcoming events and apply to volunteer.
+                    </p>
+
+                    <a asp-controller="Volunteer"
+                       asp-action="Index"
+                       class="btn btn-success">
+                        Browse Events
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <span class="badge bg-primary mb-2">Applications</span>
+                    <h5>My Applications</h5>
+                    <p class="text-muted mb-2">
+                        <span class="badge bg-warning text-dark">@pendingCount Pending</span>
+                        <span class="badge bg-success">@acceptedCount Accepted</span>
+                        <span class="badge bg-primary">@completedCount Completed</span>
+                    </p>
+
+                    <a asp-controller="Volunteer"
+                       asp-action="MyApplications"
+                       class="btn btn-primary">
+                        My Applications
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @if (acceptedCount > 0)
+        {
+            <div class="col-md-12 col-lg-4">
+                <div class="card shadow-sm h-100 border-success">
+                    <div class="card-body">
+                        <span class="badge bg-success mb-2">Action needed</span>
+                        <h5>Volunteer work in progress</h5>
+                        <p class="text-muted">
+                            You have @acceptedCount accepted volunteer
+                            @(acceptedCount == 1 ? "assignment" : "assignments").
+                            Mark them completed when you are done.
+                        </p>
+
+                        <a asp-controller="Volunteer"
+                           asp-action="MyApplications"
+                           class="btn btn-outline-success">
+                            View Assignments
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>

@@ -1,0 +1,20 @@
+@model EventFlow.Models.Event
+
+@switch (Model.LifecycleStatus)
+{
+    case "Upcoming":
+        <span class="badge bg-success">Upcoming</span>
+        break;
+    case "Ongoing":
+        <span class="badge bg-info text-dark">Ongoing</span>
+        break;
+    case "Completed":
+        <span class="badge bg-secondary">Completed</span>
+        break;
+    case "Rejected":
+        <span class="badge bg-danger">Rejected</span>
+        break;
+    default:
+        <span class="badge bg-warning text-dark">@Model.LifecycleStatus</span>
+        break;
+}

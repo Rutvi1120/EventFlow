@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventFlow.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260930124408_InitialCreate")]
+    [Migration("20261003155714_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -81,6 +81,9 @@ namespace EventFlow.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("RequestedClubId")
+                        .HasColumnType("int");
+
                     b.Property<string>("RequestedRole")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
@@ -109,6 +112,8 @@ namespace EventFlow.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
+                    b.HasIndex("RequestedClubId");
+
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
@@ -121,7 +126,6 @@ namespace EventFlow.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClubPresidentId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Department")
@@ -493,13 +497,22 @@ namespace EventFlow.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("EventFlow.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("EventFlow.Models.Club", "RequestedClub")
+                        .WithMany()
+                        .HasForeignKey("RequestedClubId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("RequestedClub");
+                });
+
             modelBuilder.Entity("EventFlow.Models.Club", b =>
                 {
                     b.HasOne("EventFlow.Models.ApplicationUser", "ClubPresident")
                         .WithMany()
                         .HasForeignKey("ClubPresidentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("EventFlow.Models.ApplicationUser", "FacultySupervisor")
                         .WithMany()

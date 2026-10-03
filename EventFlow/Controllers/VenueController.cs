@@ -44,6 +44,8 @@ namespace EventFlow.Controllers
 
             await _context.SaveChangesAsync();
 
+            TempData["SuccessMessage"] = "Venue created successfully.";
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -70,6 +72,24 @@ namespace EventFlow.Controllers
                 return BadRequest();
             }
 
+            // Do not allow capacity to drop below an upcoming event's participant limit.
+            var largestUpcomingLimit = await _context.Events
+                .Where(e =>
+                    e.VenueId == id &&
+                    e.ApprovalStatus != "Rejected" &&
+                    e.EndDateTime >= DateTime.Now)
+                .Select(e => (int?)e.MaxParticipants)
+                .MaxAsync();
+
+            if (largestUpcomingLimit.HasValue &&
+                model.Capacity < largestUpcomingLimit.Value)
+            {
+                ModelState.AddModelError(
+                    nameof(Venue.Capacity),
+                    $"Capacity cannot be lower than {largestUpcomingLimit.Value}, " +
+                    "the participant limit of an upcoming event at this venue.");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -88,6 +108,8 @@ namespace EventFlow.Controllers
             venue.Capacity = model.Capacity;
 
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Venue updated successfully.";
 
             return RedirectToAction(nameof(Index));
         }
@@ -138,6 +160,8 @@ namespace EventFlow.Controllers
             _context.Venues.Remove(venue);
 
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Venue deleted successfully.";
 
             return RedirectToAction(nameof(Index));
         }

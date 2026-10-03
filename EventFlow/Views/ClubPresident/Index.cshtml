@@ -1,5 +1,7 @@
 ﻿@{
     ViewData["Title"] = "Club President Dashboard";
+
+    int pendingVolunteerCount = ViewBag.PendingVolunteerCount ?? 0;
 }
 
 <div class="container py-4">
@@ -9,6 +11,8 @@
             Manage your club and its events.
         </p>
     </div>
+
+    <partial name="_Alerts" />
 
     <div class="row g-4">
         <div class="col-md-6 col-lg-3">
@@ -63,15 +67,13 @@
         <div class="col-md-6 col-lg-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
-                    <h5>Volunteers</h5>
-                    <p class="text-muted">
-                        Manage volunteers for your club events.
-                    </p>
+                    <h5>Pending Volunteer Applications</h5>
+                    <div class="display-6 mb-2">@pendingVolunteerCount</div>
 
                     <a asp-controller="Volunteer"
-                       asp-action="MyApplications"
-                       class="btn btn-primary">
-                        Volunteer Area
+                       asp-action="Manage"
+                       class="btn btn-warning">
+                        Manage Volunteers
                     </a>
                 </div>
             </div>

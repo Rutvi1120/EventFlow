@@ -1,5 +1,6 @@
 ﻿using EventFlow.Data;
 using EventFlow.Models;
+using EventFlow.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,13 +14,16 @@ namespace EventFlow.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly VolunteerManagementService _volunteerService;
 
         public ClubPresidentController(
             ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            VolunteerManagementService volunteerService)
         {
             _context = context;
             _userManager = userManager;
+            _volunteerService = volunteerService;
         }
 
         public async Task<IActionResult> Index()
@@ -48,6 +52,8 @@ namespace EventFlow.Controllers
 
             ViewBag.Clubs = clubs;
             ViewBag.Events = events;
+            ViewBag.PendingVolunteerCount =
+                await _volunteerService.CountPendingAsync(User);
 
             return View();
         }
@@ -173,15 +179,7 @@ namespace EventFlow.Controllers
                     "End time must be later than start time.");
             }
 
-            var venueExists = await _context.Venues
-                .AnyAsync(v => v.Id == eventItem.VenueId);
-
-            if (!venueExists)
-            {
-                ModelState.AddModelError(
-                    nameof(Event.VenueId),
-                    "The selected venue does not exist.");
-            }
+            await EventRules.ValidateVenueAsync(_context, ModelState, eventItem);
 
             if (!ModelState.IsValid)
             {
@@ -212,9 +210,19 @@ namespace EventFlow.Controllers
             var events = await _context.Events
                 .Include(e => e.Venue)
                 .Include(e => e.Club)
+                .Include(e => e.Registrations)
                 .Where(e => e.OrganizerId == userId)
                 .OrderByDescending(e => e.StartDateTime)
                 .ToListAsync();
+
+            var eventIds = events.Select(e => e.Id).ToList();
+
+            var manageableIds = await _volunteerService.ManageableEvents(User)
+                .Where(e => eventIds.Contains(e.Id))
+                .Select(e => e.Id)
+                .ToListAsync();
+
+            ViewBag.ManageableEventIds = new HashSet<int>(manageableIds);
 
             return View(events);
         }
@@ -288,15 +296,7 @@ namespace EventFlow.Controllers
                     "End time must be later than start time.");
             }
 
-            var venueExists = await _context.Venues
-                .AnyAsync(v => v.Id == eventItem.VenueId);
-
-            if (!venueExists)
-            {
-                ModelState.AddModelError(
-                    nameof(Event.VenueId),
-                    "The selected venue does not exist.");
-            }
+            await EventRules.ValidateVenueAsync(_context, ModelState, eventItem);
 
             if (!ModelState.IsValid)
             {
@@ -352,6 +352,121 @@ namespace EventFlow.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Events));
+        }
+
+        // =====================================================
+        // VOLUNTEER MANAGEMENT - DIRECT ADD
+        // Same workflow as Faculty/AddVolunteer, limited to the
+        // president's own club events (enforced by the service).
+        // =====================================================
+
+        [HttpGet]
+        public async Task<IActionResult> AddVolunteer(int eventId)
+        {
+            var (access, eventItem) =
+                await _volunteerService.CheckDirectAddAccessAsync(eventId, User);
+
+            var blocked = DirectAddRedirect(access, eventId);
+
+            if (blocked != null)
+            {
+                return blocked;
+            }
+
+            return View(
+                "~/Views/Faculty/AddVolunteer.cshtml",
+                await BuildAddVolunteerModelAsync(
+                    eventItem!,
+                    new AddVolunteerViewModel { EventId = eventId }));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddVolunteer(AddVolunteerViewModel model)
+        {
+            var (access, eventItem) =
+                await _volunteerService.CheckDirectAddAccessAsync(model.EventId, User);
+
+            var blocked = DirectAddRedirect(access, model.EventId);
+
+            if (blocked != null)
+            {
+                return blocked;
+            }
+
+            if (ModelState.IsValid)
+            {
+                var result = await _volunteerService
+                    .AddVolunteerDirectlyAsync(eventItem!, model);
+
+                switch (result)
+                {
+                    case DirectAddResult.Success:
+                        TempData["SuccessMessage"] =
+                            "Volunteer added successfully. The student can see the assignment now.";
+
+                        return RedirectToAction(
+                            "EventVolunteers",
+                            "Volunteer",
+                            new { eventId = model.EventId });
+
+                    case DirectAddResult.Duplicate:
+                        ModelState.AddModelError(
+                            nameof(model.VolunteerId),
+                            "This student is already a volunteer (or has applied) for this event.");
+                        break;
+
+                    default:
+                        ModelState.AddModelError(
+                            nameof(model.VolunteerId),
+                            "Please select a valid student.");
+                        break;
+                }
+            }
+
+            return View(
+                "~/Views/Faculty/AddVolunteer.cshtml",
+                await BuildAddVolunteerModelAsync(eventItem!, model));
+        }
+
+        private IActionResult? DirectAddRedirect(DirectAddAccess access, int eventId)
+        {
+            switch (access)
+            {
+                case DirectAddAccess.EventNotFound:
+                    return NotFound();
+
+                case DirectAddAccess.NotAuthorized:
+                    TempData["ErrorMessage"] =
+                        "You are not authorized to manage volunteers for this event.";
+
+                    return RedirectToAction("Manage", "Volunteer");
+
+                case DirectAddAccess.EventUnavailable:
+                    TempData["ErrorMessage"] =
+                        "Volunteers can only be added to approved events that have not ended.";
+
+                    return RedirectToAction(
+                        "EventVolunteers",
+                        "Volunteer",
+                        new { eventId });
+
+                default:
+                    return null;
+            }
+        }
+
+        private async Task<AddVolunteerViewModel> BuildAddVolunteerModelAsync(
+            Event eventItem,
+            AddVolunteerViewModel model)
+        {
+            model.EventId = eventItem.Id;
+            model.Event = eventItem;
+            model.FormController = "ClubPresident";
+            model.Students =
+                await _volunteerService.GetStudentOptionsAsync(eventItem.Id);
+
+            return model;
         }
 
         private async Task LoadVenues()

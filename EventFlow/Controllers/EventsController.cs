@@ -1,6 +1,7 @@
 using EventFlow.Data;
 using EventFlow.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,10 +10,14 @@ namespace EventFlow.Controllers
     public class EventsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public EventsController(ApplicationDbContext context)
+        public EventsController(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         [AllowAnonymous]
@@ -46,6 +51,28 @@ namespace EventFlow.Controllers
             if (eventItem == null)
             {
                 return NotFound();
+            }
+
+            // State used by the view to show the correct action buttons.
+            ViewBag.RegisteredCount = eventItem.Registrations.Count;
+            ViewBag.SeatsLeft = Math.Max(
+                0,
+                eventItem.MaxParticipants - eventItem.Registrations.Count);
+
+            var userId = _userManager.GetUserId(User);
+
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                ViewBag.IsRegistered = eventItem.Registrations
+                    .Any(r => r.UserId == userId);
+
+                ViewBag.IsWaitlisted = eventItem.WaitlistEntries
+                    .Any(w => w.UserId == userId);
+
+                var myVolunteer = eventItem.Volunteers
+                    .FirstOrDefault(v => v.VolunteerId == userId);
+
+                ViewBag.MyVolunteerStatus = myVolunteer?.Status;
             }
 
             return View(eventItem);

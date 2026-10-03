@@ -1,196 +1,317 @@
-﻿@model IEnumerable<EventFlow.Models.Volunteer>
+@model EventFlow.Models.EventVolunteersViewModel
 
 @{
     ViewData["Title"] = "Event Volunteers";
-    var eventItem = ViewBag.Event as EventFlow.Models.Event;
+
+    var eventItem = Model.Event;
 }
 
 <div class="container py-4">
-    <div class="mb-4">
-        @if (eventItem != null && eventItem.ApprovalStatus == "Approved")
-        {
-            <a asp-controller="Events"
-               asp-action="Details"
-               asp-route-id="@eventItem.Id"
-               class="text-decoration-none">
-                ← Back to Event
-            </a>
-        }
-        else
-        {
-            <a asp-controller="Volunteer"
-               asp-action="Index"
-               class="text-decoration-none">
-                ← Back to Volunteer Area
-            </a>
-        }
+
+    <div class="mb-3">
+        <a asp-controller="Volunteer"
+           asp-action="Manage"
+           class="text-decoration-none">
+            &larr; Back to Volunteer Management
+        </a>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1>Event Volunteers</h1>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                <div>
+                    <div class="mb-2 d-flex flex-wrap gap-1">
+                        <span class="badge bg-primary">@eventItem.EventType</span>
+                        <partial name="_EventStatusBadge" model="eventItem" />
+                    </div>
 
-            @if (eventItem != null)
-            {
-                <p class="text-muted mb-0">
-                    @eventItem.Name
-                </p>
-            }
+                    <h2 class="mb-1">@eventItem.Name</h2>
+
+                    <div class="text-muted">
+                        <div>
+                            <strong>Date:</strong>
+                            @eventItem.StartDateTime.ToString("dd MMM yyyy, hh:mm tt")
+                            -
+                            @eventItem.EndDateTime.ToString("hh:mm tt")
+                        </div>
+                        <div>
+                            <strong>Venue:</strong>
+                            @(eventItem.Venue?.Name ?? "Not specified")
+                        </div>
+                        @if (eventItem.Club != null)
+                        {
+                            <div><strong>Club:</strong> @eventItem.Club.Name</div>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.CanAddVolunteer)
+                {
+                    <a asp-controller="@Model.AddVolunteerController"
+                       asp-action="AddVolunteer"
+                       asp-route-eventId="@eventItem.Id"
+                       class="btn btn-success">
+                        + Add Volunteer
+                    </a>
+                }
+            </div>
         </div>
     </div>
 
-    @if (!Model.Any())
+    <partial name="_Alerts" />
+
+    @if (Model.Total == 0)
     {
-        <div class="alert alert-info">
-            No volunteer applications have been submitted for this event.
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="display-6 mb-3">👥</div>
+                <h4>No volunteers yet</h4>
+                <p class="text-muted mb-0">
+                    No students have applied or been added for this event yet.
+                </p>
+            </div>
         </div>
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Volunteer</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Notes</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+        @* ---------------- PENDING ---------------- *@
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Pending</h5>
+                <span class="badge bg-warning text-dark">@Model.Pending.Count</span>
+            </div>
 
-                <tbody>
-                    @foreach (var volunteer in Model)
-                    {
-                        <tr>
-                            <td>
-                                @(volunteer.VolunteerUser?.FullName
-                                    ?? "Unknown")
-                            </td>
+            @if (!Model.Pending.Any())
+            {
+                <div class="card-body text-muted">No pending applications.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Student</th>
+                                <th>Role</th>
+                                <th>Notes</th>
+                                <th class="pe-4 text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var volunteer in Model.Pending)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-semibold">
+                                            @(volunteer.VolunteerUser?.FullName ?? "Unknown student")
+                                        </div>
+                                        <small class="text-muted">@volunteer.VolunteerUser?.Email</small>
+                                    </td>
+                                    <td>@volunteer.Role</td>
+                                    <td>
+                                        @if (string.IsNullOrWhiteSpace(volunteer.Notes))
+                                        {
+                                            <span class="text-muted">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            @volunteer.Notes
+                                        }
+                                    </td>
+                                    <td class="pe-4">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <form asp-controller="Volunteer"
+                                                  asp-action="Assign"
+                                                  method="post">
+                                                <input type="hidden" name="id" value="@volunteer.Id" />
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    Approve
+                                                </button>
+                                            </form>
 
-                            <td>
-                                @volunteer.Role
-                            </td>
+                                            <form asp-controller="Volunteer"
+                                                  asp-action="Reject"
+                                                  method="post"
+                                                  onsubmit="return confirm('Reject this volunteer application?');">
+                                                <input type="hidden" name="id" value="@volunteer.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
 
-                            <td>
-                                @if (volunteer.Status == "Accepted")
-                                {
-                                    <span class="badge bg-success">
-                                        Accepted
-                                    </span>
-                                }
-                                else if (volunteer.Status == "Rejected")
-                                {
-                                    <span class="badge bg-danger">
-                                        Rejected
-                                    </span>
-                                }
-                                else if (volunteer.Status == "Completed")
-                                {
-                                    <span class="badge bg-primary">
-                                        Completed
-                                    </span>
-                                }
-                                else if (volunteer.Status == "Assigned")
-                                {
-                                    <span class="badge bg-info text-dark">
-                                        Assigned
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-warning text-dark">
-                                        Pending
-                                    </span>
-                                }
-                            </td>
+        @* ---------------- ACCEPTED ---------------- *@
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Accepted</h5>
+                <span class="badge bg-success">@Model.Accepted.Count</span>
+            </div>
 
-                            <td>
-                                @(string.IsNullOrWhiteSpace(volunteer.Notes)
-                                    ? "—"
-                                    : volunteer.Notes)
-                            </td>
+            @if (!Model.Accepted.Any())
+            {
+                <div class="card-body text-muted">No accepted volunteers.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Student</th>
+                                <th>Role</th>
+                                <th>Accepted</th>
+                                <th class="pe-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var volunteer in Model.Accepted)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-semibold">
+                                            @(volunteer.VolunteerUser?.FullName ?? "Unknown student")
+                                        </div>
+                                        <small class="text-muted">@volunteer.VolunteerUser?.Email</small>
+                                    </td>
+                                    <td>@volunteer.Role</td>
+                                    <td>
+                                        @if (volunteer.AssignedAt.HasValue)
+                                        {
+                                            @volunteer.AssignedAt.Value.ToLocalTime().ToString("dd MMM yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">&mdash;</span>
+                                        }
+                                    </td>
+                                    <td class="pe-4">
+                                        <partial name="_VolunteerStatusBadge" model="volunteer.Status" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
 
-                            <td>
-                                <div class="d-flex gap-2">
-                                    @if (volunteer.Status == "Pending")
-                                    {
-                                        <form asp-controller="Volunteer"
-                                              asp-action="Assign"
-                                              method="post">
+        @* ---------------- COMPLETED ---------------- *@
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Completed</h5>
+                <span class="badge bg-primary">@Model.Completed.Count</span>
+            </div>
 
-                                            @Html.AntiForgeryToken()
+            @if (!Model.Completed.Any())
+            {
+                <div class="card-body text-muted">No completed volunteers yet.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Student</th>
+                                <th>Role</th>
+                                <th>Completed</th>
+                                <th class="pe-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var volunteer in Model.Completed)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-semibold">
+                                            @(volunteer.VolunteerUser?.FullName ?? "Unknown student")
+                                        </div>
+                                        <small class="text-muted">@volunteer.VolunteerUser?.Email</small>
+                                    </td>
+                                    <td>@volunteer.Role</td>
+                                    <td>
+                                        @if (volunteer.CompletedAt.HasValue)
+                                        {
+                                            @volunteer.CompletedAt.Value.ToLocalTime().ToString("dd MMM yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">&mdash;</span>
+                                        }
+                                    </td>
+                                    <td class="pe-4">
+                                        <partial name="_VolunteerStatusBadge" model="volunteer.Status" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
 
-                                            <input type="hidden"
-                                                   name="id"
-                                                   value="@volunteer.Id" />
+        @* ---------------- REJECTED ---------------- *@
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Rejected</h5>
+                <span class="badge bg-danger">@Model.Rejected.Count</span>
+            </div>
 
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-success">
-                                                Assign
-                                            </button>
-                                        </form>
-
-                                        <form asp-controller="Volunteer"
-                                              asp-action="Reject"
-                                              method="post">
-
-                                            @Html.AntiForgeryToken()
-
-                                            <input type="hidden"
-                                                   name="id"
-                                                   value="@volunteer.Id" />
-
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-outline-danger">
-                                                Reject
-                                            </button>
-                                        </form>
-                                    }
-
-                                    @if (volunteer.Status == "Assigned")
-                                    {
-                                        <form asp-controller="Volunteer"
-                                              asp-action="Reject"
-                                              method="post">
-
-                                            @Html.AntiForgeryToken()
-
-                                            <input type="hidden"
-                                                   name="id"
-                                                   value="@volunteer.Id" />
-
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-outline-danger">
-                                                Reject
-                                            </button>
-                                        </form>
-                                    }
-
-                                    @if (volunteer.Status == "Accepted")
-                                    {
-                                        <form asp-controller="Volunteer"
-                                              asp-action="Complete"
-                                              method="post">
-
-                                            @Html.AntiForgeryToken()
-
-                                            <input type="hidden"
-                                                   name="id"
-                                                   value="@volunteer.Id" />
-
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-primary">
-                                                Complete
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+            @if (!Model.Rejected.Any())
+            {
+                <div class="card-body text-muted">No rejected applications.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Student</th>
+                                <th>Role</th>
+                                <th>Notes</th>
+                                <th class="pe-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var volunteer in Model.Rejected)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-semibold">
+                                            @(volunteer.VolunteerUser?.FullName ?? "Unknown student")
+                                        </div>
+                                        <small class="text-muted">@volunteer.VolunteerUser?.Email</small>
+                                    </td>
+                                    <td>@volunteer.Role</td>
+                                    <td>
+                                        @if (string.IsNullOrWhiteSpace(volunteer.Notes))
+                                        {
+                                            <span class="text-muted">&mdash;</span>
+                                        }
+                                        else
+                                        {
+                                            @volunteer.Notes
+                                        }
+                                    </td>
+                                    <td class="pe-4">
+                                        <partial name="_VolunteerStatusBadge" model="volunteer.Status" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     }
+
 </div>

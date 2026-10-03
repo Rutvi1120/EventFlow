@@ -1,5 +1,6 @@
-using EventFlow.Data;
+﻿using EventFlow.Data;
 using EventFlow.Models;
+using EventFlow.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -51,6 +52,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Cookie.SameSite =
         SameSiteMode.Lax;
 });
+
+builder.Services.AddScoped<VolunteerManagementService>();
 
 builder.Services.AddControllersWithViews();
 
@@ -108,6 +111,7 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(
             ex,
             "An error occurred while initializing the database.");
+        throw;
     }
 }
 

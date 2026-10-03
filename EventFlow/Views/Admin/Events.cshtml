@@ -12,6 +12,8 @@
         </p>
     </div>
 
+    <partial name="_Alerts" />
+
     @if (!Model.Any())
     {
         <div class="alert alert-info">
@@ -90,6 +92,16 @@
                                        class="btn btn-sm btn-outline-primary">
                                         Details
                                     </a>
+
+                                    @if (eventItem.ApprovalStatus == "Approved")
+                                    {
+                                        <a asp-controller="Volunteer"
+                                           asp-action="EventVolunteers"
+                                           asp-route-eventId="@eventItem.Id"
+                                           class="btn btn-sm btn-outline-success">
+                                            Volunteers
+                                        </a>
+                                    }
 
                                     @if (eventItem.ApprovalStatus == "Pending")
                                     {

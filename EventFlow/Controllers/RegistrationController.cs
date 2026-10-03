@@ -1,4 +1,5 @@
-﻿using EventFlow.Data;
+using System.Data;
+using EventFlow.Data;
 using EventFlow.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -21,6 +22,11 @@ namespace EventFlow.Controllers
             _userManager = userManager;
         }
 
+        // =====================================================
+        // REGISTER
+        // If the event is full the user is placed on the waitlist.
+        // =====================================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(int eventId)
@@ -33,70 +39,90 @@ namespace EventFlow.Controllers
             }
 
             var eventItem = await _context.Events
-                .FirstOrDefaultAsync(e =>
-                    e.Id == eventId &&
-                    e.ApprovalStatus == "Approved");
+                .FirstOrDefaultAsync(e => e.Id == eventId);
 
-            if (eventItem == null)
+            var problem = GetSignupProblem(eventItem);
+
+            if (problem != null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = problem;
+
+                return RedirectToAction("Index", "Events");
             }
 
-            if (eventItem.EndDateTime <= DateTime.Now)
+            if (await _context.Registrations.AnyAsync(r =>
+                    r.EventId == eventId && r.UserId == userId))
             {
-                return BadRequest();
+                TempData["InfoMessage"] =
+                    "You are already registered for this event.";
+
+                return RedirectToDetails(eventId);
             }
 
-            var alreadyRegistered = await _context.Registrations
-                .AnyAsync(r =>
-                    r.EventId == eventId &&
-                    r.UserId == userId);
-
-            if (alreadyRegistered)
+            if (await _context.WaitlistEntries.AnyAsync(w =>
+                    w.EventId == eventId && w.UserId == userId))
             {
-                return RedirectToAction(
-                    "Details",
-                    "Events",
-                    new { id = eventId });
+                TempData["InfoMessage"] =
+                    "You are already on the waitlist for this event.";
+
+                return RedirectToDetails(eventId);
             }
 
-            var alreadyWaitlisted = await _context.WaitlistEntries
-                .AnyAsync(w =>
-                    w.EventId == eventId &&
-                    w.UserId == userId);
-
-            if (alreadyWaitlisted)
+            try
             {
-                return RedirectToAction(
-                    "Details",
-                    "Events",
-                    new { id = eventId });
+                // Serializable so two students cannot both take the last seat.
+                await using var transaction =
+                    await _context.Database.BeginTransactionAsync(
+                        IsolationLevel.Serializable);
+
+                var registrationCount = await _context.Registrations
+                    .CountAsync(r => r.EventId == eventId);
+
+                if (registrationCount >= eventItem!.MaxParticipants)
+                {
+                    _context.WaitlistEntries.Add(new WaitlistEntry
+                    {
+                        EventId = eventId,
+                        UserId = userId,
+                        JoinedAt = DateTime.UtcNow
+                    });
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    TempData["InfoMessage"] =
+                        "This event is full. You have been added to the waitlist " +
+                        "and will be registered automatically if a seat opens up.";
+                }
+                else
+                {
+                    _context.Registrations.Add(new Registration
+                    {
+                        EventId = eventId,
+                        UserId = userId,
+                        RegisteredAt = DateTime.UtcNow
+                    });
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    TempData["SuccessMessage"] =
+                        "You have been registered for this event.";
+                }
+            }
+            catch (DbUpdateException)
+            {
+                TempData["ErrorMessage"] =
+                    "Your registration could not be completed. " +
+                    "You may already be registered - please check My Registrations.";
             }
 
-            var registrationCount = await _context.Registrations
-                .CountAsync(r => r.EventId == eventId);
-
-            if (registrationCount >= eventItem.MaxParticipants)
-            {
-                return RedirectToAction(
-                    nameof(JoinWaitlist),
-                    new { eventId });
-            }
-
-            _context.Registrations.Add(new Registration
-            {
-                EventId = eventId,
-                UserId = userId,
-                RegisteredAt = DateTime.UtcNow
-            });
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(
-                "Details",
-                "Events",
-                new { id = eventId });
+            return RedirectToDetails(eventId);
         }
+
+        // =====================================================
+        // CANCEL REGISTRATION
+        // =====================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -110,16 +136,25 @@ namespace EventFlow.Controllers
             }
 
             var registration = await _context.Registrations
+                .Include(r => r.Event)
                 .FirstOrDefaultAsync(r =>
                     r.EventId == eventId &&
                     r.UserId == userId);
 
             if (registration == null)
             {
-                return RedirectToAction(
-                    "Details",
-                    "Events",
-                    new { id = eventId });
+                TempData["InfoMessage"] =
+                    "You are not registered for this event.";
+
+                return RedirectToDetails(eventId);
+            }
+
+            if (registration.Event != null && registration.Event.HasEnded)
+            {
+                TempData["ErrorMessage"] =
+                    "This event has already ended, so the registration cannot be cancelled.";
+
+                return RedirectToAction(nameof(MyRegistrations));
             }
 
             _context.Registrations.Remove(registration);
@@ -128,11 +163,14 @@ namespace EventFlow.Controllers
 
             await PromoteWaitlistedUser(eventId);
 
-            return RedirectToAction(
-                "Details",
-                "Events",
-                new { id = eventId });
+            TempData["SuccessMessage"] = "Your registration has been cancelled.";
+
+            return RedirectToDetails(eventId);
         }
+
+        // =====================================================
+        // JOIN / LEAVE WAITLIST
+        // =====================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -146,54 +184,44 @@ namespace EventFlow.Controllers
             }
 
             var eventItem = await _context.Events
-                .FirstOrDefaultAsync(e =>
-                    e.Id == eventId &&
-                    e.ApprovalStatus == "Approved");
+                .FirstOrDefaultAsync(e => e.Id == eventId);
 
-            if (eventItem == null)
+            var problem = GetSignupProblem(eventItem);
+
+            if (problem != null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = problem;
+
+                return RedirectToAction("Index", "Events");
             }
 
-            if (eventItem.EndDateTime <= DateTime.Now)
+            if (await _context.Registrations.AnyAsync(r =>
+                    r.EventId == eventId && r.UserId == userId))
             {
-                return BadRequest();
+                TempData["InfoMessage"] =
+                    "You are already registered for this event.";
+
+                return RedirectToDetails(eventId);
             }
 
-            var registrationExists = await _context.Registrations
-                .AnyAsync(r =>
-                    r.EventId == eventId &&
-                    r.UserId == userId);
-
-            if (registrationExists)
+            if (await _context.WaitlistEntries.AnyAsync(w =>
+                    w.EventId == eventId && w.UserId == userId))
             {
-                return RedirectToAction(
-                    "Details",
-                    "Events",
-                    new { id = eventId });
-            }
+                TempData["InfoMessage"] =
+                    "You are already on the waitlist for this event.";
 
-            var waitlistExists = await _context.WaitlistEntries
-                .AnyAsync(w =>
-                    w.EventId == eventId &&
-                    w.UserId == userId);
-
-            if (waitlistExists)
-            {
-                return RedirectToAction(
-                    "Details",
-                    "Events",
-                    new { id = eventId });
+                return RedirectToDetails(eventId);
             }
 
             var registrationCount = await _context.Registrations
                 .CountAsync(r => r.EventId == eventId);
 
-            if (registrationCount < eventItem.MaxParticipants)
+            if (registrationCount < eventItem!.MaxParticipants)
             {
-                return RedirectToAction(
-                    nameof(Register),
-                    new { eventId });
+                TempData["InfoMessage"] =
+                    "Seats are still available - you can register directly.";
+
+                return RedirectToDetails(eventId);
             }
 
             _context.WaitlistEntries.Add(new WaitlistEntry
@@ -203,12 +231,20 @@ namespace EventFlow.Controllers
                 JoinedAt = DateTime.UtcNow
             });
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
 
-            return RedirectToAction(
-                "Details",
-                "Events",
-                new { id = eventId });
+                TempData["SuccessMessage"] =
+                    "You have been added to the waitlist.";
+            }
+            catch (DbUpdateException)
+            {
+                TempData["InfoMessage"] =
+                    "You are already on the waitlist for this event.";
+            }
+
+            return RedirectToDetails(eventId);
         }
 
         [HttpPost]
@@ -232,13 +268,17 @@ namespace EventFlow.Controllers
                 _context.WaitlistEntries.Remove(waitlistEntry);
 
                 await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] =
+                    "You have left the waitlist.";
             }
 
-            return RedirectToAction(
-                "Details",
-                "Events",
-                new { id = eventId });
+            return RedirectToDetails(eventId);
         }
+
+        // =====================================================
+        // MY REGISTRATIONS / MY WAITLIST
+        // =====================================================
 
         public async Task<IActionResult> MyRegistrations()
         {
@@ -250,6 +290,7 @@ namespace EventFlow.Controllers
             }
 
             var registrations = await _context.Registrations
+                .AsNoTracking()
                 .Include(r => r.Event)
                 .ThenInclude(e => e!.Venue)
                 .Include(r => r.Event)
@@ -271,6 +312,7 @@ namespace EventFlow.Controllers
             }
 
             var waitlistEntries = await _context.WaitlistEntries
+                .AsNoTracking()
                 .Include(w => w.Event)
                 .ThenInclude(e => e!.Venue)
                 .Include(w => w.Event)
@@ -282,18 +324,55 @@ namespace EventFlow.Controllers
             return View(waitlistEntries);
         }
 
+        // =====================================================
+        // HELPERS
+        // =====================================================
+
+        private IActionResult RedirectToDetails(int eventId)
+        {
+            return RedirectToAction(
+                "Details",
+                "Events",
+                new { id = eventId });
+        }
+
+        /// <summary>
+        /// Registration / waitlist is only possible for approved events
+        /// that have not started yet. Returns an error message, or null if open.
+        /// </summary>
+        private static string? GetSignupProblem(Event? eventItem)
+        {
+            if (eventItem == null)
+            {
+                return "The selected event could not be found.";
+            }
+
+            if (eventItem.ApprovalStatus != EventApprovalStatus.Approved)
+            {
+                return "Registration is only available for approved events.";
+            }
+
+            if (eventItem.HasEnded)
+            {
+                return "This event has already ended.";
+            }
+
+            if (eventItem.HasStarted)
+            {
+                return "Registration is closed because the event has already started.";
+            }
+
+            return null;
+        }
+
         private async Task PromoteWaitlistedUser(int eventId)
         {
             var eventItem = await _context.Events
                 .FirstOrDefaultAsync(e => e.Id == eventId);
 
-            if (eventItem == null)
-            {
-                return;
-            }
-
-            if (eventItem.ApprovalStatus != "Approved" ||
-                eventItem.EndDateTime <= DateTime.Now)
+            if (eventItem == null ||
+                eventItem.ApprovalStatus != EventApprovalStatus.Approved ||
+                eventItem.HasStarted)
             {
                 return;
             }

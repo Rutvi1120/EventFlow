@@ -1,5 +1,6 @@
 ﻿using EventFlow.Data;
 using EventFlow.Models;
+using EventFlow.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -117,15 +118,7 @@ namespace EventFlow.Controllers
                     "End time must be later than start time.");
             }
 
-            var venueExists = await _context.Venues
-                .AnyAsync(v => v.Id == eventItem.VenueId);
-
-            if (!venueExists)
-            {
-                ModelState.AddModelError(
-                    nameof(Event.VenueId),
-                    "Please select a valid venue.");
-            }
+            await EventRules.ValidateVenueAsync(_context, ModelState, eventItem);
 
             if (!ModelState.IsValid)
             {
@@ -226,15 +219,7 @@ namespace EventFlow.Controllers
                     "End time must be later than start time.");
             }
 
-            var venueExists = await _context.Venues
-                .AnyAsync(v => v.Id == eventItem.VenueId);
-
-            if (!venueExists)
-            {
-                ModelState.AddModelError(
-                    nameof(Event.VenueId),
-                    "Please select a valid venue.");
-            }
+            await EventRules.ValidateVenueAsync(_context, ModelState, eventItem);
 
             if (!ModelState.IsValid)
             {

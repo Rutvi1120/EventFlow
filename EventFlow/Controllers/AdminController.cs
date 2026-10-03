@@ -97,6 +97,8 @@ namespace EventFlow.Controllers
                 }
             }
 
+            TempData["SuccessMessage"] = $"{user.FullName} has been approved.";
+
             return RedirectToAction(nameof(Users));
         }
 
@@ -117,12 +119,13 @@ namespace EventFlow.Controllers
 
             if (!result.Succeeded)
             {
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(
-                        string.Empty,
-                        error.Description);
-                }
+                TempData["ErrorMessage"] = string.Join(
+                    " ",
+                    result.Errors.Select(e => e.Description));
+            }
+            else
+            {
+                TempData["SuccessMessage"] = $"{user.FullName} has been rejected.";
             }
 
             return RedirectToAction(nameof(Users));
@@ -153,8 +156,11 @@ namespace EventFlow.Controllers
             }
 
             eventItem.ApprovalStatus = "Approved";
+            eventItem.Status = "Upcoming";
 
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Event approved successfully.";
 
             return RedirectToAction(nameof(Events));
         }
@@ -173,6 +179,8 @@ namespace EventFlow.Controllers
             eventItem.ApprovalStatus = "Rejected";
 
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Event rejected.";
 
             return RedirectToAction(nameof(Events));
         }
@@ -203,6 +211,8 @@ namespace EventFlow.Controllers
 
             await _context.SaveChangesAsync();
 
+            TempData["SuccessMessage"] = $"Club '{club.Name}' approved.";
+
             return RedirectToAction(nameof(Clubs));
         }
 
@@ -220,6 +230,8 @@ namespace EventFlow.Controllers
             club.Status = "Rejected";
 
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Club '{club.Name}' rejected.";
 
             return RedirectToAction(nameof(Clubs));
         }

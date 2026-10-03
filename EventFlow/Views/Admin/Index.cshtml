@@ -10,6 +10,8 @@
         </p>
     </div>
 
+    <partial name="_Alerts" />
+
     <div class="row g-4">
 
         <!-- Users -->
@@ -76,6 +78,24 @@
                        asp-action="Index"
                        class="btn btn-primary">
                         Manage Venues
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Volunteers -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Volunteers</h5>
+                    <p class="text-muted">
+                        Monitor volunteer applications and activity.
+                    </p>
+
+                    <a asp-controller="Volunteer"
+                       asp-action="Manage"
+                       class="btn btn-primary">
+                        Manage Volunteers
                     </a>
                 </div>
             </div>

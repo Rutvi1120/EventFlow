@@ -15,8 +15,7 @@ namespace EventFlow.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ConflictDetectionService _conflictDetectionService;
-        public Registration
-            Controller(
+        public RegistrationController(
     ApplicationDbContext context,
     UserManager<ApplicationUser> userManager,
     ConflictDetectionService conflictDetectionService)
@@ -75,7 +74,7 @@ namespace EventFlow.Controllers
             {
                 TempData["ErrorMessage"] =
                     $"Registration blocked. You already have " +
-                    $"'{participantConflict.Title}' scheduled from " +
+                    $"'{participantConflict.Name}' scheduled from " +
                     $"{participantConflict.StartDateTime:g} to " +
                     $"{participantConflict.EndDateTime:g}. " +
                     $"The selected event overlaps with it.";

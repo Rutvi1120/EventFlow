@@ -403,7 +403,7 @@ namespace EventFlow.Controllers
             {
                 TempData["ErrorMessage"] =
                     $"Volunteer cannot be assigned because they are already " +
-                    $"assigned to '{volunteerConflict.Event!.Title}' " +
+                    $"assigned to '{volunteerConflict.Event!.Name}' " +
                     $"from {volunteerConflict.Event.StartDateTime:g} " +
                     $"to {volunteerConflict.Event.EndDateTime:g}.";
 

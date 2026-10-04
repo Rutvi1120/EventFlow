@@ -155,10 +155,10 @@ namespace EventFlow.Services
             // Venue conflict
             // -----------------------------
 
-            if (eventItem.VenueId.HasValue)
+            if (eventItem.VenueId > 0)
             {
                 var venueConflict = await FindVenueConflictAsync(
-                    eventItem.VenueId.Value,
+                    eventItem.VenueId,
                     eventItem.StartDateTime,
                     eventItem.EndDateTime,
                     eventItem.Id);
@@ -166,7 +166,7 @@ namespace EventFlow.Services
                 if (venueConflict != null)
                 {
                     conflicts.Add(
-                        $"Venue conflict: {venueConflict.Title} is already scheduled " +
+                        $"Venue conflict: {venueConflict.Name} is already scheduled " +
                         $"from {venueConflict.StartDateTime:g} to " +
                         $"{venueConflict.EndDateTime:g}.");
                 }
@@ -197,7 +197,7 @@ namespace EventFlow.Services
                 {
                     conflicts.Add(
                         $"Participant conflict: a participant registered for " +
-                        $"'{participantConflict.Title}' has an overlapping event.");
+                        $"'{participantConflict.Name}' has an overlapping event.");
                 }
             }
 
@@ -215,12 +215,12 @@ namespace EventFlow.Services
 
             foreach (var volunteer in volunteers)
             {
-                if (string.IsNullOrWhiteSpace(volunteer.UserId))
+                if (string.IsNullOrWhiteSpace(volunteer.VolunteerId))
                     continue;
 
                 var volunteerConflict =
                     await FindVolunteerConflictAsync(
-                        volunteer.UserId,
+                        volunteer.VolunteerId,
                         eventItem.StartDateTime,
                         eventItem.EndDateTime);
 
@@ -229,7 +229,7 @@ namespace EventFlow.Services
                 {
                     conflicts.Add(
                         $"Volunteer conflict: a volunteer is already assigned " +
-                        $"to '{volunteerConflict.Event?.Title}'.");
+                        $"to '{volunteerConflict.Event?.Name}'.");
                 }
             }
 

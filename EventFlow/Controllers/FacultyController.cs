@@ -574,6 +574,12 @@ namespace EventFlow.Controllers
                             "This student is already a volunteer (or has applied) for this event.");
                         break;
 
+                    case DirectAddResult.VolunteerConflict:
+                        ModelState.AddModelError(
+                            nameof(model.VolunteerId),
+                            "This student is already assigned as a volunteer for another overlapping event.");
+                        break;
+
                     default:
                         ModelState.AddModelError(
                             nameof(model.VolunteerId),

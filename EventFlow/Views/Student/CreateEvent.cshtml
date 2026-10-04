@@ -84,6 +84,42 @@
                             </div>
                         </div>
 
+                        <div class="mb-3">
+                            <label asp-for="FacultySupervisorId"
+                                   class="form-label">
+                                Faculty Supervisor
+                            </label>
+
+                            <select asp-for="FacultySupervisorId"
+                                    class="form-select">
+
+                                <option value="">
+                                    Select Faculty Supervisor
+                                </option>
+
+                                @foreach (var faculty in ViewBag.FacultySupervisors)
+                                {
+                                    <option value="@faculty.Id">
+                                        @faculty.FullName
+                                        @if (!string.IsNullOrWhiteSpace(faculty.Department))
+                                        {
+                                            @: - @faculty.Department
+                                        }
+                                    </option>
+                                }
+
+                            </select>
+
+                            <span asp-validation-for="FacultySupervisorId"
+                                  class="text-danger">
+                            </span>
+
+                            <div class="form-text">
+                                The selected faculty member will review this event
+                                and manage its volunteer applications after approval.
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="MaxParticipants"

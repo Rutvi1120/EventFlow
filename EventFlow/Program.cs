@@ -54,6 +54,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddScoped<VolunteerManagementService>();
+builder.Services.AddScoped<ConflictDetectionService>();
 
 builder.Services.AddControllersWithViews();
 

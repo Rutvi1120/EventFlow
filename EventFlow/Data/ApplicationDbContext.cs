@@ -30,6 +30,12 @@ namespace EventFlow.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Event>()
+            .HasOne(e => e.FacultySupervisor)
+            .WithMany()
+            .HasForeignKey(e => e.FacultySupervisorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Event>()
                 .HasOne(e => e.Club)
                 .WithMany(c => c.Events)
                 .HasForeignKey(e => e.ClubId)

@@ -123,17 +123,24 @@ namespace EventFlow.Controllers
                 .Include(e => e.Venue)
                 .Where(e =>
                     e.OrganizerId == facultyId ||
+
+                    // Student-created events assigned to this Faculty
                     (
-                        e.ApprovalStatus == "Pending" &&
-                        (
-                            e.EventType == "Student" ||
-                            e.EventType == "College" ||
-                            (
-                                e.EventType == "Club" &&
-                                e.Club != null &&
-                                e.Club.FacultySupervisorId == facultyId
-                            )
-                        )
+                        e.EventType == EventTypes.Student &&
+                        e.FacultySupervisorId == facultyId
+                    ) ||
+
+                    // Pending College events
+                    (
+                        e.ApprovalStatus == EventApprovalStatus.Pending &&
+                        e.EventType == EventTypes.College
+                    ) ||
+
+                    // Club events supervised by this Faculty
+                    (
+                        e.EventType == EventTypes.Club &&
+                        e.Club != null &&
+                        e.Club.FacultySupervisorId == facultyId
                     ))
                 .OrderByDescending(e => e.StartDateTime)
                 .ToListAsync();
@@ -175,8 +182,11 @@ namespace EventFlow.Controllers
 
             var canApprove = eventItem.EventType switch
             {
-                "Student" => true,
-                "College" => true,
+                "Student" =>
+                    eventItem.FacultySupervisorId == facultyId,
+
+                "College" =>
+                    true,
 
                 "Club" =>
                     eventItem.Club != null &&
@@ -184,7 +194,6 @@ namespace EventFlow.Controllers
 
                 _ => false
             };
-
             if (!canApprove)
                 return Forbid();
 
@@ -224,8 +233,11 @@ namespace EventFlow.Controllers
 
             var canReject = eventItem.EventType switch
             {
-                "Student" => true,
-                "College" => true,
+                "Student" =>
+                    eventItem.FacultySupervisorId == facultyId,
+
+                "College" =>
+                    true,
 
                 "Club" =>
                     eventItem.Club != null &&

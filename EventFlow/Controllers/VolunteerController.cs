@@ -17,15 +17,17 @@ namespace EventFlow.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly VolunteerManagementService _volunteerService;
-
+        private readonly ConflictDetectionService _conflictDetectionService;
         public VolunteerController(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager,
-            VolunteerManagementService volunteerService)
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager,
+    VolunteerManagementService volunteerService,
+    ConflictDetectionService conflictDetectionService)
         {
             _context = context;
             _userManager = userManager;
             _volunteerService = volunteerService;
+            _conflictDetectionService = conflictDetectionService;
         }
 
         // =====================================================
@@ -377,6 +379,42 @@ namespace EventFlow.Controllers
                     nameof(EventVolunteers),
                     new { eventId = volunteer.EventId });
             }
+
+            // =====================================================
+            // CHECK VOLUNTEER TIME CONFLICT
+            // =====================================================
+
+            var eventItem = await _context.Events
+                .FirstOrDefaultAsync(e => e.Id == volunteer.EventId);
+
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            var volunteerConflict =
+                await _conflictDetectionService.FindVolunteerConflictAsync(
+                    volunteer.VolunteerId,
+                    eventItem.StartDateTime,
+                    eventItem.EndDateTime,
+                    eventItem.Id);
+
+            if (volunteerConflict != null)
+            {
+                TempData["ErrorMessage"] =
+                    $"Volunteer cannot be assigned because they are already " +
+                    $"assigned to '{volunteerConflict.Event!.Title}' " +
+                    $"from {volunteerConflict.Event.StartDateTime:g} " +
+                    $"to {volunteerConflict.Event.EndDateTime:g}.";
+
+                return RedirectToAction(
+                    nameof(EventVolunteers),
+                    new { eventId = volunteer.EventId });
+            }
+
+            // =====================================================
+            // APPROVE VOLUNTEER
+            // =====================================================
 
             volunteer.Status = VolunteerStatus.Accepted;
             volunteer.AssignedAt = DateTime.UtcNow;

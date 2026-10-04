@@ -12,125 +12,483 @@
     <link rel="stylesheet"
           href="~/css/site.css"
           asp-append-version="true" />
+
+    <style>
+        /* =========================
+           EVENTFLOW LAYOUT
+        ========================= */
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        /* Navbar */
+        .eventflow-navbar {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            box-shadow: 0 4px 18px rgba(79, 70, 229, 0.20);
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .eventflow-navbar .container {
+            max-width: 1400px;
+        }
+
+        /* Brand */
+        .eventflow-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white !important;
+            font-size: 1.35rem;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.3px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            font-size: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .brand-text {
+            line-height: 1;
+        }
+
+        .brand-subtitle {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 400;
+            opacity: 0.8;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation */
+        .eventflow-navbar .navbar-nav {
+            gap: 4px;
+        }
+
+        .eventflow-navbar .nav-link {
+            color: rgba(255, 255, 255, 0.88) !important;
+            font-size: 0.93rem;
+            font-weight: 500;
+            padding: 9px 13px !important;
+            border-radius: 9px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .eventflow-navbar .nav-link:hover {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* Login partial area */
+        .login-area {
+            margin-left: 10px;
+        }
+
+        /* Main content */
+        main {
+            min-height: calc(100vh - 150px);
+        }
+
+        /* Footer */
+        .eventflow-footer {
+            background: #111827;
+            color: #9ca3af;
+            margin-top: 40px;
+            padding: 35px 0 20px;
+        }
+
+        .footer-brand {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .footer-description {
+            font-size: 0.9rem;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            margin-top: 25px;
+            padding-top: 18px;
+            font-size: 0.85rem;
+        }
+
+        /* Mobile */
+        @@media (max-width: 991px) {
+
+            .eventflow-navbar .navbar-collapse {
+                margin-top: 12px;
+                padding: 10px;
+                border-radius: 12px;
+                background: rgba(0, 0, 0, 0.12);
+            }
+
+            .eventflow-navbar .nav-link {
+                padding: 11px 13px !important;
+            }
+
+            .login-area {
+                margin-left: 0;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        @@media (max-width: 576px) {
+
+            .eventflow-brand {
+                font-size: 1.15rem;
+            }
+
+            .brand-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+
+            .brand-subtitle {
+                font-size: 0.58rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
+
+    <!-- =========================
+         NAVBAR
+    ========================== -->
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav class="navbar navbar-expand-lg eventflow-navbar">
+
             <div class="container">
-                <a class="navbar-brand"
+
+                <!-- Brand -->
+                <a class="eventflow-brand"
                    asp-controller="Home"
                    asp-action="Index">
-                    EventFlow
+
+                    <span class="brand-icon">
+                        📅
+                    </span>
+
+                    <span class="brand-text">
+                        EventFlow
+                        <span class="brand-subtitle">
+                            Event Coordination System
+                        </span>
+                    </span>
                 </a>
 
-                <button class="navbar-toggler"
+
+                <!-- Mobile button -->
+                <button class="navbar-toggler border-0 shadow-none"
                         type="button"
                         data-bs-toggle="collapse"
-                        data-bs-target="#mainNavigation">
+                        data-bs-target="#mainNavigation"
+                        aria-controls="mainNavigation"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
+
+                <!-- Navigation -->
                 <div class="collapse navbar-collapse"
                      id="mainNavigation">
 
                     <ul class="navbar-nav me-auto">
+
                         @if (User.Identity?.IsAuthenticated != true)
                         {
+                            <!-- Guest -->
                             <li class="nav-item">
                                 <a class="nav-link"
                                    asp-controller="Events"
                                    asp-action="Index">
-                                    Events
+                                    📅 Events
                                 </a>
                             </li>
                         }
+
                         else if (User.IsInRole("Admin"))
                         {
+                            <!-- ADMIN -->
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Index">Dashboard</a>
+                                <a class="nav-link"
+                                   asp-controller="Admin"
+                                   asp-action="Index">
+                                    🏠 Dashboard
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Users">Users</a>
+                                <a class="nav-link"
+                                   asp-controller="Admin"
+                                   asp-action="Users">
+                                    👥 Users
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Events">Events</a>
+                                <a class="nav-link"
+                                   asp-controller="Admin"
+                                   asp-action="Events">
+                                    📅 Events
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Venue" asp-action="Index">Venues</a>
+                                <a class="nav-link"
+                                   asp-controller="Venue"
+                                   asp-action="Index">
+                                    📍 Venues
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Volunteer" asp-action="Manage">Volunteers</a>
+                                <a class="nav-link"
+                                   asp-controller="Volunteer"
+                                   asp-action="Manage">
+                                    🤝 Volunteers
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Clubs">Clubs</a>
+                                <a class="nav-link"
+                                   asp-controller="Admin"
+                                   asp-action="Clubs">
+                                    🏛 Clubs
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Role" asp-action="Index">Roles</a>
+                                <a class="nav-link"
+                                   asp-controller="Role"
+                                   asp-action="Index">
+                                    🔐 Roles
+                                </a>
                             </li>
                         }
+
                         else if (User.IsInRole("Faculty"))
                         {
+                            <!-- FACULTY -->
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Faculty" asp-action="Index">Dashboard</a>
+                                <a class="nav-link"
+                                   asp-controller="Faculty"
+                                   asp-action="Index">
+                                    🏠 Dashboard
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                                <a class="nav-link"
+                                   asp-controller="Events"
+                                   asp-action="Index">
+                                    📅 Events
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Volunteer" asp-action="Manage">Volunteer Management</a>
+                                <a class="nav-link"
+                                   asp-controller="Volunteer"
+                                   asp-action="Manage">
+                                    🤝 Volunteer Management
+                                </a>
                             </li>
                         }
+
                         else if (User.IsInRole("ClubPresident"))
                         {
+                            <!-- CLUB PRESIDENT -->
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="ClubPresident" asp-action="Index">Dashboard</a>
+                                <a class="nav-link"
+                                   asp-controller="ClubPresident"
+                                   asp-action="Index">
+                                    🏠 Dashboard
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="ClubPresident" asp-action="Events">Club Events</a>
+                                <a class="nav-link"
+                                   asp-controller="ClubPresident"
+                                   asp-action="AllClubs">
+                                    🏛 My Clubs
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Volunteer" asp-action="Manage">Volunteer Management</a>
+                                <a class="nav-link"
+                                   asp-controller="ClubPresident"
+                                   asp-action="Events">
+                                    📅 Club Events
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Volunteer"
+                                   asp-action="Manage">
+                                    🤝 Volunteer Management
+                                </a>
                             </li>
                         }
+
                         else if (User.IsInRole("Student"))
                         {
+                            <!-- STUDENT -->
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Student" asp-action="Index">Dashboard</a>
+                                <a class="nav-link"
+                                   asp-controller="Student"
+                                   asp-action="Index">
+                                    🏠 Dashboard
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                                <a class="nav-link"
+                                   asp-controller="Events"
+                                   asp-action="Index">
+                                    📅 Events
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Volunteer" asp-action="Index">Volunteer</a>
+                                <a class="nav-link"
+                                   asp-controller="Volunteer"
+                                   asp-action="Index">
+                                    🤝 Volunteer
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Volunteer" asp-action="MyApplications">My Applications</a>
+                                <a class="nav-link"
+                                   asp-controller="Volunteer"
+                                   asp-action="MyApplications">
+                                    📋 My Applications
+                                </a>
                             </li>
                         }
+
                         else
                         {
+                            <!-- OTHER AUTHENTICATED USERS -->
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Events" asp-action="Index">Events</a>
+                                <a class="nav-link"
+                                   asp-controller="Events"
+                                   asp-action="Index">
+                                    📅 Events
+                                </a>
                             </li>
                         }
+
                     </ul>
 
-                    <partial name="_LoginPartial" />
+
+                    <!-- Login / Profile -->
+                    <div class="login-area">
+                        <partial name="_LoginPartial" />
+                    </div>
+
                 </div>
             </div>
         </nav>
     </header>
 
-    <main class="min-vh-100">
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
+    <main>
         @RenderBody()
     </main>
 
-    <footer class="border-top py-3">
-        <div class="container text-muted">
-            &copy; @DateTime.Now.Year - EventFlow
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer class="eventflow-footer">
+
+        <div class="container">
+
+            <div class="row">
+
+                <div class="col-md-7">
+
+                    <div class="footer-brand">
+                        📅 EventFlow
+                    </div>
+
+                    <p class="footer-description mb-0">
+                        A smart event coordination and management system
+                        designed to simplify event planning, registration,
+                        volunteering and collaboration.
+                    </p>
+
+                </div>
+
+                <div class="col-md-5 text-md-end mt-3 mt-md-0">
+
+                    <div class="mb-2">
+                        <span>Event Management</span>
+                    </div>
+
+                    <div>
+                        <span>Registration • Volunteers • Clubs • Venues</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="footer-bottom text-center">
+
+                &copy; @DateTime.Now.Year - EventFlow.
+                All rights reserved.
+
+            </div>
+
         </div>
+
     </footer>
+
+
+    <!-- =========================
+         SCRIPTS
+    ========================== -->
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
@@ -140,5 +498,6 @@
             asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

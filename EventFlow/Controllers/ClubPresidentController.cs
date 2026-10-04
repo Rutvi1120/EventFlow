@@ -15,15 +15,17 @@ namespace EventFlow.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly VolunteerManagementService _volunteerService;
-
+        private readonly ConflictDetectionService _conflictDetectionService;
         public ClubPresidentController(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager,
-            VolunteerManagementService volunteerService)
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager,
+    VolunteerManagementService volunteerService,
+    ConflictDetectionService conflictDetectionService)
         {
             _context = context;
             _userManager = userManager;
             _volunteerService = volunteerService;
+            _conflictDetectionService = conflictDetectionService;
         }
 
         public async Task<IActionResult> Index()
@@ -49,7 +51,19 @@ namespace EventFlow.Controllers
                 .Where(e => e.OrganizerId == userId)
                 .OrderByDescending(e => e.StartDateTime)
                 .ToListAsync();
+            var myClubCount = await _context.Clubs
+    .CountAsync(c => c.ClubPresidentId == userId);
 
+            var clubEventCount = await _context.Events
+                .CountAsync(e => e.Club != null &&
+                                 e.Club.ClubPresidentId == userId);
+
+            var pendingVolunteerCount =
+    await _volunteerService.CountPendingAsync(User);
+
+            ViewBag.MyClubCount = myClubCount;
+            ViewBag.ClubEventCount = clubEventCount;
+            ViewBag.PendingVolunteerCount = pendingVolunteerCount;
             ViewBag.Clubs = clubs;
             ViewBag.Events = events;
             ViewBag.PendingVolunteerCount =
@@ -179,7 +193,32 @@ namespace EventFlow.Controllers
                     "End time must be later than start time.");
             }
 
-            await EventRules.ValidateVenueAsync(_context, ModelState, eventItem);
+            await EventRules.ValidateVenueAsync(
+    _context,
+    ModelState,
+    eventItem);
+
+            // =====================================================
+            // CHECK VENUE TIME CONFLICT
+            // =====================================================
+
+            if (eventItem.VenueId>0)
+            {
+                var venueConflict =
+                    await _conflictDetectionService.FindVenueConflictAsync(
+                        eventItem.VenueId,
+                        eventItem.StartDateTime,
+                        eventItem.EndDateTime);
+
+                if (venueConflict != null)
+                {
+                    ModelState.AddModelError(
+                        nameof(Event.VenueId),
+                        $"Venue conflict: {venueConflict.Name} is already scheduled " +
+                        $"from {venueConflict.StartDateTime:g} to " +
+                        $"{venueConflict.EndDateTime:g}.");
+                }
+            }
 
             if (!ModelState.IsValid)
             {
@@ -296,7 +335,34 @@ namespace EventFlow.Controllers
                     "End time must be later than start time.");
             }
 
-            await EventRules.ValidateVenueAsync(_context, ModelState, eventItem);
+            await EventRules.ValidateVenueAsync(
+    _context,
+    ModelState,
+    eventItem);
+
+            // =====================================================
+            // CHECK VENUE TIME CONFLICT
+            // Exclude the event currently being edited.
+            // =====================================================
+
+            if (eventItem.VenueId>0)
+            {
+                var venueConflict =
+                    await _conflictDetectionService.FindVenueConflictAsync(
+                        eventItem.VenueId,
+                        eventItem.StartDateTime,
+                        eventItem.EndDateTime,
+                        id);
+
+                if (venueConflict != null)
+                {
+                    ModelState.AddModelError(
+                        nameof(Event.VenueId),
+                        $"Venue conflict: {venueConflict.Name} is already scheduled " +
+                        $"from {venueConflict.StartDateTime:g} to " +
+                        $"{venueConflict.EndDateTime:g}.");
+                }
+            }
 
             if (!ModelState.IsValid)
             {

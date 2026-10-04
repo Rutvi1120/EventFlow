@@ -49,6 +49,9 @@ namespace EventFlow.Controllers
                 .OrderByDescending(r => r.RegisteredAt)
                 .ToListAsync();
 
+            var myEventsCount = await _context.Events
+                .CountAsync(e => e.OrganizerId == userId);
+
             var volunteerAssignments = await _context.Volunteers
                 .Include(v => v.Event)
                 .ThenInclude(e => e!.Venue)
@@ -59,7 +62,8 @@ namespace EventFlow.Controllers
             ViewBag.UpcomingEvents = upcomingEvents;
             ViewBag.Registrations = registrations;
             ViewBag.VolunteerAssignments = volunteerAssignments;
-
+            ViewBag.MyEventsCount = myEventsCount;
+            ViewBag.RegistrationsCount = registrations.Count;
             return View();
         }
 
@@ -82,6 +86,7 @@ namespace EventFlow.Controllers
         public async Task<IActionResult> CreateEvent()
         {
             await LoadVenues();
+            await LoadFacultySupervisors();
 
             var eventItem = new Event
             {
@@ -105,11 +110,37 @@ namespace EventFlow.Controllers
             }
 
             eventItem.OrganizerId = userId;
-            eventItem.EventType = "Student";
-            eventItem.ApprovalStatus = "Pending";
+
+            // Never trust these values from the browser.
+            eventItem.EventType = EventTypes.Student;
+            eventItem.ApprovalStatus = EventApprovalStatus.Pending;
             eventItem.Status = "Upcoming";
             eventItem.ClubId = null;
             eventItem.ClubName = null;
+
+            // Faculty supervisor is required for Student-created events.
+            if (string.IsNullOrWhiteSpace(eventItem.FacultySupervisorId))
+            {
+                ModelState.AddModelError(
+                    nameof(Event.FacultySupervisorId),
+                    "Please select a Faculty Supervisor.");
+            }
+            else
+            {
+                var faculty =
+                    await _userManager.FindByIdAsync(
+                        eventItem.FacultySupervisorId);
+
+                if (faculty == null ||
+                    !await _userManager.IsInRoleAsync(
+                        faculty,
+                        AppRoles.Faculty))
+                {
+                    ModelState.AddModelError(
+                        nameof(Event.FacultySupervisorId),
+                        "Please select a valid Faculty Supervisor.");
+                }
+            }
 
             if (eventItem.EndDateTime <= eventItem.StartDateTime)
             {
@@ -118,17 +149,25 @@ namespace EventFlow.Controllers
                     "End time must be later than start time.");
             }
 
-            await EventRules.ValidateVenueAsync(_context, ModelState, eventItem);
+            await EventRules.ValidateVenueAsync(
+                _context,
+                ModelState,
+                eventItem);
 
             if (!ModelState.IsValid)
             {
                 await LoadVenues();
+                await LoadFacultySupervisors();
+
                 return View(eventItem);
             }
 
             _context.Events.Add(eventItem);
 
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Event submitted successfully. The selected Faculty Supervisor will review it.";
 
             return RedirectToAction(nameof(MyEvents));
         }
@@ -224,7 +263,31 @@ namespace EventFlow.Controllers
             if (!ModelState.IsValid)
             {
                 await LoadVenues();
+                await LoadFacultySupervisors();
+
                 return View(eventItem);
+            }
+            if (string.IsNullOrWhiteSpace(eventItem.FacultySupervisorId))
+            {
+                ModelState.AddModelError(
+                    nameof(Event.FacultySupervisorId),
+                    "Please select a Faculty Supervisor.");
+            }
+            else
+            {
+                var faculty =
+                    await _userManager.FindByIdAsync(
+                        eventItem.FacultySupervisorId);
+
+                if (faculty == null ||
+                    !await _userManager.IsInRoleAsync(
+                        faculty,
+                        AppRoles.Faculty))
+                {
+                    ModelState.AddModelError(
+                        nameof(Event.FacultySupervisorId),
+                        "Please select a valid Faculty Supervisor.");
+                }
             }
 
             existingEvent.Name = eventItem.Name;
@@ -289,5 +352,16 @@ namespace EventFlow.Controllers
                 "Id",
                 "Name");
         }
+
+        private async Task LoadFacultySupervisors()
+        {
+            var facultyUsers =
+                await _userManager.GetUsersInRoleAsync(
+                    AppRoles.Faculty);
+
+            ViewBag.FacultySupervisors = facultyUsers
+                .OrderBy(f => f.FullName)
+                .ToList();
+        }
     }
-}
+    }

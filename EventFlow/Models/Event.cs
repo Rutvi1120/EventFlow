@@ -53,6 +53,9 @@ namespace EventFlow.Models
 
         public Club? Club { get; set; }
 
+        public string? FacultySupervisorId { get; set; }
+
+        public ApplicationUser? FacultySupervisor { get; set; }
         public ICollection<Registration> Registrations { get; set; }
             = new List<Registration>();
 

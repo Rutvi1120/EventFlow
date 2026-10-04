@@ -1,82 +1,640 @@
 ﻿@{
     ViewData["Title"] = "Club President Dashboard";
-
+    int myClubCount = ViewBag.MyClubCount ?? 0;
+    int clubEventCount = ViewBag.ClubEventCount ?? 0;
     int pendingVolunteerCount = ViewBag.PendingVolunteerCount ?? 0;
 }
 
+<style>
+    body {
+        background: #f7f9fc;
+    }
+
+    /* ================= HEADER ================= */
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #6f42c1, #9b59b6);
+        color: white;
+        border-radius: 24px;
+        padding: 35px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 35px rgba(111, 66, 193, 0.18);
+    }
+
+        .dashboard-header h1 {
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .dashboard-header p {
+            color: rgba(255,255,255,0.78);
+            margin-bottom: 0;
+        }
+
+    .club-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.14);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+    }
+
+    /* ================= STAT ================= */
+
+    .stat-card {
+        background: white;
+        border: none;
+        border-radius: 18px;
+        padding: 24px;
+        height: 100%;
+        box-shadow: 0 8px 25px rgba(32, 56, 85, 0.07);
+        transition: 0.25s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(32, 56, 85, 0.11);
+        }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        margin-bottom: 15px;
+    }
+
+    .stat-number {
+        font-size: 30px;
+        font-weight: 800;
+        color: #172033;
+    }
+
+    .stat-label {
+        color: #667085;
+        font-size: 14px;
+    }
+
+    /* ================= SECTIONS ================= */
+
+    .section-title {
+        font-weight: 800;
+        color: #172033;
+    }
+
+    .section-description {
+        color: #667085;
+    }
+
+    /* ================= ACTION CARDS ================= */
+
+    .action-card {
+        background: white;
+        border: 1px solid #edf0f5;
+        border-radius: 20px;
+        padding: 28px;
+        height: 100%;
+        transition: 0.25s ease;
+    }
+
+        .action-card:hover {
+            transform: translateY(-6px);
+            border-color: transparent;
+            box-shadow: 0 15px 35px rgba(32, 56, 85, 0.1);
+        }
+
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+        margin-bottom: 20px;
+    }
+
+    .action-card h5 {
+        font-weight: 700;
+        color: #172033;
+    }
+
+    .action-card p {
+        color: #667085;
+        min-height: 48px;
+        line-height: 1.6;
+    }
+
+    .dashboard-btn {
+        border-radius: 10px;
+        padding: 9px 18px;
+        font-weight: 600;
+    }
+
+    /* ================= VOLUNTEER ALERT ================= */
+
+    .volunteer-alert {
+        border-radius: 20px;
+        border: none;
+        background: linear-gradient( 135deg, #fff7e6, #fffdf7 );
+        box-shadow: 0 8px 25px rgba(32, 56, 85, 0.06);
+    }
+
+    .volunteer-alert-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        background: #ffe8b3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+    /* ================= QUICK GUIDE ================= */
+
+    .guide-card {
+        background: #172033;
+        color: white;
+        border-radius: 22px;
+        padding: 30px;
+    }
+
+        .guide-card p {
+            color: #aeb8ca;
+        }
+
+    .guide-step {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .guide-number {
+        min-width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #6f42c1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-header {
+            padding: 25px;
+        }
+
+        .club-icon {
+            display: none;
+        }
+    }
+</style>
+
+
 <div class="container py-4">
-    <div class="mb-4">
-        <h1>Club President Dashboard</h1>
-        <p class="text-muted">
-            Manage your club and its events.
-        </p>
-    </div>
 
     <partial name="_Alerts" />
 
-    <div class="row g-4">
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5>My Clubs</h5>
-                    <p class="text-muted">
-                        View the clubs you manage.
-                    </p>
 
-                    <a asp-action="AllClubs"
-                       class="btn btn-primary">
-                        My Clubs
-                    </a>
+    <!-- ================= HEADER ================= -->
+
+    <div class="dashboard-header">
+
+        <div class="row align-items-center">
+
+            <div class="col">
+
+                <div class="small fw-semibold mb-2">
+                    CLUB MANAGEMENT PORTAL
                 </div>
+
+                <h1>
+                    Club President Dashboard 👑
+                </h1>
+
+                <p>
+                    Manage your club, organize events and coordinate
+                    your volunteer team from one place.
+                </p>
+
             </div>
+
+            <div class="col-auto">
+
+                <div class="club-icon">
+                    👑
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5>My Events</h5>
-                    <p class="text-muted">
-                        Manage events organized by your club.
-                    </p>
+    </div>
 
-                    <a asp-action="Events"
-                       class="btn btn-primary">
-                        My Events
-                    </a>
+
+    <!-- ================= STATISTICS ================= -->
+
+    <div class="row g-4 mb-5">
+
+        <!-- My Clubs -->
+
+        <div class="col-6 col-lg-3">
+
+            <div class="stat-card">
+
+                <div class="stat-icon bg-primary-subtle text-primary">
+                    🏛️
                 </div>
+
+                <div class="stat-number">
+                    @myClubCount
+                </div>
+
+                <div class="stat-label">
+                    My Clubs
+                </div>
+
             </div>
+
         </div>
 
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5>Browse Events</h5>
-                    <p class="text-muted">
-                        Discover approved college events.
-                    </p>
 
-                    <a asp-controller="Events"
-                       asp-action="Index"
-                       class="btn btn-primary">
-                        Browse Events
-                    </a>
+        <!-- My Events -->
+
+        <div class="col-6 col-lg-3">
+
+            <div class="stat-card">
+
+                <div class="stat-icon bg-success-subtle text-success">
+                    📅
                 </div>
+
+                <div class="stat-number">
+                    @clubEventCount
+                </div>
+
+                <div class="stat-label">
+                    Club Events
+                </div>
+
             </div>
+
         </div>
 
+
+        <!-- Volunteer Applications -->
+
+        <div class="col-6 col-lg-3">
+
+            <div class="stat-card">
+
+                <div class="stat-icon bg-warning-subtle text-warning">
+                    🤝
+                </div>
+
+                <div class="stat-number">
+                    @pendingVolunteerCount
+                </div>
+
+                <div class="stat-label">
+                    Pending Volunteers
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Event Discovery -->
+
+        <div class="col-6 col-lg-3">
+
+            <div class="stat-card">
+
+                <div class="stat-icon bg-info-subtle text-info">
+                    🔎
+                </div>
+
+                <div class="stat-number">
+                    ∞
+                </div>
+
+                <div class="stat-label">
+                    Events to Discover
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= CLUB MANAGEMENT ================= -->
+
+    <div class="mb-4">
+
+        <h3 class="section-title mb-1">
+            Club Management
+        </h3>
+
+        <p class="section-description mb-0">
+            Manage your clubs and organize successful events.
+        </p>
+
+    </div>
+
+
+    <div class="row g-4 mb-5">
+
+        <!-- My Clubs -->
+
         <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5>Pending Volunteer Applications</h5>
-                    <div class="display-6 mb-2">@pendingVolunteerCount</div>
+
+            <div class="action-card">
+
+                <div class="action-icon bg-primary-subtle text-primary">
+                    🏛️
+                </div>
+
+                <h5>
+                    My Clubs
+                </h5>
+
+                <p>
+                    View and manage the clubs where
+                    you are a president.
+                </p>
+
+                <a asp-action="AllClubs"
+                   class="btn btn-primary dashboard-btn">
+                    View My Clubs →
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- My Events -->
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="action-card">
+
+                <div class="action-icon bg-success-subtle text-success">
+                    📅
+                </div>
+
+                <h5>
+                    My Events
+                </h5>
+
+                <p>
+                    Manage events organized by
+                    your club.
+                </p>
+
+                <a asp-action="Events"
+                   class="btn btn-success dashboard-btn">
+                    Manage Events →
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- Browse Events -->
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="action-card">
+
+                <div class="action-icon bg-info-subtle text-info">
+                    🔎
+                </div>
+
+                <h5>
+                    Browse Events
+                </h5>
+
+                <p>
+                    Discover approved college events
+                    and activities.
+                </p>
+
+                <a asp-controller="Events"
+                   asp-action="Index"
+                   class="btn btn-info dashboard-btn">
+                    Explore Events →
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- Volunteers -->
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="action-card">
+
+                <div class="action-icon bg-warning-subtle text-warning">
+                    🤝
+                </div>
+
+                <h5>
+                    Volunteers
+                </h5>
+
+                <p>
+                    Review and manage volunteer
+                    applications for your events.
+                </p>
+
+                <a asp-controller="Volunteer"
+                   asp-action="Manage"
+                   class="btn btn-warning dashboard-btn">
+                    Manage Volunteers →
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= VOLUNTEER NOTIFICATION ================= -->
+    @if (pendingVolunteerCount > 0)
+    {
+        <div class="volunteer-alert p-4 mb-5">
+
+            <div class="row align-items-center">
+
+                <div class="col">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="volunteer-alert-icon">
+                            🤝
+                        </div>
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                Volunteer Applications Need Review
+                            </h5>
+
+                            <p class="text-muted mb-0">
+                                You have
+                                <strong>@pendingVolunteerCount</strong>
+                                pending volunteer
+                                @(pendingVolunteerCount == 1
+                                    ? "application"
+                                    : "applications")
+                                waiting for your decision.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-auto mt-3 mt-md-0">
 
                     <a asp-controller="Volunteer"
                        asp-action="Manage"
-                       class="btn btn-warning">
-                        Manage Volunteers
+                       class="btn btn-warning dashboard-btn">
+                        Review Applications →
                     </a>
+
                 </div>
+
             </div>
+
         </div>
+    }
+    else
+    {
+        <div class="alert alert-success border-0 rounded-4 p-4 mb-5">
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div style="font-size: 28px;">
+                    ✓
+                </div>
+
+                <div>
+
+                    <h6 class="fw-bold mb-1">
+                        Volunteer applications are up to date
+                    </h6>
+
+                    <small>
+                        There are currently no pending applications
+                        requiring your attention.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ================= QUICK GUIDE ================= -->
+
+    <div class="guide-card mb-5">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-5">
+
+                <span class="badge bg-light text-dark mb-3">
+                    CLUB PRESIDENT GUIDE
+                </span>
+
+                <h3 class="fw-bold">
+                    Run your club smoothly
+                </h3>
+
+                <p>
+                    EventFlow gives club presidents everything
+                    they need to organize activities and manage
+                    student participation.
+                </p>
+
+            </div>
+
+
+            <div class="col-lg-7">
+
+                <div class="guide-step">
+
+                    <div class="guide-number">
+                        01
+                    </div>
+
+                    <div>
+                        <strong>Manage your club</strong>
+                        <div class="text-white-50 small">
+                            Keep your club information organized.
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="guide-step">
+
+                    <div class="guide-number">
+                        02
+                    </div>
+
+                    <div>
+                        <strong>Organize events</strong>
+                        <div class="text-white-50 small">
+                            Create and manage your club activities.
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="guide-step">
+
+                    <div class="guide-number">
+                        03
+                    </div>
+
+                    <div>
+                        <strong>Manage volunteers</strong>
+                        <div class="text-white-50 small">
+                            Review applications and build your event team.
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
+
 </div>
+

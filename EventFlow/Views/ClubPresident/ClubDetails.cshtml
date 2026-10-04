@@ -12,6 +12,12 @@
         </a>
     </div>
 
+    <a asp-controller="ClubPresident"
+       asp-action="CreateEvent"
+       asp-route-clubId="@Model.Id"
+       class="btn btn-success">
+        ➕ Create Event
+    </a>
     <div class="row g-4">
         <div class="col-lg-5">
             <div class="card shadow-sm">

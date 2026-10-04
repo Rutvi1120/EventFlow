@@ -129,22 +129,22 @@ namespace EventFlow.Areas.Identity.Pages.Account
 
                 if (await _userManager.IsInRoleAsync(user, "Admin"))
                 {
-                    return RedirectToAction("Index", "Admin");
+                    return LocalRedirect("~/Admin");
                 }
 
                 if (await _userManager.IsInRoleAsync(user, "Student"))
                 {
-                    return RedirectToAction("Index", "Student");
+                    return LocalRedirect("~/Student");
                 }
 
                 if (await _userManager.IsInRoleAsync(user, "Faculty"))
                 {
-                    return RedirectToAction("Index", "Faculty");
+                    return LocalRedirect("~/Faculty");
                 }
 
                 if (await _userManager.IsInRoleAsync(user, "ClubPresident"))
                 {
-                    return RedirectToAction("Index", "ClubPresident");
+                    return LocalRedirect("~/ClubPresident");
                 }
 
                 ModelState.AddModelError(

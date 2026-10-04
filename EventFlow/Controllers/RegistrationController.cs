@@ -1,10 +1,11 @@
-using System.Data;
 using EventFlow.Data;
 using EventFlow.Models;
+using EventFlow.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace EventFlow.Controllers
 {
@@ -13,13 +14,16 @@ namespace EventFlow.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-
-        public RegistrationController(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+        private readonly ConflictDetectionService _conflictDetectionService;
+        public Registration
+            Controller(
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager,
+    ConflictDetectionService conflictDetectionService)
         {
             _context = context;
             _userManager = userManager;
+            _conflictDetectionService = conflictDetectionService;
         }
 
         // =====================================================
@@ -55,6 +59,26 @@ namespace EventFlow.Controllers
             {
                 TempData["InfoMessage"] =
                     "You are already registered for this event.";
+
+                return RedirectToDetails(eventId);
+            }
+            // =====================================================
+            // CHECK PARTICIPANT TIME CONFLICT
+            // =====================================================
+
+            var participantConflict =
+                await _conflictDetectionService.FindParticipantConflictAsync(
+                    userId,
+                    eventId);
+
+            if (participantConflict != null)
+            {
+                TempData["ErrorMessage"] =
+                    $"Registration blocked. You already have " +
+                    $"'{participantConflict.Title}' scheduled from " +
+                    $"{participantConflict.StartDateTime:g} to " +
+                    $"{participantConflict.EndDateTime:g}. " +
+                    $"The selected event overlaps with it.";
 
                 return RedirectToDetails(eventId);
             }
@@ -149,7 +173,8 @@ namespace EventFlow.Controllers
                 return RedirectToDetails(eventId);
             }
 
-            if (registration.Event != null && registration.Event.HasEnded)
+            if (registration.Event != null &&
+                registration.Event.HasEnded)
             {
                 TempData["ErrorMessage"] =
                     "This event has already ended, so the registration cannot be cancelled.";
@@ -157,13 +182,107 @@ namespace EventFlow.Controllers
                 return RedirectToAction(nameof(MyRegistrations));
             }
 
-            _context.Registrations.Remove(registration);
+            var promotedFromWaitlist = false;
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                // Keep cancellation and waitlist promotion together.
+                // Serializable prevents two cancellations from promoting
+                // the same waitlisted participant.
+                await using var transaction =
+                    await _context.Database.BeginTransactionAsync(
+                        IsolationLevel.Serializable);
 
-            await PromoteWaitlistedUser(eventId);
+                // ---------------------------------------------
+                // 1. Cancel current registration
+                // ---------------------------------------------
+                _context.Registrations.Remove(registration);
 
-            TempData["SuccessMessage"] = "Your registration has been cancelled.";
+                await _context.SaveChangesAsync();
+
+                var eventItem = registration.Event;
+
+                // ---------------------------------------------
+                // 2. Check whether waitlist promotion is allowed
+                // ---------------------------------------------
+                if (eventItem != null &&
+                    eventItem.ApprovalStatus == EventApprovalStatus.Approved &&
+                    !eventItem.HasStarted)
+                {
+                    // ---------------------------------------------
+                    // 3. Find earliest waitlisted participant
+                    // ---------------------------------------------
+                    var nextEntry = await _context.WaitlistEntries
+                        .Where(w => w.EventId == eventId)
+                        .OrderBy(w => w.JoinedAt)
+                        .ThenBy(w => w.Id)
+                        .FirstOrDefaultAsync();
+
+                    if (nextEntry != null)
+                    {
+                        // Safety check in case the waitlisted user
+                        // somehow already has a registration.
+                        var alreadyRegistered =
+                            await _context.Registrations.AnyAsync(r =>
+                                r.EventId == eventId &&
+                                r.UserId == nextEntry.UserId);
+
+                        if (alreadyRegistered)
+                        {
+                            // They no longer need to remain on
+                            // the waitlist.
+                            _context.WaitlistEntries.Remove(nextEntry);
+
+                            await _context.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            // ---------------------------------------------
+                            // 4. Promote participant
+                            // ---------------------------------------------
+                            _context.Registrations.Add(new Registration
+                            {
+                                EventId = eventId,
+                                UserId = nextEntry.UserId,
+                                RegisteredAt = DateTime.UtcNow
+                            });
+
+                            // ---------------------------------------------
+                            // 5. Remove promoted participant from waitlist
+                            // ---------------------------------------------
+                            _context.WaitlistEntries.Remove(nextEntry);
+
+                            await _context.SaveChangesAsync();
+
+                            promotedFromWaitlist = true;
+                        }
+                    }
+                }
+
+                // ---------------------------------------------
+                // 6. Commit cancellation + promotion together
+                // ---------------------------------------------
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateException)
+            {
+                TempData["ErrorMessage"] =
+                    "The registration could not be cancelled. Please try again.";
+
+                return RedirectToDetails(eventId);
+            }
+
+            if (promotedFromWaitlist)
+            {
+                TempData["InfoMessage"] =
+                    "Your registration has been cancelled. " +
+                    "The next participant on the waitlist has been automatically registered.";
+            }
+            else
+            {
+                TempData["SuccessMessage"] =
+                    "Your registration has been cancelled.";
+            }
 
             return RedirectToDetails(eventId);
         }

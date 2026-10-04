@@ -1,78 +1,748 @@
 ﻿@{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "EventFlow";
 }
 
-<div class="container py-5">
-    <div class="row align-items-center min-vh-75">
-        <div class="col-lg-7">
-            <span class="badge bg-primary mb-3">
-                College Event Management
-            </span>
+<style>
+    body {
+        background: #f8faff;
+    }
 
-            <h1 class="display-4 fw-bold mb-3">
-                Welcome to EventFlow
-            </h1>
+    .hero-section {
+        min-height: 72vh;
+        display: flex;
+        align-items: center;
+        background:
+            radial-gradient(circle at 85% 20%, rgba(13, 110, 253, 0.12), transparent 25%),
+            radial-gradient(circle at 10% 80%, rgba(111, 66, 193, 0.10), transparent 25%);
+        position: relative;
+        overflow: hidden;
+    }
 
-            <p class="lead text-muted mb-4">
-                Discover college events, organize activities,
-                manage clubs, register for events, and volunteer
-                for activities across the campus.
-            </p>
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 50px;
+        background: #e8f1ff;
+        color: #0d6efd;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
 
-            <div class="d-flex flex-wrap gap-2">
-                <a asp-controller="Events"
-                   asp-action="Index"
-                   class="btn btn-primary btn-lg">
-                    Explore Events
-                </a>
+    .hero-title {
+        font-size: clamp(3rem, 6vw, 5.2rem);
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -2px;
+        color: #172033;
+    }
 
-                @if (User.Identity?.IsAuthenticated != true)
-                {
-                    <a asp-area="Identity"
-                       asp-page="/Account/Register"
-                       class="btn btn-outline-primary btn-lg">
-                        Create Account
-                    </a>
-                }
-            </div>
-        </div>
+    .hero-title span {
+        color: #0d6efd;
+    }
 
-        <div class="col-lg-5 mt-5 mt-lg-0">
-            <div class="card shadow-sm">
-                <div class="card-body p-4">
-                    <h3 class="mb-4">
-                        EventFlow
-                    </h3>
+    .hero-description {
+        font-size: 1.15rem;
+        line-height: 1.8;
+        color: #667085;
+        max-width: 650px;
+    }
 
-                    <div class="mb-3">
-                        <h5>Discover</h5>
-                        <p class="text-muted mb-0">
-                            Find approved college events and activities.
-                        </p>
-                    </div>
+    .hero-buttons {
+        margin-top: 30px;
+    }
 
-                    <div class="mb-3">
-                        <h5>Organize</h5>
-                        <p class="text-muted mb-0">
-                            Create student, club, and college events.
-                        </p>
-                    </div>
+    .btn-main {
+        padding: 13px 26px;
+        border-radius: 12px;
+        font-weight: 600;
+        box-shadow: 0 8px 20px rgba(13, 110, 253, 0.2);
+    }
 
-                    <div class="mb-3">
-                        <h5>Participate</h5>
-                        <p class="text-muted mb-0">
-                            Register for events or join the waitlist.
-                        </p>
-                    </div>
+    .btn-second {
+        padding: 13px 26px;
+        border-radius: 12px;
+        font-weight: 600;
+    }
 
-                    <div>
-                        <h5>Volunteer</h5>
-                        <p class="text-muted mb-0">
-                            Apply for volunteer roles at events.
-                        </p>
-                    </div>
+    /* Event Illustration */
+
+    .event-visual {
+        position: relative;
+        min-height: 430px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .main-event-card {
+        width: 340px;
+        border-radius: 24px;
+        background: white;
+        padding: 24px;
+        box-shadow: 0 25px 60px rgba(32, 56, 85, 0.15);
+        transform: rotate(2deg);
+        position: relative;
+        z-index: 2;
+    }
+
+    .event-cover {
+        height: 150px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #0d6efd, #6f42c1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 55px;
+        margin-bottom: 18px;
+    }
+
+    .event-date {
+        display: inline-block;
+        background: #eaf2ff;
+        color: #0d6efd;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .floating-card {
+        position: absolute;
+        background: white;
+        padding: 16px 20px;
+        border-radius: 16px;
+        box-shadow: 0 15px 35px rgba(32, 56, 85, 0.12);
+        z-index: 3;
+    }
+
+    .floating-card.people {
+        left: 0;
+        top: 55px;
+    }
+
+    .floating-card.volunteer {
+        right: 0;
+        bottom: 50px;
+    }
+
+    .floating-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eef4ff;
+        color: #0d6efd;
+        font-size: 20px;
+    }
+
+    /* Stats */
+
+    .stats-section {
+        margin-top: -35px;
+        position: relative;
+        z-index: 5;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 18px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(32, 56, 85, 0.08);
+        height: 100%;
+    }
+
+    .stat-number {
+        font-size: 30px;
+        font-weight: 800;
+        color: #172033;
+    }
+
+    .stat-label {
+        color: #667085;
+        font-size: 14px;
+    }
+
+    /* Features */
+
+    .features-section {
+        padding: 90px 0;
+    }
+
+    .section-title {
+        font-weight: 800;
+        color: #172033;
+    }
+
+    .section-subtitle {
+        color: #667085;
+        max-width: 650px;
+        margin: auto;
+    }
+
+    .feature-card {
+        height: 100%;
+        padding: 30px;
+        border: 1px solid #edf0f5;
+        background: white;
+        border-radius: 20px;
+        transition: 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-7px);
+        box-shadow: 0 18px 40px rgba(32, 56, 85, 0.1);
+        border-color: transparent;
+    }
+
+    .feature-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #edf4ff;
+        color: #0d6efd;
+        font-size: 26px;
+        margin-bottom: 20px;
+    }
+
+    .feature-card h4 {
+        font-weight: 700;
+        color: #172033;
+    }
+
+    .feature-card p {
+        color: #667085;
+        line-height: 1.7;
+    }
+
+    /* Workflow */
+
+    .workflow-section {
+        background: #172033;
+        padding: 80px 0;
+        color: white;
+    }
+
+    .workflow-step {
+        text-align: center;
+        position: relative;
+    }
+
+    .step-number {
+        width: 55px;
+        height: 55px;
+        margin: auto auto 18px;
+        border-radius: 50%;
+        background: #0d6efd;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: 800;
+        font-size: 18px;
+    }
+
+    .workflow-step p {
+        color: #aeb8ca;
+        font-size: 14px;
+    }
+
+    /* CTA */
+
+    .cta-section {
+        padding: 90px 0;
+    }
+
+    .cta-box {
+        background: linear-gradient(135deg, #0d6efd, #6f42c1);
+        border-radius: 28px;
+        padding: 60px 30px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 20px 50px rgba(13, 110, 253, 0.2);
+    }
+
+    .cta-box p {
+        color: rgba(255,255,255,0.8);
+        max-width: 600px;
+        margin: 15px auto 25px;
+    }
+
+    .btn-white {
+        background: white;
+        color: #0d6efd;
+        padding: 13px 28px;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+    }
+
+    @@media (max-width: 991px) {
+        .hero-section {
+            padding: 70px 0;
+        }
+
+        .event-visual {
+            margin-top: 50px;
+        }
+
+        .floating-card.people {
+            left: 5%;
+        }
+
+        .floating-card.volunteer {
+            right: 5%;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .main-event-card {
+            width: 290px;
+        }
+
+        .floating-card {
+            transform: scale(0.85);
+        }
+
+        .hero-title {
+            letter-spacing: -1px;
+        }
+    }
+</style>
+
+
+<!-- ================= HERO SECTION ================= -->
+
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+
+            <!-- LEFT SIDE -->
+            <div class="col-lg-7">
+
+                <div class="hero-badge">
+                    <span>●</span>
+                    College Event Management Platform
                 </div>
+
+                <h1 class="hero-title">
+                    Campus events,
+                    <span>organized better.</span>
+                </h1>
+
+                <p class="hero-description mt-4">
+                    EventFlow brings students, clubs, organizers and
+                    volunteers together in one simple platform.
+                    Discover events, register, organize activities
+                    and make every campus event successful.
+                </p>
+
+                <div class="hero-buttons d-flex flex-wrap gap-3">
+
+                    <a asp-controller="Events"
+                       asp-action="Index"
+                       class="btn btn-primary btn-main">
+                        Explore Events →
+                    </a>
+
+                    @if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <a asp-area="Identity"
+                           asp-page="/Account/Register"
+                           class="btn btn-outline-primary btn-second">
+                            Create Account
+                        </a>
+                    }
+
+                </div>
+
             </div>
+
+
+            <!-- RIGHT SIDE -->
+            <div class="col-lg-5">
+
+                <div class="event-visual">
+
+                    <!-- Floating Participants Card -->
+                    <div class="floating-card people">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="floating-icon">
+                                👥
+                            </div>
+                            <div>
+                                <strong>250+</strong>
+                                <div class="small text-muted">
+                                    Participants
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Main Event Card -->
+                    <div class="main-event-card">
+
+                        <div class="event-cover">
+                            🎓
+                        </div>
+
+                        <span class="event-date">
+                            UPCOMING EVENT
+                        </span>
+
+                        <h4 class="fw-bold">
+                            TechFest 2026
+                        </h4>
+
+                        <p class="text-muted mb-3">
+                            Innovation • Technology • Campus
+                        </p>
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center">
+
+                            <div>
+                                <small class="text-muted">
+                                    Date
+                                </small>
+                                <div class="fw-semibold">
+                                    15 October
+                                </div>
+                            </div>
+
+                            <a asp-controller="Events"
+                               asp-action="Index"
+                               class="btn btn-primary btn-sm">
+                                View
+                            </a>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Floating Volunteer Card -->
+                    <div class="floating-card volunteer">
+
+                        <div class="d-flex align-items-center gap-3">
+
+                            <div class="floating-icon">
+                                🤝
+                            </div>
+
+                            <div>
+                                <strong>Volunteer</strong>
+                                <div class="small text-muted">
+                                    Join event teams
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
     </div>
-</div>
+</section>
+
+
+<!-- ================= STATS ================= -->
+
+<section class="stats-section">
+    <div class="container">
+
+        <div class="row g-3">
+
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">Campus Events</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-number">20+</div>
+                    <div class="stat-label">Clubs & Organizations</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-number">1K+</div>
+                    <div class="stat-label">Student Participants</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-3">
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Event Access</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ================= FEATURES ================= -->
+
+<section class="features-section">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                EVERYTHING IN ONE PLACE
+            </span>
+
+            <h2 class="section-title display-6 mt-3">
+                Make campus events easier
+            </h2>
+
+            <p class="section-subtitle mt-3">
+                From discovering events to managing volunteers,
+                EventFlow simplifies the complete event lifecycle.
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            <!-- Discover -->
+            <div class="col-md-6 col-lg-3">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        🔎
+                    </div>
+
+                    <h4>Discover</h4>
+
+                    <p>
+                        Find upcoming college events, technical
+                        activities, workshops and competitions
+                        from one place.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Organize -->
+            <div class="col-md-6 col-lg-3">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        📅
+                    </div>
+
+                    <h4>Organize</h4>
+
+                    <p>
+                        Create and manage student, club and
+                        college events with structured scheduling.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Participate -->
+            <div class="col-md-6 col-lg-3">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        🎟️
+                    </div>
+
+                    <h4>Participate</h4>
+
+                    <p>
+                        Register for events, track participation
+                        and join the waitlist when events are full.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Volunteer -->
+            <div class="col-md-6 col-lg-3">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        🤝
+                    </div>
+
+                    <h4>Volunteer</h4>
+
+                    <p>
+                        Apply for volunteer roles and help
+                        organizers successfully manage events.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= WORKFLOW ================= -->
+
+<section class="workflow-section">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="text-info fw-semibold">
+                SIMPLE WORKFLOW
+            </span>
+
+            <h2 class="display-6 fw-bold mt-2">
+                From discovery to participation
+            </h2>
+
+            <p class="text-white-50">
+                Everything students need to get involved in campus life.
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            <div class="col-6 col-lg-3">
+                <div class="workflow-step">
+
+                    <div class="step-number">
+                        01
+                    </div>
+
+                    <h5>Discover</h5>
+
+                    <p>
+                        Browse approved upcoming events.
+                    </p>
+
+                </div>
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+                <div class="workflow-step">
+
+                    <div class="step-number">
+                        02
+                    </div>
+
+                    <h5>Register</h5>
+
+                    <p>
+                        Register or join an event waitlist.
+                    </p>
+
+                </div>
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+                <div class="workflow-step">
+
+                    <div class="step-number">
+                        03
+                    </div>
+
+                    <h5>Participate</h5>
+
+                    <p>
+                        Attend and enjoy the campus event.
+                    </p>
+
+                </div>
+            </div>
+
+
+            <div class="col-6 col-lg-3">
+                <div class="workflow-step">
+
+                    <div class="step-number">
+                        04
+                    </div>
+
+                    <h5>Volunteer</h5>
+
+                    <p>
+                        Help organize and manage activities.
+                    </p>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= CTA ================= -->
+
+<section class="cta-section">
+
+    <div class="container">
+
+        <div class="cta-box">
+
+            <h2 class="display-6 fw-bold">
+                Ready to be part of campus life?
+            </h2>
+
+            <p>
+                Discover exciting events, connect with students,
+                join clubs and make your college experience more active.
+            </p>
+
+            <a asp-controller="Events"
+               asp-action="Index"
+               class="btn btn-white">
+                Explore Events →
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+

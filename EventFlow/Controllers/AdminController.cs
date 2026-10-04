@@ -1,5 +1,6 @@
 ﻿using EventFlow.Data;
 using EventFlow.Models;
+using EventFlow.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,13 +13,16 @@ namespace EventFlow.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ConflictDetectionService _conflictDetectionService;
 
         public AdminController(
             ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            ConflictDetectionService conflictDetectionService)
         {
             _context = context;
             _userManager = userManager;
+            _conflictDetectionService = conflictDetectionService;
         }
 
         public IActionResult Index()
@@ -34,72 +38,6 @@ namespace EventFlow.Controllers
                 .ToListAsync();
 
             return View(users);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApproveUser(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            user.IsApproved = true;
-
-            var result = await _userManager.UpdateAsync(user);
-
-            if (!result.Succeeded)
-            {
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(
-                        string.Empty,
-                        error.Description);
-                }
-
-                return View(
-                    "Users",
-                    await _userManager.Users
-                        .Include(u => u.RequestedClub)
-                        .OrderBy(u => u.FullName)
-                        .ToListAsync());
-            }
-
-            if (!string.IsNullOrWhiteSpace(user.RequestedRole))
-            {
-                var validRoles = new[]
-                {
-                    "Faculty",
-                    "ClubPresident"
-                };
-
-                if (validRoles.Contains(user.RequestedRole) &&
-                    !await _userManager.IsInRoleAsync(
-                        user,
-                        user.RequestedRole))
-                {
-                    var roleResult = await _userManager.AddToRoleAsync(
-                        user,
-                        user.RequestedRole);
-
-                    if (!roleResult.Succeeded)
-                    {
-                        foreach (var error in roleResult.Errors)
-                        {
-                            ModelState.AddModelError(
-                                string.Empty,
-                                error.Description);
-                        }
-                    }
-                }
-            }
-
-            TempData["SuccessMessage"] = $"{user.FullName} has been approved.";
-
-            return RedirectToAction(nameof(Users));
         }
 
         [HttpPost]
@@ -125,7 +63,8 @@ namespace EventFlow.Controllers
             }
             else
             {
-                TempData["SuccessMessage"] = $"{user.FullName} has been rejected.";
+                TempData["SuccessMessage"] =
+                    $"{user.FullName} has been rejected.";
             }
 
             return RedirectToAction(nameof(Users));
@@ -148,11 +87,35 @@ namespace EventFlow.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveEvent(int id)
         {
-            var eventItem = await _context.Events.FindAsync(id);
+            var eventItem = await _context.Events
+                .Include(e => e.Venue)
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (eventItem == null)
             {
                 return NotFound();
+            }
+
+            // Check venue conflict before approving the event
+            if (eventItem.VenueId > 0)
+            {
+                var venueConflict =
+                    await _conflictDetectionService.FindVenueConflictAsync(
+                        eventItem.VenueId,
+                        eventItem.StartDateTime,
+                        eventItem.EndDateTime,
+                        eventItem.Id);
+
+                if (venueConflict != null)
+                {
+                    TempData["ErrorMessage"] =
+                        $"Event cannot be approved because the selected venue " +
+                        $"is already occupied by '{venueConflict.Name}' " +
+                        $"from {venueConflict.StartDateTime:g} " +
+                        $"to {venueConflict.EndDateTime:g}.";
+
+                    return RedirectToAction(nameof(Events));
+                }
             }
 
             eventItem.ApprovalStatus = "Approved";
@@ -160,7 +123,8 @@ namespace EventFlow.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Event approved successfully.";
+            TempData["SuccessMessage"] =
+                "Event approved successfully.";
 
             return RedirectToAction(nameof(Events));
         }
@@ -211,7 +175,8 @@ namespace EventFlow.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"Club '{club.Name}' approved.";
+            TempData["SuccessMessage"] =
+                $"Club '{club.Name}' approved.";
 
             return RedirectToAction(nameof(Clubs));
         }
@@ -231,7 +196,8 @@ namespace EventFlow.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"Club '{club.Name}' rejected.";
+            TempData["SuccessMessage"] =
+                $"Club '{club.Name}' rejected.";
 
             return RedirectToAction(nameof(Clubs));
         }

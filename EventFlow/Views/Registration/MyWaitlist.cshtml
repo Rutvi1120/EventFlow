@@ -54,14 +54,11 @@
                             </td>
 
                             <td>
-                                @waitlistEntry.JoinedAt
-                                .ToLocalTime()
-                                .ToString("dd MMM yyyy hh:mm tt")
+                                @waitlistEntry.JoinedAt.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")
                             </td>
 
                             <td>
-                                @eventItem.StartDateTime
-                                .ToString("dd MMM yyyy hh:mm tt")
+                                @eventItem.StartDateTime.ToString("dd MMM yyyy hh:mm tt")
                             </td>
 
                             <td class="text-end">

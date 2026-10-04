@@ -34,6 +34,7 @@ namespace EventFlow.Controllers
             return View(events);
         }
 
+
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
@@ -53,13 +54,21 @@ namespace EventFlow.Controllers
                 return NotFound();
             }
 
-            // State used by the view to show the correct action buttons.
+            // Registration information
             ViewBag.RegisteredCount = eventItem.Registrations.Count;
+
             ViewBag.SeatsLeft = Math.Max(
                 0,
-                eventItem.MaxParticipants - eventItem.Registrations.Count);
+                eventItem.MaxParticipants -
+                eventItem.Registrations.Count);
 
+            // Current user
             var userId = _userManager.GetUserId(User);
+
+            // Check whether the current user is the event creator
+            ViewBag.IsOrganizer =
+                !string.IsNullOrWhiteSpace(userId) &&
+                userId == eventItem.OrganizerId;
 
             if (!string.IsNullOrWhiteSpace(userId))
             {
@@ -75,9 +84,12 @@ namespace EventFlow.Controllers
                 ViewBag.MyVolunteerStatus = myVolunteer?.Status;
             }
 
+            // Waitlist count
+            ViewBag.WaitlistCount =
+                eventItem.WaitlistEntries.Count;
+
             return View(eventItem);
         }
-
         [Authorize]
         public async Task<IActionResult> MyEvents()
         {

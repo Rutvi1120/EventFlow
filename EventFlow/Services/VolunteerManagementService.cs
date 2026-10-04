@@ -19,7 +19,8 @@ namespace EventFlow.Services
     {
         Success,
         InvalidStudent,
-        Duplicate
+        Duplicate,
+        VolunteerConflict
     }
 
     /// <summary>
@@ -36,13 +37,15 @@ namespace EventFlow.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-
+        private readonly ConflictDetectionService _conflictDetectionService;
         public VolunteerManagementService(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager,
+    ConflictDetectionService conflictDetectionService)
         {
             _context = context;
             _userManager = userManager;
+            _conflictDetectionService = conflictDetectionService;
         }
 
         // -------------------------------------------------------------
@@ -69,17 +72,38 @@ namespace EventFlow.Services
             var isPresident = user.IsInRole(AppRoles.ClubPresident);
 
             return query.Where(e =>
-                (isFaculty &&
-                    (e.EventType == EventTypes.College ||
-                     (e.ClubId != null &&
-                      e.Club != null &&
-                      e.Club.FacultySupervisorId == userId)))
-                ||
-                (isPresident &&
-                    e.ClubId != null &&
-                    e.Club != null &&
-                    e.Club.ClubPresidentId == userId));
+               (isFaculty &&
+                   (
+                       // Faculty can manage College events
+                       e.EventType == EventTypes.College
+
+                       ||
+
+                       // Faculty can manage Student events
+                       // assigned specifically to them
+                       (
+                           e.EventType == EventTypes.Student &&
+                           e.FacultySupervisorId == userId
+                       )
+
+                       ||
+
+                       // Faculty can manage their supervised Club events
+                       (
+                           e.ClubId != null &&
+                           e.Club != null &&
+                           e.Club.FacultySupervisorId == userId
+                       )
+                   ))
+               ||
+
+               // Club President manages their own club events
+               (isPresident &&
+                   e.ClubId != null &&
+                   e.Club != null &&
+                   e.Club.ClubPresidentId == userId));
         }
+        
 
         public Task<bool> CanManageVolunteersAsync(
             int eventId,
@@ -169,8 +193,8 @@ namespace EventFlow.Services
         /// The caller must already have passed CheckDirectAddAccessAsync.
         /// </summary>
         public async Task<DirectAddResult> AddVolunteerDirectlyAsync(
-            Event eventItem,
-            AddVolunteerViewModel model)
+    Event eventItem,
+    AddVolunteerViewModel model)
         {
             var student = string.IsNullOrWhiteSpace(model.VolunteerId)
                 ? null
@@ -189,6 +213,22 @@ namespace EventFlow.Services
             if (exists)
             {
                 return DirectAddResult.Duplicate;
+            }
+
+            // =============================================================
+            // CHECK VOLUNTEER TIME CONFLICT
+            // =============================================================
+
+            var volunteerConflict =
+                await _conflictDetectionService.FindVolunteerConflictAsync(
+                    student.Id,
+                    eventItem.StartDateTime,
+                    eventItem.EndDateTime,
+                    eventItem.Id);
+
+            if (volunteerConflict != null)
+            {
+                return DirectAddResult.VolunteerConflict;
             }
 
             var notes = string.IsNullOrWhiteSpace(model.Notes)
@@ -219,4 +259,6 @@ namespace EventFlow.Services
             return DirectAddResult.Success;
         }
     }
+
 }
+

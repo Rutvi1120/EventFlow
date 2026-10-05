@@ -18,21 +18,6 @@
             </a>
 
             <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a class="dropdown-item"
-                       asp-controller="Registration"
-                       asp-action="MyRegistrations">
-                        My Registrations
-                    </a>
-                </li>
-
-                <li>
-                    <a class="dropdown-item"
-                       asp-controller="Registration"
-                       asp-action="MyWaitlist">
-                        My Waitlist
-                    </a>
-                </li>
 
                 @if (User.IsInRole("Student"))
                 {
@@ -63,6 +48,7 @@
                         </button>
                     </form>
                 </li>
+
             </ul>
         </li>
     }

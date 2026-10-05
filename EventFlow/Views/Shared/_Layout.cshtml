@@ -69,6 +69,13 @@
             color: white;
             font-size: 20px;
             backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .brand-icon img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
         }
 
         .brand-text {
@@ -156,18 +163,26 @@
             text-decoration: none;
         }
 
-        .admin-brand-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 13px;
+       .admin-brand-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 18px;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-            background: rgba(255, 255, 255, 0.16);
-            font-size: 21px;
-        }
+    background: rgba(255, 255, 255, 0.16);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.admin-brand-icon img {
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    border-radius: 0;
+}
 
         .admin-brand-name {
             font-size: 1.3rem;
@@ -432,6 +447,15 @@
             font-size: 1.2rem;
             font-weight: 700;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-brand img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
         }
 
         .footer-description {
@@ -546,6 +570,11 @@
                 font-size: 18px;
             }
 
+            .brand-icon img {
+                width: 28px;
+                height: 28px;
+            }
+
             .brand-subtitle {
                 font-size: 0.58rem;
             }
@@ -584,7 +613,8 @@
                        asp-action="Index">
 
                         <span class="admin-brand-icon">
-                            📅
+                            <img src="~/images/logo.png"
+                                 alt="EventFlow Logo" />
                         </span>
 
                         <span>
@@ -705,21 +735,6 @@
                     </a>
 
 
-                    <!-- Roles -->
-                    <a class="admin-sidebar-link
-                       @(ViewContext.RouteData.Values["controller"]?.ToString() == "Role"
-                         ? "active" : "")"
-                       asp-controller="Role"
-                       asp-action="Index">
-
-                        <span class="admin-sidebar-icon">
-                            🔐
-                        </span>
-
-                        <span>Roles</span>
-                    </a>
-
-
                     <!-- Public Events -->
                     <a class="admin-sidebar-link"
                        asp-controller="Events"
@@ -750,9 +765,23 @@
 
                     </div>
 
-                    <div class="login-area">
-                        <partial name="_LoginPartial" />
-                    </div>
+                    <form asp-area="Identity"
+                          asp-page="/Account/Logout"
+                          asp-route-returnUrl="/"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="admin-logout border-0 bg-transparent text-start">
+
+                            <span>🚪</span>
+
+                            <span>Logout</span>
+
+                        </button>
+
+                    </form>
 
                 </div>
 
@@ -809,7 +838,8 @@
                        asp-action="Index">
 
                         <span class="brand-icon">
-                            📅
+                            <img src="~/images/logo.png"
+                                 alt="EventFlow Logo" />
                         </span>
 
                         <span class="brand-text">
@@ -1075,7 +1105,12 @@
                     <div class="col-md-7">
 
                         <div class="footer-brand">
-                            📅 EventFlow
+
+                            <img src="~/images/logo.png"
+                                 alt="EventFlow Logo" />
+
+                            <span>EventFlow</span>
+
                         </div>
 
                         <p class="footer-description mb-0">

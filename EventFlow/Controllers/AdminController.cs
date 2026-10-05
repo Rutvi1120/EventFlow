@@ -25,8 +25,27 @@ namespace EventFlow.Controllers
             _conflictDetectionService = conflictDetectionService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            ViewBag.TotalUsers = await _userManager.Users.CountAsync();
+
+            ViewBag.PendingUsers = await _userManager.Users
+                .CountAsync(u => !u.IsApproved);
+
+            ViewBag.TotalEvents = await _context.Events.CountAsync();
+
+            ViewBag.PendingEvents = await _context.Events
+                .CountAsync(e => e.ApprovalStatus == "Pending");
+
+            ViewBag.TotalClubs = await _context.Clubs.CountAsync();
+
+            ViewBag.ApprovedClubs = await _context.Clubs
+                .CountAsync(c => c.Status == "Approved");
+
+            ViewBag.TotalVenues = await _context.Venues.CountAsync();
+
+            ViewBag.TotalRegistrations = await _context.Registrations.CountAsync();
+
             return View();
         }
 

@@ -2,142 +2,736 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
+<style>
+
+    /* =========================================================
+       ADMIN DASHBOARD
+    ========================================================= */
+
+    .admin-dashboard-page {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* =========================================================
+       WELCOME BANNER
+    ========================================================= */
+
+    .admin-welcome-banner {
+        position: relative;
+        overflow: hidden;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        min-height: 190px;
+
+        padding: 38px 45px;
+        margin-bottom: 28px;
+
+        border-radius: 24px;
+
+        background: linear-gradient(
+            135deg,
+            #312e81 0%,
+            #4338ca 55%,
+            #5b21b6 100%
+        );
+
+        color: white;
+
+        box-shadow: 0 15px 35px rgba(67, 56, 202, 0.20);
+    }
+
+    .admin-welcome-banner::before {
+        content: "";
+
+        position: absolute;
+
+        width: 280px;
+        height: 280px;
+
+        right: 80px;
+        top: -150px;
+
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 50%;
+    }
+
+    .admin-welcome-banner::after {
+        content: "";
+
+        position: absolute;
+
+        width: 190px;
+        height: 190px;
+
+        right: 125px;
+        top: -105px;
+
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 50%;
+    }
+
+    .admin-welcome-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .admin-welcome-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+
+        color: rgba(255, 255, 255, 0.65);
+
+        margin-bottom: 10px;
+    }
+
+    .admin-welcome-content h1 {
+        font-size: 2.5rem;
+        font-weight: 750;
+
+        margin: 0 0 10px;
+
+        color: white;
+    }
+
+    .admin-welcome-content p {
+        margin: 0;
+
+        color: rgba(255, 255, 255, 0.75);
+
+        font-size: 0.98rem;
+    }
+
+    .admin-welcome-icon {
+        position: relative;
+        z-index: 2;
+
+        width: 90px;
+        height: 90px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 24px;
+
+        background: rgba(255, 255, 255, 0.13);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+
+        font-size: 2.4rem;
+
+        backdrop-filter: blur(8px);
+    }
+
+
+    /* =========================================================
+       ANALYTICS CARDS
+    ========================================================= */
+
+    .analytics-card {
+        position: relative;
+        overflow: hidden;
+
+        background: #ffffff;
+
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+
+        padding: 25px;
+
+        min-height: 180px;
+
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+
+        transition: transform 0.2s ease,
+                    box-shadow 0.2s ease;
+    }
+
+    .analytics-card:hover {
+        transform: translateY(-3px);
+
+        box-shadow:
+            0 10px 25px rgba(0, 0, 0, 0.07);
+    }
+
+    .analytics-card::after {
+        content: "";
+
+        position: absolute;
+
+        width: 110px;
+        height: 110px;
+
+        right: -40px;
+        bottom: -45px;
+
+        border-radius: 50%;
+
+        background: #eef2ff;
+    }
+
+
+    /* =========================================================
+       ANALYTICS ICON
+    ========================================================= */
+
+    .analytics-icon {
+        width: 50px;
+        height: 50px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 14px;
+
+        background: #eef2ff;
+
+        font-size: 1.35rem;
+
+        margin-bottom: 18px;
+    }
+
+    .users-card .analytics-icon {
+        background: #eef2ff;
+    }
+
+    .events-card .analytics-icon {
+        background: #ede9fe;
+    }
+
+    .clubs-card .analytics-icon {
+        background: #f3e8ff;
+    }
+
+    .venues-card .analytics-icon {
+        background: #e0f2fe;
+    }
+
+    .registrations-card .analytics-icon {
+        background: #ecfdf5;
+    }
+
+
+    /* =========================================================
+       ANALYTICS TEXT
+    ========================================================= */
+
+    .analytics-title {
+        position: relative;
+        z-index: 2;
+
+        color: #6b7280;
+
+        font-size: 0.72rem;
+        font-weight: 700;
+
+        text-transform: uppercase;
+        letter-spacing: 1px;
+
+        margin-bottom: 7px;
+    }
+
+    .analytics-number {
+        position: relative;
+        z-index: 2;
+
+        color: #111827;
+
+        font-size: 2.3rem;
+        line-height: 1;
+
+        font-weight: 750;
+
+        margin-bottom: 9px;
+    }
+
+    .analytics-subtitle {
+        position: relative;
+        z-index: 2;
+
+        color: #9ca3af;
+
+        font-size: 0.82rem;
+    }
+
+
+    /* =========================================================
+       SYSTEM OVERVIEW
+    ========================================================= */
+
+    .overview-section {
+        margin-top: 28px;
+
+        background: white;
+
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+
+        padding: 28px;
+
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.035);
+    }
+
+    .overview-header {
+        margin-bottom: 22px;
+    }
+
+    .overview-label {
+        color: #6366f1;
+
+        font-size: 0.7rem;
+        font-weight: 700;
+
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+
+        margin-bottom: 5px;
+    }
+
+    .overview-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+
+        color: #111827;
+
+        margin: 0 0 5px;
+    }
+
+    .overview-description {
+        color: #6b7280;
+
+        font-size: 0.88rem;
+
+        margin: 0;
+    }
+
+
+    /* =========================================================
+       OVERVIEW ROWS
+    ========================================================= */
+
+    .overview-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 16px 0;
+
+        border-bottom: 1px solid #f0f1f3;
+    }
+
+    .overview-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .overview-row:first-child {
+        padding-top: 0;
+    }
+
+    .overview-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        color: #374151;
+
+        font-size: 0.92rem;
+        font-weight: 600;
+    }
+
+    .overview-value {
+        color: #4f46e5;
+
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .overview-dot {
+        width: 10px;
+        height: 10px;
+
+        border-radius: 50%;
+
+        background: #6366f1;
+    }
+
+    .overview-dot.green {
+        background: #10b981;
+    }
+
+    .overview-dot.orange {
+        background: #f59e0b;
+    }
+
+    .overview-dot.blue {
+        background: #0ea5e9;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+
+    @@media (max-width: 900px) {
+
+        .admin-welcome-banner {
+            padding: 32px 35px;
+        }
+
+        .admin-welcome-content h1 {
+            font-size: 2.2rem;
+        }
+
+        .admin-welcome-icon {
+            width: 75px;
+            height: 75px;
+            font-size: 2rem;
+        }
+    }
+
+
+    @@media (max-width: 576px) {
+
+        .admin-dashboard-page {
+            padding: 0 3px;
+        }
+
+        .admin-welcome-banner {
+            padding: 28px 25px;
+
+            min-height: 170px;
+
+            border-radius: 20px;
+        }
+
+        .admin-welcome-content h1 {
+            font-size: 1.8rem;
+        }
+
+        .admin-welcome-content p {
+            font-size: 0.88rem;
+        }
+
+        .admin-welcome-icon {
+            display: none;
+        }
+
+        .analytics-card {
+            min-height: 160px;
+        }
+
+        .analytics-number {
+            font-size: 2rem;
+        }
+
+        .overview-section {
+            padding: 22px;
+        }
+    }
+
+</style>
+
+
 <div class="container py-4">
 
-    <div class="mb-4">
-        <h1>Admin Dashboard</h1>
+    <div class="admin-dashboard-page">
 
-        <p class="text-muted">
-            Manage users, events, clubs, and venues.
-        </p>
+        <partial name="_Alerts" />
+
+
+        <!-- =====================================================
+             WELCOME BANNER
+        ====================================================== -->
+
+        <div class="admin-welcome-banner">
+
+            <div class="admin-welcome-content">
+
+                <div class="admin-welcome-label">
+                    ADMINISTRATION PANEL
+                </div>
+
+                <h1>
+                    Welcome back, Administrator 👋
+                </h1>
+
+                <p>
+                    Here's an overview of what's happening in your
+                    EventFlow system.
+                </p>
+
+            </div>
+
+
+            <div class="admin-welcome-icon">
+                📊
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             ANALYTICS
+        ====================================================== -->
+
+        <div class="row g-4">
+
+
+            <!-- ================= USERS ================= -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="analytics-card users-card">
+
+                    <div class="analytics-icon">
+                        👥
+                    </div>
+
+                    <div class="analytics-title">
+                        Total Users
+                    </div>
+
+                    <div class="analytics-number">
+                        @ViewBag.TotalUsers
+                    </div>
+
+                    <div class="analytics-subtitle">
+                        @ViewBag.PendingUsers pending approval
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= EVENTS ================= -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="analytics-card events-card">
+
+                    <div class="analytics-icon">
+                        📅
+                    </div>
+
+                    <div class="analytics-title">
+                        Total Events
+                    </div>
+
+                    <div class="analytics-number">
+                        @ViewBag.TotalEvents
+                    </div>
+
+                    <div class="analytics-subtitle">
+                        @ViewBag.PendingEvents pending approval
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= CLUBS ================= -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="analytics-card clubs-card">
+
+                    <div class="analytics-icon">
+                        🏛
+                    </div>
+
+                    <div class="analytics-title">
+                        Total Clubs
+                    </div>
+
+                    <div class="analytics-number">
+                        @ViewBag.TotalClubs
+                    </div>
+
+                    <div class="analytics-subtitle">
+                        @ViewBag.ApprovedClubs approved
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= VENUES ================= -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="analytics-card venues-card">
+
+                    <div class="analytics-icon">
+                        📍
+                    </div>
+
+                    <div class="analytics-title">
+                        Total Venues
+                    </div>
+
+                    <div class="analytics-number">
+                        @ViewBag.TotalVenues
+                    </div>
+
+                    <div class="analytics-subtitle">
+                        Available event venues
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             SECOND ANALYTICS ROW
+        ====================================================== -->
+
+        <div class="row g-4 mt-1">
+
+
+            <!-- ================= REGISTRATIONS ================= -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="analytics-card registrations-card">
+
+                    <div class="analytics-icon">
+                        📋
+                    </div>
+
+                    <div class="analytics-title">
+                        Registrations
+                    </div>
+
+                    <div class="analytics-number">
+                        @ViewBag.TotalRegistrations
+                    </div>
+
+                    <div class="analytics-subtitle">
+                        Total event registrations
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =====================================================
+             SYSTEM OVERVIEW
+        ====================================================== -->
+
+        <div class="overview-section">
+
+            <div class="overview-header">
+
+                <div class="overview-label">
+                    SYSTEM STATUS
+                </div>
+
+                <h2 class="overview-title">
+                    System Overview
+                </h2>
+
+                <p class="overview-description">
+                    Current status of important areas in EventFlow.
+                </p>
+
+            </div>
+
+
+            <!-- Pending Users -->
+
+            <div class="overview-row">
+
+                <div class="overview-name">
+
+                    <span class="overview-dot"></span>
+
+                    Users awaiting approval
+
+                </div>
+
+                <div class="overview-value">
+                    @ViewBag.PendingUsers
+                </div>
+
+            </div>
+
+
+            <!-- Pending Events -->
+
+            <div class="overview-row">
+
+                <div class="overview-name">
+
+                    <span class="overview-dot orange"></span>
+
+                    Events awaiting approval
+
+                </div>
+
+                <div class="overview-value">
+                    @ViewBag.PendingEvents
+                </div>
+
+            </div>
+
+
+            <!-- Approved Clubs -->
+
+            <div class="overview-row">
+
+                <div class="overview-name">
+
+                    <span class="overview-dot green"></span>
+
+                    Approved clubs
+
+                </div>
+
+                <div class="overview-value">
+                    @ViewBag.ApprovedClubs
+                </div>
+
+            </div>
+
+
+            <!-- Registrations -->
+
+            <div class="overview-row">
+
+                <div class="overview-name">
+
+                    <span class="overview-dot blue"></span>
+
+                    Total event registrations
+
+                </div>
+
+                <div class="overview-value">
+                    @ViewBag.TotalRegistrations
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <partial name="_Alerts" />
-
-    <div class="row g-4">
-
-        <!-- Users -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-
-                    <h5>Users</h5>
-
-                    <p class="text-muted">
-                        Approve and manage user accounts.
-                    </p>
-
-                    <a asp-action="Users"
-                       class="btn btn-primary">
-                        Manage Users
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- Events -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-
-                    <h5>Events</h5>
-
-                    <p class="text-muted">
-                        Review and manage all events.
-                    </p>
-
-                    <a asp-action="Events"
-                       class="btn btn-primary">
-                        Manage Events
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- Clubs -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-
-                    <h5>Clubs</h5>
-
-                    <p class="text-muted">
-                        Approve and manage clubs.
-                    </p>
-
-                    <a asp-action="Clubs"
-                       class="btn btn-primary">
-                        Manage Clubs
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- Venues -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-
-                    <h5>Venues</h5>
-
-                    <p class="text-muted">
-                        Create, edit, and manage event venues.
-                    </p>
-
-                    <a asp-controller="Venue"
-                       asp-action="Index"
-                       class="btn btn-primary">
-                        Manage Venues
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- Volunteers -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-
-                    <h5>Volunteers</h5>
-
-                    <p class="text-muted">
-                        Monitor volunteer applications and activity.
-                    </p>
-
-                    <a asp-controller="Volunteer"
-                       asp-action="Manage"
-                       class="btn btn-primary">
-                        Manage Volunteers
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- All Events -->
-        <div class="col-md-6 col-lg-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-
-                    <h5>All Events</h5>
-
-                    <p class="text-muted">
-                        View the public event list.
-                    </p>
-
-                    <a asp-controller="Events"
-                       asp-action="Index"
-                       class="btn btn-primary">
-                        View Events
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
-    </div>
 </div>

@@ -40,6 +40,76 @@ namespace EventFlow.Controllers
             return View(users);
         }
 
+        // Approve Faculty / ClubPresident / Student
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Make sure the user has requested a valid role
+            if (string.IsNullOrWhiteSpace(user.RequestedRole))
+            {
+                TempData["ErrorMessage"] =
+                    $"{user.FullName} does not have a requested role.";
+
+                return RedirectToAction(nameof(Users));
+            }
+
+            if (user.RequestedRole != "Faculty" &&
+                user.RequestedRole != "ClubPresident" &&
+                user.RequestedRole != "Student")
+            {
+                TempData["ErrorMessage"] =
+                    $"Invalid requested role for {user.FullName}.";
+
+                return RedirectToAction(nameof(Users));
+            }
+
+            // Approve the account
+            user.IsApproved = true;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                TempData["ErrorMessage"] = string.Join(
+                    " ",
+                    updateResult.Errors.Select(e => e.Description));
+
+                return RedirectToAction(nameof(Users));
+            }
+
+            // Assign the requested Identity role
+            if (!await _userManager.IsInRoleAsync(
+                user,
+                user.RequestedRole))
+            {
+                var roleResult = await _userManager.AddToRoleAsync(
+                    user,
+                    user.RequestedRole);
+
+                if (!roleResult.Succeeded)
+                {
+                    TempData["ErrorMessage"] = string.Join(
+                        " ",
+                        roleResult.Errors.Select(e => e.Description));
+
+                    return RedirectToAction(nameof(Users));
+                }
+            }
+
+            TempData["SuccessMessage"] =
+                $"{user.FullName} has been approved as {user.RequestedRole}.";
+
+            return RedirectToAction(nameof(Users));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectUser(string id)

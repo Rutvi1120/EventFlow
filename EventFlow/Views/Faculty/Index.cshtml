@@ -1,6 +1,5 @@
-
 @{
-    ViewData["Title"] = "Faculty Dashboard";
+    ViewData["Name"] = "Faculty Dashboard";
 
     var supervisedClubs =
         ViewBag.SupervisedClubs as IEnumerable<EventFlow.Models.Club>
@@ -19,485 +18,351 @@
         ?? Enumerable.Empty<EventFlow.Models.Volunteer>();
 
     int pendingVolunteerCount = ViewBag.PendingVolunteerCount ?? 0;
+
+    var pendingPresidentRequests =
+        ViewBag.PendingPresidentRequests as IEnumerable<dynamic>
+        ?? Enumerable.Empty<dynamic>();
 }
 
 <style>
-    body {
-        background: #f7f9fc;
+    .faculty-dashboard {
+        max-width: 1500px;
+        margin: 0 auto;
     }
 
-    /* ================= HEADER ================= */
-
-    .dashboard-header {
-        background: linear-gradient(135deg, #172033, #315b9b);
+    .faculty-welcome {
+        background: linear-gradient(135deg, #312e81, #4338ca, #5b21b6);
         color: white;
-        border-radius: 24px;
-        padding: 35px;
-        margin-bottom: 30px;
-        box-shadow: 0 15px 35px rgba(23, 32, 51, 0.15);
-    }
-
-        .dashboard-header h1 {
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .dashboard-header p {
-            color: rgba(255,255,255,0.75);
-            margin-bottom: 0;
-        }
-
-    .faculty-icon {
-        width: 72px;
-        height: 72px;
         border-radius: 20px;
-        background: rgba(255,255,255,0.12);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 35px;
+        padding: 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 12px 30px rgba(49, 46, 129, 0.18);
     }
 
-    /* ================= STAT CARDS ================= */
-
-    .stat-card {
-        background: white;
-        border: none;
-        border-radius: 18px;
-        padding: 24px;
-        height: 100%;
-        box-shadow: 0 8px 25px rgba(32, 56, 85, 0.07);
-        transition: 0.25s ease;
-    }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(32, 56, 85, 0.11);
+        .faculty-welcome h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
         }
 
-    .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 21px;
-        margin-bottom: 15px;
-    }
-
-    .stat-number {
-        font-size: 30px;
-        font-weight: 800;
-        color: #172033;
-    }
-
-    .stat-label {
-        color: #667085;
-        font-size: 14px;
-    }
-
-    /* ================= SECTION ================= */
-
-    .section-title {
-        font-weight: 800;
-        color: #172033;
-    }
-
-    .section-description {
-        color: #667085;
-    }
-
-    /* ================= MANAGEMENT CARDS ================= */
-
-    .management-card {
-        background: white;
-        border: 1px solid #edf0f5;
-        border-radius: 20px;
-        padding: 25px;
-        height: 100%;
-        transition: 0.25s ease;
-    }
-
-        .management-card:hover {
-            transform: translateY(-6px);
-            border-color: transparent;
-            box-shadow: 0 15px 35px rgba(32, 56, 85, 0.1);
+        .faculty-welcome p {
+            margin: 8px 0 0;
+            opacity: 0.82;
         }
 
-    .management-icon {
-        width: 58px;
-        height: 58px;
+    .faculty-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .faculty-stat-card {
+        background: white;
+        border: 1px solid #e5e7eb;
         border-radius: 16px;
+        padding: 22px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .faculty-stat-label {
+        color: #6b7280;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+
+    .faculty-stat-value {
+        color: #111827;
+        font-size: 1.9rem;
+        font-weight: 700;
+    }
+
+    .faculty-section {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+    }
+
+    .faculty-section-header {
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 26px;
+        justify-content: space-between;
+        gap: 15px;
         margin-bottom: 18px;
     }
 
-    .management-card h5 {
+    .faculty-section-title {
+        margin: 0;
+        font-size: 1.2rem;
         font-weight: 700;
-        color: #172033;
+        color: #111827;
     }
 
-    .management-card p {
-        color: #667085;
-        min-height: 45px;
+    .faculty-section-subtitle {
+        margin: 4px 0 0;
+        color: #6b7280;
+        font-size: 0.86rem;
     }
 
-    .dashboard-btn {
-        border-radius: 10px;
-        padding: 9px 17px;
+    .faculty-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .faculty-table th {
+            padding: 12px;
+            text-align: left;
+            font-size: 0.8rem;
+            color: #6b7280;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .faculty-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #374151;
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        .faculty-table tr:last-child td {
+            border-bottom: none;
+        }
+
+    .faculty-empty {
+        text-align: center;
+        padding: 30px 15px;
+        color: #6b7280;
+    }
+
+    .faculty-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
         font-weight: 600;
     }
 
-    /* ================= MAIN CONTENT ================= */
+    .faculty-status-pending {
+        color: #92400e;
+        background: #fef3c7;
+    }
 
-    .dashboard-panel {
-        background: white;
+    .faculty-status-approved {
+        color: #166534;
+        background: #dcfce7;
+    }
+
+    .faculty-action-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .faculty-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 12px;
+        border-radius: 8px;
         border: none;
-        border-radius: 20px;
-        box-shadow: 0 8px 25px rgba(32, 56, 85, 0.07);
-        overflow: hidden;
+        text-decoration: none;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
     }
 
-    .panel-header {
-        padding: 20px 24px;
-        border-bottom: 1px solid #edf0f5;
-        background: white;
+    .faculty-action-primary {
+        background: #4338ca;
+        color: white;
     }
 
-        .panel-header h5 {
-            font-weight: 700;
-            margin: 0;
+        .faculty-action-primary:hover {
+            background: #3730a3;
+            color: white;
         }
 
-    .panel-body {
-        padding: 24px;
+    .faculty-action-success {
+        background: #dcfce7;
+        color: #166534;
     }
 
-    .table {
-        margin-bottom: 0;
+        .faculty-action-success:hover {
+            background: #bbf7d0;
+            color: #14532d;
+        }
+
+    .faculty-action-danger {
+        background: #fee2e2;
+        color: #991b1b;
     }
 
-        .table thead th {
-            font-size: 13px;
-            color: #667085;
-            font-weight: 600;
-            border-bottom-width: 1px;
+        .faculty-action-danger:hover {
+            background: #fecaca;
+            color: #7f1d1d;
         }
 
-        .table tbody td {
-            padding-top: 16px;
-            padding-bottom: 16px;
-        }
-
-    /* ================= CLUB LIST ================= */
-
-    .club-item {
-        border: 1px solid #edf0f5 !important;
-        border-radius: 12px !important;
-        margin-bottom: 10px;
-        transition: 0.2s ease;
+    .faculty-club-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
     }
 
-        .club-item:hover {
-            background: #f8faff;
-            transform: translateX(3px);
-        }
-
-    /* ================= ALERT ================= */
-
-    .approval-alert {
-        border: none;
-        border-radius: 15px;
-        background: #fff7e6;
-        color: #664d03;
+    .faculty-club-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 18px;
+        background: #fafafa;
     }
 
-    /* ================= RESPONSIVE ================= */
+    .faculty-club-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 6px;
+    }
 
-    @@media (max-width: 768px) {
-        .dashboard-header {
-            padding: 25px;
+    .faculty-club-detail {
+        color: #6b7280;
+        font-size: 0.82rem;
+        margin-bottom: 4px;
+    }
+
+    .faculty-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+
+    .faculty-summary-card {
+        padding: 18px;
+        border-radius: 14px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+    }
+
+    .faculty-summary-number {
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: #312e81;
+    }
+
+    .faculty-summary-label {
+        margin-top: 4px;
+        font-size: 0.82rem;
+        color: #6b7280;
+    }
+
+    @@media (max-width: 1100px) {
+        .faculty-stat-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
 
-        .faculty-icon {
-            display: none;
+        .faculty-club-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .faculty-stat-grid,
+        .faculty-club-grid,
+        .faculty-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .faculty-welcome {
+            padding: 22px;
+        }
+
+            .faculty-welcome h1 {
+                font-size: 1.5rem;
+            }
+
+        .faculty-section {
+            padding: 18px;
+            overflow-x: auto;
+        }
+
+        .faculty-table {
+            min-width: 700px;
         }
     }
 </style>
 
+<div class="faculty-dashboard">
 
-<div class="container py-4">
+    <div class="faculty-welcome">
 
-    <partial name="_Alerts" />
+        <h1>
+            Faculty Dashboard 👨‍🏫
+        </h1>
 
-
-    <!-- ================= HEADER ================= -->
-
-    <div class="dashboard-header">
-
-        <div class="row align-items-center">
-
-            <div class="col">
-
-                <div class="small fw-semibold mb-2">
-                    FACULTY PORTAL
-                </div>
-
-                <h1>
-                    Faculty Dashboard 👨‍🏫
-                </h1>
-
-                <p>
-                    Manage college events, approve activities,
-                    supervise clubs and coordinate volunteers.
-                </p>
-
-            </div>
-
-            <div class="col-auto">
-
-                <div class="faculty-icon">
-                    🎓
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= STATISTICS ================= -->
-
-    <div class="row g-4 mb-5">
-
-        <!-- Pending Events -->
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-primary-subtle text-primary">
-                    📅
-                </div>
-
-                <div class="stat-number">
-                    @pendingEvents.Count()
-                </div>
-
-                <div class="stat-label">
-                    Pending Event Approvals
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Volunteers -->
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-warning-subtle text-warning">
-                    🤝
-                </div>
-
-                <div class="stat-number">
-                    @pendingVolunteerCount
-                </div>
-
-                <div class="stat-label">
-                    Pending Volunteers
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Clubs -->
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-success-subtle text-success">
-                    🏛️
-                </div>
-
-                <div class="stat-number">
-                    @supervisedClubs.Count()
-                </div>
-
-                <div class="stat-label">
-                    Supervised Clubs
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Events -->
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-info-subtle text-info">
-                    📋
-                </div>
-
-                <div class="stat-number">
-                    @myEvents.Count()
-                </div>
-
-                <div class="stat-label">
-                    My Events
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= MANAGEMENT ================= -->
-
-    <div class="mb-4">
-
-        <h3 class="section-title mb-1">
-            Faculty Management
-        </h3>
-
-        <p class="section-description mb-0">
-            Quickly access the areas you manage.
+        <p>
+            Manage event approvals, supervised clubs, volunteers,
+            and your events from one place.
         </p>
 
     </div>
 
 
-    <div class="row g-4 mb-5">
+    <!-- =========================================================
+         STATISTICS
+         ========================================================= -->
 
-        <!-- Event Approvals -->
+    <div class="faculty-stat-grid">
 
-        <div class="col-md-6 col-lg-3">
+        <div class="faculty-stat-card">
 
-            <div class="management-card">
+            <div class="faculty-stat-label">
+                Pending Event Approvals
+            </div>
 
-                <div class="management-icon bg-primary-subtle text-primary">
-                    ✓
-                </div>
-
-                <h5>
-                    Event Approvals
-                </h5>
-
-                <p>
-                    Review and approve events submitted
-                    by students and organizers.
-                </p>
-
-                <a asp-action="Events"
-                   class="btn btn-primary dashboard-btn">
-                    Review Events →
-                </a>
-
+            <div class="faculty-stat-value">
+                @pendingEvents.Count()
             </div>
 
         </div>
 
 
-        <!-- Volunteer Management -->
+        <div class="faculty-stat-card">
 
-        <div class="col-md-6 col-lg-3">
+            <div class="faculty-stat-label">
+                Pending Volunteers
+            </div>
 
-            <div class="management-card">
-
-                <div class="management-icon bg-warning-subtle text-warning">
-                    🤝
-                </div>
-
-                <h5>
-                    Volunteers
-                </h5>
-
-                <p>
-                    Review student applications and
-                    manage volunteer assignments.
-                </p>
-
-                <a asp-controller="Volunteer"
-                   asp-action="Manage"
-                   class="btn btn-warning dashboard-btn">
-                    Manage Volunteers →
-                </a>
-
+            <div class="faculty-stat-value">
+                @pendingVolunteerCount
             </div>
 
         </div>
 
 
-        <!-- Clubs -->
+        <div class="faculty-stat-card">
 
-        <div class="col-md-6 col-lg-3">
+            <div class="faculty-stat-label">
+                Supervised Clubs
+            </div>
 
-            <div class="management-card">
-
-                <div class="management-icon bg-success-subtle text-success">
-                    🏛️
-                </div>
-
-                <h5>
-                    Supervised Clubs
-                </h5>
-
-                <p>
-                    View clubs and manage the activities
-                    you supervise.
-                </p>
-
-                <a asp-action="AllClubs"
-                   class="btn btn-success dashboard-btn">
-                    View Clubs →
-                </a>
-
+            <div class="faculty-stat-value">
+                @supervisedClubs.Count()
             </div>
 
         </div>
 
 
-        <!-- Create Event -->
+        <div class="faculty-stat-card">
 
-        <div class="col-md-6 col-lg-3">
+            <div class="faculty-stat-label">
+                My Events
+            </div>
 
-            <div class="management-card">
-
-                <div class="management-icon bg-info-subtle text-info">
-                    ➕
-                </div>
-
-                <h5>
-                    Create Event
-                </h5>
-
-                <p>
-                    Create and organize a new
-                    college-wide event.
-                </p>
-
-                <a asp-action="CreateEvent"
-                   class="btn btn-info dashboard-btn">
-                    Create Event →
-                </a>
-
+            <div class="faculty-stat-value">
+                @myEvents.Count()
             </div>
 
         </div>
@@ -505,387 +370,563 @@
     </div>
 
 
-    <!-- ================= MAIN DASHBOARD ================= -->
+    <!-- =========================================================
+         PENDING EVENT APPROVALS
+         ========================================================= -->
 
-    <div class="row g-4">
+    <div class="faculty-section">
 
+        <div class="faculty-section-header">
 
-        <!-- LEFT COLUMN -->
+            <div>
+                <h2 class="faculty-section-title">
+                    Pending Event Approvals
+                </h2>
 
-        <div class="col-lg-8">
-
-
-            <!-- PENDING EVENTS -->
-
-            <div class="dashboard-panel mb-4">
-
-                <div class="panel-header d-flex justify-content-between align-items-center">
-
-                    <h5>
-                        Pending Event Approvals
-                    </h5>
-
-                    @if (pendingEvents.Any())
-                    {
-                        <span class="badge bg-primary">
-                            @pendingEvents.Count() pending
-                        </span>
-                    }
-
-                </div>
-
-
-                <div class="panel-body">
-
-                    @if (!pendingEvents.Any())
-                    {
-                        <div class="alert alert-light border mb-0">
-                            ✓ There are no events waiting for your approval.
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="table-responsive">
-
-                            <table class="table table-hover align-middle">
-
-                                <thead>
-
-                                    <tr>
-                                        <th>Event</th>
-                                        <th>Type</th>
-                                        <th>Date</th>
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                    @foreach (var eventItem in pendingEvents.Take(5))
-                                    {
-                                        <tr>
-
-                                            <td>
-                                                <strong>
-                                                    @eventItem.Name
-                                                </strong>
-                                            </td>
-
-                                            <td>
-
-                                                <span class="badge bg-primary">
-                                                    @eventItem.EventType
-                                                </span>
-
-                                            </td>
-
-                                            <td>
-                                                @eventItem.StartDateTime.ToString("dd MMM yyyy")
-                                            </td>
-
-                                        </tr>
-                                    }
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                        <div class="mt-3">
-
-                            <a asp-action="Events"
-                               class="btn btn-outline-primary dashboard-btn">
-                                View All Events →
-                            </a>
-
-                        </div>
-                    }
-
-                </div>
-
+                <p class="faculty-section-subtitle">
+                    Review events waiting for your approval.
+                </p>
             </div>
 
-
-            <!-- VOLUNTEER APPLICATIONS -->
-
-            <div class="dashboard-panel">
-
-                <div class="panel-header d-flex justify-content-between align-items-center">
-
-                    <h5>
-                        Volunteer Applications
-                    </h5>
-
-                    <span class="badge bg-warning text-dark">
-                        @pendingVolunteerCount pending
-                    </span>
-
-                </div>
-
-
-                <div class="panel-body">
-
-                    @if (!pendingVolunteerApplications.Any())
-                    {
-                        <div class="alert alert-light border mb-0">
-                            ✓ No pending volunteer applications.
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="table-responsive">
-
-                            <table class="table table-hover align-middle">
-
-                                <thead>
-
-                                    <tr>
-                                        <th>Student</th>
-                                        <th>Event</th>
-                                        <th>Assigned Work</th>
-                                        <th></th>
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                    @foreach (var volunteer in pendingVolunteerApplications.Take(8))
-                                    {
-                                        <tr>
-
-                                            <td>
-
-                                                <div class="fw-semibold">
-                                                    @(volunteer.VolunteerUser?.FullName
-                                                        ?? "Unknown")
-                                                </div>
-
-                                                <small class="text-muted">
-                                                    @volunteer.VolunteerUser?.Email
-                                                </small>
-
-                                            </td>
-
-
-                                            <td>
-
-                                                <div class="fw-semibold">
-                                                    @volunteer.Event?.Name
-                                                </div>
-
-                                                @if (volunteer.Event != null)
-                                                {
-                                                    <small class="text-muted">
-                                                        @volunteer.Event.StartDateTime
-                                                        .ToString("dd MMM yyyy, hh:mm tt")
-                                                    </small>
-                                                }
-
-                                            </td>
-
-
-                                            <td>
-
-                                                @(string.IsNullOrWhiteSpace(volunteer.Role)
-                                                    ? "Not assigned"
-                                                    : volunteer.Role)
-
-                                            </td>
-
-
-                                            <td class="text-end">
-
-                                                <a asp-controller="Volunteer"
-                                                   asp-action="EventVolunteers"
-                                                   asp-route-eventId="@volunteer.EventId"
-                                                   class="btn btn-sm btn-primary">
-                                                    Review
-                                                </a>
-
-                                            </td>
-
-                                        </tr>
-                                    }
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                        <div class="mt-3">
-
-                            <a asp-controller="Volunteer"
-                               asp-action="Manage"
-                               class="btn btn-outline-primary dashboard-btn">
-                                Volunteer Management →
-                            </a>
-
-                        </div>
-                    }
-
-                </div>
-
-            </div>
+            @if (pendingEvents.Any())
+            {
+                <span class="faculty-status faculty-status-pending">
+                    @pendingEvents.Count() Pending
+                </span>
+            }
 
         </div>
 
 
-        <!-- RIGHT COLUMN -->
+        @if (pendingEvents.Any())
+        {
+            <div class="table-responsive">
 
-        <div class="col-lg-4">
+                <table class="faculty-table">
+
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Organizer</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var eventItem in pendingEvents)
+                        {
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        @eventItem.Name
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @eventItem.Organizer?.UserName
+                                </td>
+
+                                <td>
+                                    @eventItem.StartDateTime.ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    @eventItem.EventType
+                                </td>
+
+                                <td>
+
+                                    <div class="faculty-action-group">
+
+                                        <form asp-controller="Faculty"
+                                              asp-action="ApproveEvent"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@eventItem.Id" />
+
+                                            <button type="submit"
+                                                    class="faculty-action-btn faculty-action-success">
+                                                Approve
+                                            </button>
+
+                                        </form>
 
 
-            <!-- CLUBS -->
+                                        <form asp-controller="Faculty"
+                                              asp-action="RejectEvent"
+                                              method="post"
+                                              class="d-inline">
 
-            <div class="dashboard-panel mb-4">
+                                            @Html.AntiForgeryToken()
 
-                <div class="panel-header d-flex justify-content-between align-items-center">
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@eventItem.Id" />
 
-                    <h5>
-                        Supervised Clubs
-                    </h5>
+                                            <button type="submit"
+                                                    class="faculty-action-btn faculty-action-danger">
+                                                Reject
+                                            </button>
 
-                    <span class="badge bg-success">
-                        @supervisedClubs.Count()
-                    </span>
-
-                </div>
-
-
-                <div class="panel-body">
-
-                    @if (!supervisedClubs.Any())
-                    {
-                        <div class="alert alert-light border mb-0">
-                            No approved clubs are assigned to you.
-                        </div>
-                    }
-                    else
-                    {
-                        <div>
-
-                            @foreach (var club in supervisedClubs.Take(5))
-                            {
-                                <a asp-action="ClubDetails"
-                                   asp-route-id="@club.Id"
-                                   class="list-group-item list-group-item-action club-item">
-
-                                    <div class="p-2">
-
-                                        <div class="fw-semibold">
-                                            @club.Name
-                                        </div>
-
-                                        <small class="text-muted">
-                                            President:
-                                            @(club.ClubPresident?.FullName
-                                                ?? "No president")
-                                        </small>
+                                        </form>
 
                                     </div>
 
-                                </a>
-                            }
+                                </td>
 
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="faculty-empty">
+                No pending event approvals right now.
+            </div>
+        }
+
+    </div>
+
+
+    <!-- =========================================================
+         PENDING CLUB PRESIDENT REQUESTS
+         ========================================================= -->
+    @if (pendingPresidentRequests.Any())
+    {
+        <div class="faculty-section">
+
+            <div class="faculty-section-header">
+
+                <div>
+                    <h2 class="faculty-section-title">
+                        Pending Club President Requests
+                    </h2>
+
+                    <p class="faculty-section-subtitle">
+                        Review club president requests for your supervised clubs.
+                    </p>
+                </div>
+
+                <span class="faculty-status faculty-status-pending">
+                    @pendingPresidentRequests.Count() Pending
+                </span>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="faculty-table">
+
+                    <thead>
+                        <tr>
+                            <th>Club</th>
+                            <th>President</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var request in pendingPresidentRequests)
+                        {
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        @request.Club?.Name
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @request.User?.UserName
+                                </td>
+
+                                <td>
+
+                                    <div class="faculty-action-group">
+
+                                        <form asp-controller="Faculty"
+                                              asp-action="ApprovePresident"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@request.Id" />
+
+                                            <button type="submit"
+                                                    class="faculty-action-btn faculty-action-success">
+                                                Approve
+                                            </button>
+
+                                        </form>
+
+
+                                        <form asp-controller="Faculty"
+                                              asp-action="RejectPresident"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="@request.Id" />
+
+                                            <button type="submit"
+                                                    class="faculty-action-btn faculty-action-danger">
+                                                Reject
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- =========================================================
+         VOLUNTEER APPLICATIONS
+         ========================================================= -->
+
+    <div class="faculty-section">
+
+        <div class="faculty-section-header">
+
+            <div>
+                <h2 class="faculty-section-title">
+                    Pending Volunteer Applications
+                </h2>
+
+                <p class="faculty-section-subtitle">
+                    Review volunteer applications that require attention.
+                </p>
+            </div>
+
+            @if (pendingVolunteerApplications.Any())
+            {
+                <span class="faculty-status faculty-status-pending">
+                    @pendingVolunteerApplications.Count() Pending
+                </span>
+            }
+
+        </div>
+
+
+        @if (pendingVolunteerApplications.Any())
+        {
+            <div class="table-responsive">
+
+                <table class="faculty-table">
+
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Event</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var application in pendingVolunteerApplications)
+                        {
+                            <tr>
+
+                                <td>
+                                    @application.VolunteerUser?.UserName
+                                </td>
+
+                                <td>
+                                    @application.Event?.Name
+                                </td>
+
+                                <td>
+                                    <span class="faculty-status faculty-status-pending">
+                                        Pending
+                                    </span>
+                                </td>
+
+                                <td>
+
+                                    @if (application.Event != null)
+                                    {
+                                        <a asp-controller="Volunteer"
+                                           asp-action="EventVolunteers"
+                                           asp-route-eventId="@application.Event.Id"
+                                           class="faculty-action-btn faculty-action-primary">
+                                            Review
+                                        </a>
+                                    }
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="faculty-empty">
+                No pending volunteer applications right now.
+            </div>
+        }
+
+    </div>
+
+
+    <!-- =========================================================
+         SUPERVISED CLUBS
+         ========================================================= -->
+
+    <div class="faculty-section">
+
+        <div class="faculty-section-header">
+
+            <div>
+                <h2 class="faculty-section-title">
+                    Supervised Clubs
+                </h2>
+
+                <p class="faculty-section-subtitle">
+                    Clubs currently assigned to you for supervision.
+                </p>
+            </div>
+
+        </div>
+
+
+        @if (supervisedClubs.Any())
+        {
+            <div class="faculty-club-grid">
+
+                @foreach (var club in supervisedClubs)
+                {
+                    <div class="faculty-club-card">
+
+                        <div class="faculty-club-name">
+                            @club.Name
                         </div>
 
+                        @if (club.ClubPresident != null)
+                        {
+                            <div class="faculty-club-detail">
+                                President:
+                                @club.ClubPresident.UserName
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="faculty-club-detail">
+                                President:
+                                Not assigned
+                            </div>
+                        }
+
+                        <div class="faculty-club-detail">
+                            Faculty Supervisor:
+                            @club.FacultySupervisor?.UserName
+                        </div>
 
                         <div class="mt-3">
 
-                            <a asp-action="AllClubs"
-                               class="btn btn-outline-success dashboard-btn w-100">
-                                View All Clubs →
+                            <a asp-controller="Faculty"
+                               asp-action="ClubDetails"
+                               asp-route-id="@club.Id"
+                               class="faculty-action-btn faculty-action-primary">
+                                View Club
                             </a>
 
                         </div>
-                    }
 
+                    </div>
+                }
+
+            </div>
+        }
+        else
+        {
+            <div class="faculty-empty">
+                No supervised clubs found.
+            </div>
+        }
+
+    </div>
+
+
+    <!-- =========================================================
+         MY EVENTS
+         ========================================================= -->
+
+    <div class="faculty-section">
+
+        <div class="faculty-section-header">
+
+            <div>
+                <h2 class="faculty-section-title">
+                    My Events
+                </h2>
+
+                <p class="faculty-section-subtitle">
+                    Events created and managed by you.
+                </p>
+            </div>
+
+            @if (myEvents.Any())
+            {
+                <span class="faculty-status faculty-status-approved">
+                    @myEvents.Count() Events
+                </span>
+            }
+
+        </div>
+
+
+        @if (myEvents.Any())
+        {
+            <div class="table-responsive">
+
+                <table class="faculty-table">
+
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var eventItem in myEvents)
+                        {
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        @eventItem.Name
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    @eventItem.StartDateTime.ToString("dd MMM yyyy")
+                                </td>
+
+                                <td>
+                                    @eventItem.EventType
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div class="faculty-empty">
+                You have not created any events yet.
+            </div>
+        }
+
+    </div>
+
+
+    <!-- =========================================================
+         APPROVAL SUMMARY
+         ========================================================= -->
+
+    <div class="faculty-section">
+
+        <div class="faculty-section-header">
+
+            <div>
+                <h2 class="faculty-section-title">
+                    Approval Summary
+                </h2>
+
+                <p class="faculty-section-subtitle">
+                    Quick overview of items requiring your attention.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="faculty-summary-grid">
+
+            <div class="faculty-summary-card">
+
+                <div class="faculty-summary-number">
+                    @pendingEvents.Count()
+                </div>
+
+                <div class="faculty-summary-label">
+                    Pending Event Approvals
                 </div>
 
             </div>
 
 
-            <!-- APPROVAL SUMMARY -->
+            <div class="faculty-summary-card">
 
-            <div class="dashboard-panel">
-
-                <div class="panel-header">
-
-                    <h5>
-                        Approval Summary
-                    </h5>
-
+                <div class="faculty-summary-number">
+                    @pendingVolunteerCount
                 </div>
 
-                <div class="panel-body">
+                <div class="faculty-summary-label">
+                    Pending Volunteer Applications
+                </div>
 
-                    @if (pendingEvents.Count() > 0 ||
-                         pendingVolunteerCount > 0)
-                    {
-                        <div class="approval-alert p-3 mb-3">
-
-                            <div class="fw-bold mb-1">
-                                ⚠ Attention Required
-                            </div>
-
-                            <small>
-                                There are items waiting for your review.
-                            </small>
-
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-success border-0">
-                            ✓ Everything is up to date.
-                        </div>
-                    }
+            </div>
 
 
-                    <div class="d-flex justify-content-between
-                        align-items-center mb-3">
+            <div class="faculty-summary-card">
 
-                        <span>
-                            Event approvals
-                        </span>
+                <div class="faculty-summary-number">
+                    @pendingPresidentRequests.Count()
+                </div>
 
-                        <span class="badge bg-primary">
-                            @pendingEvents.Count()
-                        </span>
-
-                    </div>
-
-
-                    <div class="d-flex justify-content-between
-                        align-items-center mb-3">
-
-                        <span>
-                            Volunteer applications
-                        </span>
-
-                        <span class="badge bg-warning text-dark">
-                            @pendingVolunteerCount
-                        </span>
-
-                    </div>
-
-
-                    <div class="d-flex justify-content-between
-                        align-items-center">
-
-                        <span>
-                            Supervised clubs
-                        </span>
-
-                        <span class="badge bg-success">
-                            @supervisedClubs.Count()
-                        </span>
-
-                    </div>
-
+                <div class="faculty-summary-label">
+                    Pending Club President Requests
                 </div>
 
             </div>
@@ -894,5 +935,13 @@
 
     </div>
 
-</div>
 
+    <!-- =========================================================
+         ALERTS
+         ========================================================= -->
+
+    <div class="mt-4">
+        <partial name="_Alerts" />
+    </div>
+
+</div>

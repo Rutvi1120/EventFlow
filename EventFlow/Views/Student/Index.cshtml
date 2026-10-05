@@ -1,5 +1,4 @@
-﻿
-@{
+﻿@{
     ViewData["Title"] = "Student Dashboard";
 
     var volunteerAssignments =
@@ -16,174 +15,444 @@
         v.Status == EventFlow.Models.VolunteerStatus.Completed);
 
     var totalVolunteerCount = volunteerAssignments.Count();
+
+    var studentName = User.Identity?.Name ?? "Student";
 }
 
 <style>
-    body {
-        background: #f7f9fc;
+    /* =========================================================
+           STUDENT DASHBOARD
+           Local dashboard styles only.
+           Does not modify site.css or other pages.
+        ========================================================= */
+
+    .student-dashboard-page {
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
-    .dashboard-header {
-        background: linear-gradient(135deg, #0d6efd, #6f42c1);
-        color: white;
+    /* =========================================================
+           WELCOME BANNER
+        ========================================================= */
+
+    .student-welcome-banner {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 190px;
+        padding: 38px 45px;
+        margin-bottom: 28px;
         border-radius: 24px;
-        padding: 35px;
-        margin-bottom: 30px;
-        box-shadow: 0 15px 35px rgba(13, 110, 253, 0.15);
+        background: linear-gradient( 135deg, #312e81 0%, #4338ca 55%, #5b21b6 100% );
+        color: white;
+        box-shadow: 0 15px 35px rgba(67, 56, 202, 0.20);
     }
 
-        .dashboard-header h1 {
-            font-weight: 800;
-            margin-bottom: 8px;
+        .student-welcome-banner::before {
+            content: "";
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            right: 80px;
+            top: -150px;
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 50%;
         }
 
-        .dashboard-header p {
-            margin-bottom: 0;
-            color: rgba(255,255,255,0.8);
+        .student-welcome-banner::after {
+            content: "";
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            right: 125px;
+            top: -105px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 50%;
         }
 
-    .header-icon {
-        width: 70px;
-        height: 70px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.15);
+    .student-welcome-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .student-welcome-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.65);
+        margin-bottom: 10px;
+    }
+
+    .student-welcome-content h1 {
+        font-size: 2.5rem;
+        font-weight: 750;
+        margin: 0 0 10px;
+        color: white;
+    }
+
+    .student-welcome-content p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.98rem;
+    }
+
+    .student-welcome-icon {
+        position: relative;
+        z-index: 2;
+        width: 90px;
+        height: 90px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 35px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.13);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        font-size: 2.4rem;
+        backdrop-filter: blur(8px);
     }
 
-    .stat-card {
-        background: white;
-        border: none;
-        border-radius: 18px;
-        padding: 24px;
-        height: 100%;
-        box-shadow: 0 8px 25px rgba(32, 56, 85, 0.07);
-        transition: 0.25s ease;
-    }
+    /* =========================================================
+           ANALYTICS CARDS
+        ========================================================= */
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(32, 56, 85, 0.11);
-        }
-
-    .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        margin-bottom: 15px;
-    }
-
-    .stat-number {
-        font-size: 30px;
-        font-weight: 800;
-        color: #172033;
-    }
-
-    .stat-label {
-        color: #667085;
-        font-size: 14px;
-    }
-
-    .section-title {
-        font-weight: 800;
-        color: #172033;
-    }
-
-    .action-card {
-        background: white;
-        border: 1px solid #edf0f5;
+    .student-analytics-card {
+        position: relative;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
         border-radius: 20px;
         padding: 25px;
-        height: 100%;
-        transition: 0.25s ease;
+        min-height: 180px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-        .action-card:hover {
-            transform: translateY(-6px);
-            border-color: transparent;
-            box-shadow: 0 15px 35px rgba(32, 56, 85, 0.1);
+        .student-analytics-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
         }
 
-    .action-icon {
-        width: 58px;
-        height: 58px;
-        border-radius: 16px;
+        .student-analytics-card::after {
+            content: "";
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            right: -40px;
+            bottom: -45px;
+            border-radius: 50%;
+            background: #eef2ff;
+        }
+
+    .student-analytics-icon {
+        width: 50px;
+        height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 26px;
+        border-radius: 14px;
+        font-size: 1.35rem;
         margin-bottom: 18px;
     }
 
-    .action-card h5 {
+    .student-events-card .student-analytics-icon {
+        background: #eef2ff;
+    }
+
+    .student-registration-card .student-analytics-icon {
+        background: #ede9fe;
+    }
+
+    .student-pending-card .student-analytics-icon {
+        background: #fff7ed;
+    }
+
+    .student-accepted-card .student-analytics-icon {
+        background: #ecfdf5;
+    }
+
+    .student-analytics-title {
+        position: relative;
+        z-index: 2;
+        color: #6b7280;
+        font-size: 0.72rem;
         font-weight: 700;
-        color: #172033;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 7px;
     }
 
-    .action-card p {
-        color: #667085;
-        min-height: 48px;
+    .student-analytics-number {
+        position: relative;
+        z-index: 2;
+        color: #111827;
+        font-size: 2.3rem;
+        line-height: 1;
+        font-weight: 750;
+        margin-bottom: 9px;
     }
 
-    .btn-dashboard {
-        border-radius: 10px;
-        padding: 9px 18px;
+    .student-analytics-subtitle {
+        position: relative;
+        z-index: 2;
+        color: #9ca3af;
+        font-size: 0.82rem;
+    }
+
+    /* =========================================================
+           ACTIVITY / OVERVIEW
+        ========================================================= */
+
+    .student-overview-section {
+        margin-top: 28px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.035);
+    }
+
+    .student-overview-header {
+        margin-bottom: 22px;
+    }
+
+    .student-overview-label {
+        color: #6366f1;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+        margin-bottom: 5px;
+    }
+
+    .student-overview-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 5px;
+    }
+
+    .student-overview-description {
+        color: #6b7280;
+        font-size: 0.88rem;
+        margin: 0;
+    }
+
+    .student-overview-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f1f3;
+    }
+
+        .student-overview-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .student-overview-row:first-child {
+            padding-top: 0;
+        }
+
+    .student-overview-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #374151;
+        font-size: 0.92rem;
         font-weight: 600;
     }
 
-    .volunteer-card {
+    .student-overview-value {
+        color: #4f46e5;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .student-overview-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #6366f1;
+    }
+
+        .student-overview-dot.green {
+            background: #10b981;
+        }
+
+        .student-overview-dot.orange {
+            background: #f59e0b;
+        }
+
+        .student-overview-dot.blue {
+            background: #0ea5e9;
+        }
+
+    /* =========================================================
+           STUDENT ACTIVITY PANEL
+        ========================================================= */
+
+    .student-activity-section {
+        margin-top: 28px;
         background: white;
+        border: 1px solid #e5e7eb;
         border-radius: 20px;
-        padding: 25px;
-        border: 1px solid #edf0f5;
-        height: 100%;
+        padding: 28px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.035);
     }
 
-        .volunteer-card h5 {
-            font-weight: 700;
-        }
-
-    .status-number {
-        font-size: 26px;
-        font-weight: 800;
+    .student-activity-header {
+        margin-bottom: 22px;
     }
 
-    .status-item {
-        padding: 15px;
-        border-radius: 14px;
-        background: #f8f9fc;
+    .student-activity-label {
+        color: #6366f1;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+        margin-bottom: 5px;
     }
 
-    .action-needed {
-        border: 2px solid #198754;
-        background: linear-gradient( 135deg, rgba(25, 135, 84, 0.06), rgba(255,255,255,1) );
+    .student-activity-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 5px;
     }
 
-    .quick-section {
-        margin-top: 45px;
+    .student-activity-description {
+        color: #6b7280;
+        font-size: 0.88rem;
+        margin: 0;
     }
 
-    .empty-volunteer {
-        padding: 25px;
-        background: #f8f9fc;
+    .student-activity-empty {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 22px;
         border-radius: 15px;
-        text-align: center;
-        color: #667085;
+        background: #f8f9fc;
+        color: #6b7280;
     }
 
-    @@media (max-width: 768px) {
-        .dashboard-header {
-            padding: 25px;
+    .student-activity-empty-icon {
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: #eef2ff;
+        font-size: 1.3rem;
+    }
+
+    .student-activity-empty h5 {
+        margin: 0 0 4px;
+        color: #374151;
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+    .student-activity-empty p {
+        margin: 0;
+        font-size: 0.84rem;
+    }
+
+    /* =========================================================
+           VOLUNTEER SUMMARY
+        ========================================================= */
+
+    .student-volunteer-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    .student-volunteer-stat {
+        padding: 18px;
+        border-radius: 15px;
+        background: #f8f9fc;
+        text-align: center;
+    }
+
+    .student-volunteer-stat-number {
+        font-size: 1.7rem;
+        font-weight: 750;
+        color: #111827;
+        margin-bottom: 4px;
+    }
+
+    .student-volunteer-stat-label {
+        color: #6b7280;
+        font-size: 0.78rem;
+    }
+
+    /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+    @@media (max-width: 900px) {
+
+        .student-welcome-banner {
+            padding: 32px 35px;
         }
 
-        .header-icon {
+        .student-welcome-content h1 {
+            font-size: 2.2rem;
+        }
+
+        .student-welcome-icon {
+            width: 75px;
+            height: 75px;
+            font-size: 2rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+
+        .student-dashboard-page {
+            padding: 0 3px;
+        }
+
+        .student-welcome-banner {
+            padding: 28px 25px;
+            min-height: 170px;
+            border-radius: 20px;
+        }
+
+        .student-welcome-content h1 {
+            font-size: 1.8rem;
+        }
+
+        .student-welcome-content p {
+            font-size: 0.88rem;
+        }
+
+        .student-welcome-icon {
             display: none;
+        }
+
+        .student-analytics-card {
+            min-height: 160px;
+        }
+
+        .student-analytics-number {
+            font-size: 2rem;
+        }
+
+        .student-overview-section,
+        .student-activity-section {
+            padding: 22px;
+        }
+
+        .student-volunteer-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -191,522 +460,375 @@
 
 <div class="container py-4">
 
-    <!-- ================= HEADER ================= -->
+    <div class="student-dashboard-page">
 
-    <div class="dashboard-header">
+        <partial name="_Alerts" />
 
-        <div class="row align-items-center">
 
-            <div class="col">
+        <!-- =====================================================
+             WELCOME
+        ====================================================== -->
 
-                <div class="small mb-2">
+        <div class="student-welcome-banner">
+
+            <div class="student-welcome-content">
+
+                <div class="student-welcome-label">
                     STUDENT PORTAL
                 </div>
 
                 <h1>
-                    Welcome back! 👋
+                    Welcome back, @studentName 👋
                 </h1>
 
                 <p>
-                    Manage your events, registrations and volunteer
-                    activities from one place.
+                    Here's an overview of your events, registrations
+                    and volunteer activities.
                 </p>
 
             </div>
 
-            <div class="col-auto">
-
-                <div class="header-icon">
-                    🎓
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <partial name="_Alerts" />
-
-
-    <!-- ================= VOLUNTEER STATS ================= -->
-
-    <div class="row g-4 mb-5">
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-primary-subtle text-primary">
-                    📅
-                </div>
-
-                <div class="stat-number">
-                    @ViewBag.MyEventsCount
-                </div>
-
-                <div class="stat-label">
-                    My Events
-                </div>
-
+            <div class="student-welcome-icon">
+                🎓
             </div>
 
         </div>
 
 
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-info-subtle text-info">
-                    🎟️
-                </div>
-
-                <div class="stat-number">
-                    @ViewBag.RegistrationsCount
-                </div>
-
-                <div class="stat-label">
-                    Registrations
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-warning-subtle text-warning">
-                    ⏳
-                </div>
-
-                <div class="stat-number">
-                    @pendingCount
-                </div>
-
-                <div class="stat-label">
-                    Pending Volunteer
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-success-subtle text-success">
-                    ✓
-                </div>
-
-                <div class="stat-number">
-                    @acceptedCount
-                </div>
-
-                <div class="stat-label">
-                    Accepted Volunteer
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= EVENT MANAGEMENT ================= -->
-
-    <div class="quick-section">
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-
-            <div>
-                <h3 class="section-title mb-1">
-                    Event Management
-                </h3>
-
-                <p class="text-muted mb-0">
-                    Discover and manage your college events.
-                </p>
-            </div>
-
-        </div>
-
+        <!-- =====================================================
+             ANALYTICS
+        ====================================================== -->
 
         <div class="row g-4">
 
-            <!-- Browse Events -->
 
-            <div class="col-md-6 col-lg-3">
+            <!-- MY EVENTS -->
 
-                <div class="action-card">
+            <div class="col-md-6 col-xl-3">
 
-                    <div class="action-icon bg-primary-subtle text-primary">
-                        🔎
+                <div class="student-analytics-card student-events-card">
+
+                    <div class="student-analytics-icon">
+                        📅
                     </div>
 
-                    <h5>
-                        Browse Events
-                    </h5>
-
-                    <p>
-                        Discover approved college events,
-                        workshops and activities.
-                    </p>
-
-                    <a asp-controller="Events"
-                       asp-action="Index"
-                       class="btn btn-primary btn-dashboard">
-                        View Events →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- Create Event -->
-
-            <div class="col-md-6 col-lg-3">
-
-                <div class="action-card">
-
-                    <div class="action-icon bg-success-subtle text-success">
-                        ➕
-                    </div>
-
-                    <h5>
-                        Create Event
-                    </h5>
-
-                    <p>
-                        Create a new student event and
-                        organize activities.
-                    </p>
-
-                    <a asp-controller="Student"
-                       asp-action="CreateEvent"
-                       class="btn btn-success btn-dashboard">
-                        Create Event →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- My Events -->
-
-            <div class="col-md-6 col-lg-3">
-
-                <div class="action-card">
-
-                    <div class="action-icon bg-warning-subtle text-warning">
-                        📋
-                    </div>
-
-                    <h5>
+                    <div class="student-analytics-title">
                         My Events
-                    </h5>
+                    </div>
 
-                    <p>
-                        Manage events that you have
-                        created.
-                    </p>
+                    <div class="student-analytics-number">
+                        @ViewBag.MyEventsCount
+                    </div>
 
-                    <a asp-controller="Student"
-                       asp-action="MyEvents"
-                       class="btn btn-warning btn-dashboard">
-                        My Events →
-                    </a>
+                    <div class="student-analytics-subtitle">
+                        Events created by you
+                    </div>
 
                 </div>
 
             </div>
 
 
-            <!-- Registrations -->
+            <!-- REGISTRATIONS -->
 
-            <div class="col-md-6 col-lg-3">
+            <div class="col-md-6 col-xl-3">
 
-                <div class="action-card">
+                <div class="student-analytics-card student-registration-card">
 
-                    <div class="action-icon bg-info-subtle text-info">
+                    <div class="student-analytics-icon">
                         🎟️
                     </div>
 
-                    <h5>
+                    <div class="student-analytics-title">
                         Registrations
+                    </div>
+
+                    <div class="student-analytics-number">
+                        @ViewBag.RegistrationsCount
+                    </div>
+
+                    <div class="student-analytics-subtitle">
+                        Your event registrations
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PENDING -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="student-analytics-card student-pending-card">
+
+                    <div class="student-analytics-icon">
+                        ⏳
+                    </div>
+
+                    <div class="student-analytics-title">
+                        Pending Volunteer
+                    </div>
+
+                    <div class="student-analytics-number">
+                        @pendingCount
+                    </div>
+
+                    <div class="student-analytics-subtitle">
+                        Applications awaiting response
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACCEPTED -->
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="student-analytics-card student-accepted-card">
+
+                    <div class="student-analytics-icon">
+                        ✓
+                    </div>
+
+                    <div class="student-analytics-title">
+                        Accepted Volunteer
+                    </div>
+
+                    <div class="student-analytics-number">
+                        @acceptedCount
+                    </div>
+
+                    <div class="student-analytics-subtitle">
+                        Active volunteer assignments
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             CURRENT ACTIVITY
+        ====================================================== -->
+
+        <div class="student-activity-section">
+
+            <div class="student-activity-header">
+
+                <div class="student-activity-label">
+                    CURRENT ACTIVITY
+                </div>
+
+                <h2 class="student-activity-title">
+                    Your Current Activity
+                </h2>
+
+                <p class="student-activity-description">
+                    A quick view of your current EventFlow activity.
+                </p>
+
+            </div>
+
+
+            <div class="student-activity-empty">
+
+                <div class="student-activity-empty-icon">
+                    📅
+                </div>
+
+                <div>
+
+                    <h5>
+                        Your event activity
                     </h5>
 
                     <p>
-                        View and manage your event
-                        registrations.
+                        You currently have
+                        <strong>@ViewBag.MyEventsCount</strong>
+                        event
+                        @(Convert.ToInt32(ViewBag.MyEventsCount ?? 0) == 1
+                            ? ""
+                            : "s")
+                        in your account and
+                        <strong>@ViewBag.RegistrationsCount</strong>
+                        registration
+                        @(Convert.ToInt32(ViewBag.RegistrationsCount ?? 0) == 1
+                            ? ""
+                            : "s").
                     </p>
 
-                    <a asp-controller="Registration"
-                       asp-action="MyRegistrations"
-                       class="btn btn-info btn-dashboard">
-                        My Registrations →
-                    </a>
-
                 </div>
 
             </div>
 
         </div>
 
-    </div>
+
+        <!-- =====================================================
+             VOLUNTEER OVERVIEW
+        ====================================================== -->
+
+        <div class="student-overview-section">
+
+            <div class="student-overview-header">
+
+                <div class="student-overview-label">
+                    VOLUNTEER STATUS
+                </div>
+
+                <h2 class="student-overview-title">
+                    Volunteer Overview
+                </h2>
+
+                <p class="student-overview-description">
+                    Current status of your volunteer applications and assignments.
+                </p>
+
+            </div>
 
 
-    <!-- ================= VOLUNTEERING ================= -->
+            <!-- Pending -->
 
-    <div class="quick-section">
+            <div class="student-overview-row">
 
-        <div class="mb-4">
+                <div class="student-overview-name">
 
-            <h3 class="section-title mb-1">
-                Volunteer Center 🤝
-            </h3>
+                    <span class="student-overview-dot orange"></span>
 
-            <p class="text-muted mb-0">
-                Find opportunities and manage your volunteer assignments.
-            </p>
+                    Applications awaiting response
 
-        </div>
+                </div>
 
-
-        <div class="row g-4">
-
-            <!-- Browse Volunteer Events -->
-
-            <div class="col-md-6 col-lg-4">
-
-                <div class="volunteer-card">
-
-                    <span class="badge bg-success mb-3">
-                        OPPORTUNITIES
-                    </span>
-
-                    <h5>
-                        Browse Volunteer Events
-                    </h5>
-
-                    <p class="text-muted">
-                        Find approved upcoming events and
-                        apply as a volunteer for approved events.
-                    </p>
-
-                    <a asp-controller="Volunteer"
-                       asp-action="Index"
-                       class="btn btn-success btn-dashboard">
-                        Find Opportunities →
-                    </a>
-
+                <div class="student-overview-value">
+                    @pendingCount
                 </div>
 
             </div>
 
 
-            <!-- Applications -->
+            <!-- Accepted -->
 
-            <div class="col-md-6 col-lg-4">
+            <div class="student-overview-row">
 
-                <div class="volunteer-card">
+                <div class="student-overview-name">
 
-                    <span class="badge bg-primary mb-3">
-                        MY APPLICATIONS
-                    </span>
+                    <span class="student-overview-dot green"></span>
 
-                    <h5>
-                        Volunteer Applications
-                    </h5>
+                    Accepted assignments
 
-                    <div class="row g-2 mt-3 mb-3">
+                </div>
 
-                        <div class="col-4">
-
-                            <div class="status-item text-center">
-
-                                <div class="status-number text-warning">
-                                    @pendingCount
-                                </div>
-
-                                <small class="text-muted">
-                                    Pending
-                                </small>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-4">
-
-                            <div class="status-item text-center">
-
-                                <div class="status-number text-success">
-                                    @acceptedCount
-                                </div>
-
-                                <small class="text-muted">
-                                    Accepted
-                                </small>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="col-4">
-
-                            <div class="status-item text-center">
-
-                                <div class="status-number text-primary">
-                                    @completedCount
-                                </div>
-
-                                <small class="text-muted">
-                                    Completed
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <a asp-controller="Volunteer"
-                       asp-action="MyApplications"
-                       class="btn btn-primary btn-dashboard">
-                        View Applications →
-                    </a>
-
+                <div class="student-overview-value">
+                    @acceptedCount
                 </div>
 
             </div>
 
 
-            <!-- Accepted Assignment -->
-            @if (acceptedCount > 0)
-            {
-                <div class="col-md-12 col-lg-4">
+            <!-- Completed -->
 
-                    <div class="volunteer-card action-needed">
+            <div class="student-overview-row">
 
-                        <span class="badge bg-success mb-3">
-                            ACTION NEEDED
-                        </span>
+                <div class="student-overview-name">
 
-                        <h5>
-                            Volunteer Work in Progress
-                        </h5>
+                    <span class="student-overview-dot blue"></span>
 
-                        <p class="text-muted">
-                            You currently have
-                            <strong>@acceptedCount</strong>
-                            accepted
-                            @(acceptedCount == 1
-                                ? "assignment"
-                                : "assignments").
-                        </p>
-
-                        <div class="alert alert-success py-2">
-                            ✓ Complete your volunteer work
-                            when the event activity is finished.
-                        </div>
-
-                        <a asp-controller="Volunteer"
-                           asp-action="MyApplications"
-                           class="btn btn-outline-success btn-dashboard">
-                            View Assignments →
-                        </a>
-
-                    </div>
+                    Completed assignments
 
                 </div>
-            }
-            else
-            {
-                <div class="col-md-12 col-lg-4">
 
-                    <div class="volunteer-card">
+                <div class="student-overview-value">
+                    @completedCount
+                </div>
 
-                        <span class="badge bg-secondary mb-3">
-                            STATUS
-                        </span>
+            </div>
 
-                        <h5>
-                            No Active Assignment
-                        </h5>
 
-                        <p class="text-muted">
-                            You currently don't have any accepted
-                            volunteer assignments.
-                        </p>
+            <!-- Total -->
 
-                        <a asp-controller="Volunteer"
-                           asp-action="Index"
-                           class="btn btn-outline-success btn-dashboard">
-                            Find Opportunities →
-                        </a>
+            <div class="student-overview-row">
 
-                    </div>
+                <div class="student-overview-name">
+
+                    <span class="student-overview-dot"></span>
+
+                    Total volunteer applications
 
                 </div>
-            }
+
+                <div class="student-overview-value">
+                    @totalVolunteerCount
+                </div>
+
+            </div>
 
         </div>
 
-    </div>
+
+        <!-- =====================================================
+             VOLUNTEER BREAKDOWN
+        ====================================================== -->
+
+        <div class="student-overview-section">
+
+            <div class="student-overview-header">
+
+                <div class="student-overview-label">
+                    VOLUNTEER JOURNEY
+                </div>
+
+                <h2 class="student-overview-title">
+                    Your Progress
+                </h2>
+
+                <p class="student-overview-description">
+                    A summary of your volunteer journey in EventFlow.
+                </p>
+
+            </div>
 
 
-    <!-- ================= VOLUNTEER SUMMARY ================= -->
+            <div class="student-volunteer-grid">
 
-    <div class="quick-section mb-5">
+                <div class="student-volunteer-stat">
 
-        <div class="card border-0 shadow-sm rounded-4">
-
-            <div class="card-body p-4">
-
-                <div class="row align-items-center">
-
-                    <div class="col-md-8">
-
-                        <span class="badge bg-light text-primary mb-2">
-                            VOLUNTEER JOURNEY
-                        </span>
-
-                        <h4 class="fw-bold">
-                            Your volunteer progress
-                        </h4>
-
-                        <p class="text-muted mb-0">
-                            You have submitted
-                            <strong>@totalVolunteerCount</strong>
-                            volunteer
-                            @(totalVolunteerCount == 1
-                                ? "application"
-                                : "applications")
-                            so far.
-                        </p>
-
+                    <div class="student-volunteer-stat-number">
+                        @pendingCount
                     </div>
 
-                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="student-volunteer-stat-label">
+                        Pending
+                    </div>
 
-                        <a asp-controller="Volunteer"
-                           asp-action="MyApplications"
-                           class="btn btn-primary btn-dashboard">
-                            View My Journey →
-                        </a>
+                </div>
 
+
+                <div class="student-volunteer-stat">
+
+                    <div class="student-volunteer-stat-number">
+                        @acceptedCount
+                    </div>
+
+                    <div class="student-volunteer-stat-label">
+                        Accepted
+                    </div>
+
+                </div>
+
+
+                <div class="student-volunteer-stat">
+
+                    <div class="student-volunteer-stat-number">
+                        @completedCount
+                    </div>
+
+                    <div class="student-volunteer-stat-label">
+                        Completed
                     </div>
 
                 </div>
@@ -718,4 +840,3 @@
     </div>
 
 </div>
-

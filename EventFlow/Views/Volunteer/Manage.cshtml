@@ -4,8 +4,6 @@
     ViewData["Title"] = "Volunteer Management";
 
     var isAdmin = User.IsInRole("Admin");
-    var canAdd = User.IsInRole("Faculty") || User.IsInRole("ClubPresident");
-    var addController = User.IsInRole("Faculty") ? "Faculty" : "ClubPresident";
 
     var upcoming = Model.Where(r => !r.HasEnded).OrderBy(r => r.StartDateTime).ToList();
     var past = Model.Where(r => r.HasEnded).OrderByDescending(r => r.StartDateTime).ToList();
@@ -131,16 +129,6 @@
                                                class="btn btn-sm btn-primary">
                                                 Manage Volunteers
                                             </a>
-
-                                            @if (canAdd)
-                                            {
-                                                <a asp-controller="@addController"
-                                                   asp-action="AddVolunteer"
-                                                   asp-route-eventId="@row.EventId"
-                                                   class="btn btn-sm btn-success">
-                                                    + Add Volunteer
-                                                </a>
-                                            }
                                         </div>
                                     </td>
                                 </tr>

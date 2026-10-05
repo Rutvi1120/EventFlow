@@ -3,7 +3,7 @@ namespace EventFlow.Models
     /// <summary>
     /// The only valid values for Volunteer.Status.
     /// Pending   -> student applied, waiting for review
-    /// Accepted  -> approved by a manager, or added directly by a manager
+    /// Accepted  -> approved by an event creator/manager
     /// Rejected  -> application declined
     /// Completed -> student finished the volunteer work
     /// </summary>

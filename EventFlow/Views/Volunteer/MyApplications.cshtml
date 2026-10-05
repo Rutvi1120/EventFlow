@@ -50,7 +50,7 @@
                             <th class="ps-4">Event</th>
                             <th>Date</th>
                             <th>Venue</th>
-                            <th>Role</th>
+                            <th>Assigned Work</th>
                             <th>Notes</th>
                             <th>Status</th>
                             <th class="pe-4">Action</th>
@@ -85,7 +85,16 @@
 
                                 <td>@(application.Event?.Venue?.Name ?? "Not specified")</td>
 
-                                <td>@application.Role</td>
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(application.Role))
+                                    {
+                                        <span class="text-muted">Not assigned yet</span>
+                                    }
+                                    else
+                                    {
+                                        @application.Role
+                                    }
+                                </td>
 
                                 <td>
                                     @if (string.IsNullOrWhiteSpace(application.Notes))

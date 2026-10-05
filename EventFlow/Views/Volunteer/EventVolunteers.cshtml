@@ -45,15 +45,6 @@
                     </div>
                 </div>
 
-                @if (Model.CanAddVolunteer)
-                {
-                    <a asp-controller="@Model.AddVolunteerController"
-                       asp-action="AddVolunteer"
-                       asp-route-eventId="@eventItem.Id"
-                       class="btn btn-success">
-                        + Add Volunteer
-                    </a>
-                }
             </div>
         </div>
     </div>
@@ -67,7 +58,7 @@
                 <div class="display-6 mb-3">👥</div>
                 <h4>No volunteers yet</h4>
                 <p class="text-muted mb-0">
-                    No students have applied or been added for this event yet.
+                    No students have applied to volunteer for this event yet.
                 </p>
             </div>
         </div>
@@ -92,7 +83,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4">Student</th>
-                                <th>Role</th>
+                                <th>Assigned Work</th>
                                 <th>Notes</th>
                                 <th class="pe-4 text-end">Actions</th>
                             </tr>
@@ -107,7 +98,7 @@
                                         </div>
                                         <small class="text-muted">@volunteer.VolunteerUser?.Email</small>
                                     </td>
-                                    <td>@volunteer.Role</td>
+                                    <td><span class="text-muted">Not assigned yet</span></td>
                                     <td>
                                         @if (string.IsNullOrWhiteSpace(volunteer.Notes))
                                         {
@@ -166,7 +157,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4">Student</th>
-                                <th>Role</th>
+                                <th>Assigned Work</th>
                                 <th>Accepted</th>
                                 <th class="pe-4">Status</th>
                             </tr>
@@ -181,7 +172,24 @@
                                         </div>
                                         <small class="text-muted">@volunteer.VolunteerUser?.Email</small>
                                     </td>
-                                    <td>@volunteer.Role</td>
+                                    <td style="min-width: 300px;">
+                                        <form asp-controller="Volunteer"
+                                              asp-action="AssignWork"
+                                              method="post"
+                                              class="d-flex gap-2">
+                                            <input type="hidden" name="VolunteerId" value="@volunteer.Id" />
+                                            <input type="hidden" name="EventId" value="@eventItem.Id" />
+                                            <input type="text"
+                                                   name="AssignedWork"
+                                                   value="@volunteer.Role"
+                                                   class="form-control form-control-sm"
+                                                   maxlength="100"
+                                                   placeholder="e.g. Registration desk" />
+                                            <button type="submit" class="btn btn-sm btn-primary">
+                                                Save
+                                            </button>
+                                        </form>
+                                    </td>
                                     <td>
                                         @if (volunteer.AssignedAt.HasValue)
                                         {
@@ -221,7 +229,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4">Student</th>
-                                <th>Role</th>
+                                <th>Assigned Work</th>
                                 <th>Completed</th>
                                 <th class="pe-4">Status</th>
                             </tr>
@@ -236,7 +244,9 @@
                                         </div>
                                         <small class="text-muted">@volunteer.VolunteerUser?.Email</small>
                                     </td>
-                                    <td>@volunteer.Role</td>
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(volunteer.Role) ? "Not assigned" : volunteer.Role)
+                                    </td>
                                     <td>
                                         @if (volunteer.CompletedAt.HasValue)
                                         {
@@ -276,7 +286,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4">Student</th>
-                                <th>Role</th>
+                                <th>Assigned Work</th>
                                 <th>Notes</th>
                                 <th class="pe-4">Status</th>
                             </tr>
@@ -291,7 +301,9 @@
                                         </div>
                                         <small class="text-muted">@volunteer.VolunteerUser?.Email</small>
                                     </td>
-                                    <td>@volunteer.Role</td>
+                                    <td>
+                                        @(string.IsNullOrWhiteSpace(volunteer.Role) ? "Not assigned" : volunteer.Role)
+                                    </td>
                                     <td>
                                         @if (string.IsNullOrWhiteSpace(volunteer.Notes))
                                         {

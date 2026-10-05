@@ -10,10 +10,8 @@ namespace EventFlow.Models
         public const string Faculty = "Faculty";
         public const string ClubPresident = "ClubPresident";
 
-        /// <summary>Roles that may review volunteers (comma separated for [Authorize]).</summary>
+        /// <summary>Legacy role group for users who can review volunteers; event creators are also authorized by ownership.</summary>
         public const string VolunteerManagers = "Admin,Faculty,ClubPresident";
 
-        /// <summary>Roles that may add a volunteer directly.</summary>
-        public const string VolunteerAdders = "Faculty,ClubPresident";
     }
 }

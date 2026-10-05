@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace EventFlow.Models
 {
@@ -13,11 +12,6 @@ namespace EventFlow.Models
     {
         public int EventId { get; set; }
 
-        [Required(ErrorMessage = "Please enter the volunteer role you want to perform.")]
-        [StringLength(100, ErrorMessage = "The role cannot be longer than 100 characters.")]
-        [Display(Name = "Volunteer Role")]
-        public string Role { get; set; } = string.Empty;
-
         [StringLength(1000, ErrorMessage = "Notes cannot be longer than 1000 characters.")]
         public string? Notes { get; set; }
 
@@ -26,37 +20,15 @@ namespace EventFlow.Models
         public Event? Event { get; set; }
     }
 
-    /// <summary>
-    /// Posted by Faculty / ClubPresident when adding a student directly.
-    /// </summary>
-    public class AddVolunteerViewModel
+    public class AssignVolunteerWorkViewModel
     {
+        public int VolunteerId { get; set; }
         public int EventId { get; set; }
 
-        [Required(ErrorMessage = "Please select a student.")]
-        [Display(Name = "Student")]
-        public string? VolunteerId { get; set; }
-
-        [Required(ErrorMessage = "Volunteer role is required.")]
-        [StringLength(100, ErrorMessage = "The role cannot be longer than 100 characters.")]
-        [Display(Name = "Volunteer Role")]
-        public string Role { get; set; } = string.Empty;
-
-        [StringLength(1000, ErrorMessage = "Notes cannot be longer than 1000 characters.")]
-        public string? Notes { get; set; }
-
-        [BindNever]
-        [ValidateNever]
-        public Event? Event { get; set; }
-
-        [BindNever]
-        [ValidateNever]
-        public List<SelectListItem> Students { get; set; } = new();
-
-        /// <summary>Controller that owns the POST action ("Faculty" or "ClubPresident").</summary>
-        [BindNever]
-        [ValidateNever]
-        public string FormController { get; set; } = "Faculty";
+        [Required(ErrorMessage = "Please enter the work to assign.")]
+        [StringLength(100, ErrorMessage = "Assigned work cannot be longer than 100 characters.")]
+        [Display(Name = "Assigned Work")]
+        public string AssignedWork { get; set; } = string.Empty;
     }
 
     public class EventVolunteersViewModel
@@ -66,9 +38,6 @@ namespace EventFlow.Models
         public List<Volunteer> Accepted { get; set; } = new();
         public List<Volunteer> Completed { get; set; } = new();
         public List<Volunteer> Rejected { get; set; } = new();
-
-        public bool CanAddVolunteer { get; set; }
-        public string AddVolunteerController { get; set; } = "Faculty";
 
         public int Total =>
             Pending.Count + Accepted.Count + Completed.Count + Rejected.Count;

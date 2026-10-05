@@ -79,9 +79,12 @@ namespace EventFlow.Controllers
                     .Any(w => w.UserId == userId);
 
                 var myVolunteer = eventItem.Volunteers
-                    .FirstOrDefault(v => v.VolunteerId == userId);
+                    .FirstOrDefault(v =>
+                        v.VolunteerId == userId &&
+                        v.Status != VolunteerStatus.Rejected);
 
                 ViewBag.MyVolunteerStatus = myVolunteer?.Status;
+                ViewBag.IsActiveVolunteer = myVolunteer != null;
             }
 
             // Waitlist count

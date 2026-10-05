@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace EventFlow.Models
 {
@@ -16,7 +16,8 @@ namespace EventFlow.Models
 
         public Event? Event { get; set; }
 
-        [Required]
+        // Stores the work assigned by the event creator/manager.
+        // Students do not choose this when applying.
         [StringLength(100)]
         public string Role { get; set; } = string.Empty;
 

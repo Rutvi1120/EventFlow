@@ -134,7 +134,8 @@ namespace EventFlow.Controllers
             {
                 EventId = eventItem!.Id,
                 VolunteerId = userId,
-                Role = model.Role.Trim(),
+                // Work is assigned later by the event creator/manager.
+                Role = string.Empty,
                 Notes = string.IsNullOrWhiteSpace(model.Notes)
                     ? null
                     : model.Notes.Trim(),
@@ -256,10 +257,10 @@ namespace EventFlow.Controllers
         }
 
         // =====================================================
-        // ADMIN / FACULTY / CLUB PRESIDENT - EVENT LIST
+        // EVENT CREATOR / ADMIN / FACULTY / CLUB PRESIDENT - EVENT LIST
         // =====================================================
 
-        [Authorize(Roles = AppRoles.VolunteerManagers)]
+        [Authorize]
         public async Task<IActionResult> Manage()
         {
             var rows = await _volunteerService.ManageableEvents(User)
@@ -291,10 +292,10 @@ namespace EventFlow.Controllers
         }
 
         // =====================================================
-        // ADMIN / FACULTY / CLUB PRESIDENT - EVENT VOLUNTEERS
+        // EVENT CREATOR / ADMIN / FACULTY / CLUB PRESIDENT - EVENT VOLUNTEERS
         // =====================================================
 
-        [Authorize(Roles = AppRoles.VolunteerManagers)]
+        [Authorize]
         public async Task<IActionResult> EventVolunteers(int eventId)
         {
             var eventItem = await _context.Events
@@ -333,13 +334,6 @@ namespace EventFlow.Controllers
                     .Where(v => v.Status == VolunteerStatus.Completed).ToList(),
                 Rejected = volunteers
                     .Where(v => v.Status == VolunteerStatus.Rejected).ToList(),
-                CanAddVolunteer =
-                    VolunteerManagementService.CanAddDirectly(User) &&
-                    eventItem.IsApproved &&
-                    !eventItem.HasEnded,
-                AddVolunteerController = User.IsInRole(AppRoles.Faculty)
-                    ? "Faculty"
-                    : "ClubPresident"
             };
 
             return View(model);
@@ -351,7 +345,7 @@ namespace EventFlow.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = AppRoles.VolunteerManagers)]
+        [Authorize]
         public async Task<IActionResult> Assign(int id)
         {
             var volunteer = await _context.Volunteers
@@ -435,7 +429,7 @@ namespace EventFlow.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = AppRoles.VolunteerManagers)]
+        [Authorize]
         public async Task<IActionResult> Reject(int id)
         {
             var volunteer = await _context.Volunteers
@@ -475,6 +469,62 @@ namespace EventFlow.Controllers
             return RedirectToAction(
                 nameof(EventVolunteers),
                 new { eventId = volunteer.EventId });
+        }
+
+        // =====================================================
+        // ASSIGN WORK TO AN ACCEPTED VOLUNTEER
+        // =====================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> AssignWork(AssignVolunteerWorkViewModel model)
+        {
+            if (!await _volunteerService.CanManageVolunteersAsync(model.EventId, User))
+            {
+                TempData["ErrorMessage"] = NotAuthorizedMessage;
+                return RedirectToAction(nameof(Manage));
+            }
+
+            var volunteer = await _context.Volunteers
+                .FirstOrDefaultAsync(v =>
+                    v.Id == model.VolunteerId &&
+                    v.EventId == model.EventId);
+
+            if (volunteer == null)
+            {
+                return NotFound();
+            }
+
+            if (volunteer.Status != VolunteerStatus.Accepted)
+            {
+                TempData["ErrorMessage"] =
+                    "Work can only be assigned to an accepted volunteer.";
+
+                return RedirectToAction(
+                    nameof(EventVolunteers),
+                    new { eventId = model.EventId });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] =
+                    "Please enter the work to assign.";
+
+                return RedirectToAction(
+                    nameof(EventVolunteers),
+                    new { eventId = model.EventId });
+            }
+
+            volunteer.Role = model.AssignedWork.Trim();
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Volunteer work assigned successfully.";
+
+            return RedirectToAction(
+                nameof(EventVolunteers),
+                new { eventId = model.EventId });
         }
 
         // =====================================================
@@ -533,6 +583,18 @@ namespace EventFlow.Controllers
                     "You have already applied to volunteer for this event.";
 
                 return RedirectToAction(nameof(MyApplications));
+            }
+
+            var alreadyParticipant = await _context.Registrations.AnyAsync(r =>
+                r.EventId == eventItem.Id &&
+                r.UserId == userId);
+
+            if (alreadyParticipant)
+            {
+                TempData["ErrorMessage"] =
+                    "You are already registered as a participant for this event, so you cannot apply as a volunteer.";
+
+                return RedirectToAction("Details", "Events", new { id = eventItem.Id });
             }
 
             return null;

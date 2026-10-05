@@ -8,6 +8,7 @@
 
     bool isRegistered = ViewBag.IsRegistered == true;
     bool isWaitlisted = ViewBag.IsWaitlisted == true;
+    bool isActiveVolunteer = ViewBag.IsActiveVolunteer == true;
     int registeredCount = ViewBag.RegisteredCount ?? 0;
     int waitlistCount = ViewBag.WaitlistCount ?? 0;
     int seatsLeft = ViewBag.SeatsLeft ?? 0;
@@ -118,6 +119,11 @@
                     {
                         <span class="badge bg-secondary fs-6">This event has ended</span>
                     }
+                    else if (isActiveVolunteer)
+                    {
+                        <span class="badge bg-info text-dark fs-6">You are registered as a volunteer</span>
+                        <span class="text-muted">Volunteer and participant registration cannot be combined for the same event.</span>
+                    }
                     else if (isRegistered)
                     {
                         <span class="badge bg-success fs-6">You are registered</span>
@@ -185,7 +191,7 @@
                                 Volunteer application: @myVolunteerStatus
                             </a>
                         }
-                        else if (!Model.HasEnded)
+                        else if (!Model.HasEnded && !isRegistered)
                         {
                             <a asp-controller="Volunteer"
                                asp-action="Apply"

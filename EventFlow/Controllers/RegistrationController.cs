@@ -61,6 +61,14 @@ namespace EventFlow.Controllers
 
                 return RedirectToDetails(eventId);
             }
+
+            if (await IsActiveVolunteerAsync(eventId, userId))
+            {
+                TempData["ErrorMessage"] =
+                    "You are registered as a volunteer for this event, so you cannot register as a participant.";
+
+                return RedirectToDetails(eventId);
+            }
             // =====================================================
             // CHECK PARTICIPANT TIME CONFLICT
             // =====================================================
@@ -217,44 +225,46 @@ namespace EventFlow.Controllers
                         .ThenBy(w => w.Id)
                         .FirstOrDefaultAsync();
 
-                    if (nextEntry != null)
+                    while (true)
                     {
-                        // Safety check in case the waitlisted user
-                        // somehow already has a registration.
+                        var nextEntry1 = await _context.WaitlistEntries
+                            .Where(w => w.EventId == eventId)
+                            .OrderBy(w => w.JoinedAt)
+                            .ThenBy(w => w.Id)
+                            .FirstOrDefaultAsync();
+
+                        if (nextEntry1 == null)
+                        {
+                            break;
+                        }
+
                         var alreadyRegistered =
                             await _context.Registrations.AnyAsync(r =>
                                 r.EventId == eventId &&
                                 r.UserId == nextEntry.UserId);
 
-                        if (alreadyRegistered)
+                        var alreadyVolunteer =
+                            await IsActiveVolunteerAsync(eventId, nextEntry.UserId);
+
+                        if (alreadyRegistered || alreadyVolunteer)
                         {
-                            // They no longer need to remain on
-                            // the waitlist.
                             _context.WaitlistEntries.Remove(nextEntry);
-
                             await _context.SaveChangesAsync();
+                            continue;
                         }
-                        else
+
+                        _context.Registrations.Add(new Registration
                         {
-                            // ---------------------------------------------
-                            // 4. Promote participant
-                            // ---------------------------------------------
-                            _context.Registrations.Add(new Registration
-                            {
-                                EventId = eventId,
-                                UserId = nextEntry.UserId,
-                                RegisteredAt = DateTime.UtcNow
-                            });
+                            EventId = eventId,
+                            UserId = nextEntry.UserId,
+                            RegisteredAt = DateTime.UtcNow
+                        });
 
-                            // ---------------------------------------------
-                            // 5. Remove promoted participant from waitlist
-                            // ---------------------------------------------
-                            _context.WaitlistEntries.Remove(nextEntry);
+                        _context.WaitlistEntries.Remove(nextEntry);
+                        await _context.SaveChangesAsync();
 
-                            await _context.SaveChangesAsync();
-
-                            promotedFromWaitlist = true;
-                        }
+                        promotedFromWaitlist = true;
+                        break;
                     }
                 }
 
@@ -318,6 +328,14 @@ namespace EventFlow.Controllers
             {
                 TempData["InfoMessage"] =
                     "You are already registered for this event.";
+
+                return RedirectToDetails(eventId);
+            }
+
+            if (await IsActiveVolunteerAsync(eventId, userId))
+            {
+                TempData["ErrorMessage"] =
+                    "You are registered as a volunteer for this event, so you cannot join the participant waitlist.";
 
                 return RedirectToDetails(eventId);
             }
@@ -483,6 +501,14 @@ namespace EventFlow.Controllers
             return null;
         }
 
+        private Task<bool> IsActiveVolunteerAsync(int eventId, string userId)
+        {
+            return _context.Volunteers.AnyAsync(v =>
+                v.EventId == eventId &&
+                v.VolunteerId == userId &&
+                v.Status != VolunteerStatus.Rejected);
+        }
+
         private async Task PromoteWaitlistedUser(int eventId)
         {
             var eventItem = await _context.Events
@@ -503,39 +529,45 @@ namespace EventFlow.Controllers
                 return;
             }
 
-            var nextEntry = await _context.WaitlistEntries
-                .Where(w => w.EventId == eventId)
-                .OrderBy(w => w.JoinedAt)
-                .FirstOrDefaultAsync();
-
-            if (nextEntry == null)
+            while (true)
             {
-                return;
-            }
+                var nextEntry = await _context.WaitlistEntries
+                    .Where(w => w.EventId == eventId)
+                    .OrderBy(w => w.JoinedAt)
+                    .ThenBy(w => w.Id)
+                    .FirstOrDefaultAsync();
 
-            var alreadyRegistered = await _context.Registrations
-                .AnyAsync(r =>
-                    r.EventId == eventId &&
-                    r.UserId == nextEntry.UserId);
+                if (nextEntry == null)
+                {
+                    return;
+                }
 
-            if (alreadyRegistered)
-            {
+                var alreadyRegistered = await _context.Registrations
+                    .AnyAsync(r =>
+                        r.EventId == eventId &&
+                        r.UserId == nextEntry.UserId);
+
+                var alreadyVolunteer =
+                    await IsActiveVolunteerAsync(eventId, nextEntry.UserId);
+
+                if (alreadyRegistered || alreadyVolunteer)
+                {
+                    _context.WaitlistEntries.Remove(nextEntry);
+                    await _context.SaveChangesAsync();
+                    continue;
+                }
+
+                _context.Registrations.Add(new Registration
+                {
+                    EventId = eventId,
+                    UserId = nextEntry.UserId,
+                    RegisteredAt = DateTime.UtcNow
+                });
+
                 _context.WaitlistEntries.Remove(nextEntry);
                 await _context.SaveChangesAsync();
-
                 return;
             }
-
-            _context.Registrations.Add(new Registration
-            {
-                EventId = eventId,
-                UserId = nextEntry.UserId,
-                RegisteredAt = DateTime.UtcNow
-            });
-
-            _context.WaitlistEntries.Remove(nextEntry);
-
-            await _context.SaveChangesAsync();
         }
     }
 }

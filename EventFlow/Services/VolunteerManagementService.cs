@@ -6,17 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EventFlow.Services
 {
-    /// <summary>
-    /// Single source of truth for who may manage volunteers for an event.
-    ///
-    /// Admin          -> every event
-    /// Event creator  -> their own events, regardless of their application role
-    /// Faculty        -> College events, assigned Student events, and supervised Club events
-    /// ClubPresident  -> events belonging to their club
-    ///
-    /// Students can apply to volunteer, but they cannot manage volunteers unless
-    /// they are also the creator of that event.
-    /// </summary>
+  
     public class VolunteerManagementService
     {
         private readonly ApplicationDbContext _context;
@@ -50,12 +40,10 @@ namespace EventFlow.Services
             var isPresident = user.IsInRole(AppRoles.ClubPresident);
 
             return query.Where(e =>
-                // Event creator can manage volunteers for their own event.
                 e.OrganizerId == userId
 
                 ||
 
-                // Existing Faculty permissions.
                 (isFaculty &&
                     (
                         e.EventType == EventTypes.College
@@ -70,7 +58,6 @@ namespace EventFlow.Services
 
                 ||
 
-                // Existing Club President permissions.
                 (isPresident &&
                     e.ClubId != null &&
                     e.Club != null &&

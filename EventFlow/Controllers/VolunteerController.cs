@@ -30,10 +30,7 @@ namespace EventFlow.Controllers
             _conflictDetectionService = conflictDetectionService;
         }
 
-        // =====================================================
-        // STUDENT - BROWSE APPROVED UPCOMING EVENTS
-        // =====================================================
-
+       
         [Authorize(Roles = AppRoles.Student)]
         public async Task<IActionResult> Index()
         {
@@ -56,7 +53,6 @@ namespace EventFlow.Controllers
                 .OrderBy(e => e.StartDateTime)
                 .ToListAsync();
 
-            // EventId -> my status, so the view can show "Applied" instead of "Apply".
             ViewBag.MyApplications = await _context.Volunteers
                 .AsNoTracking()
                 .Where(v => v.VolunteerId == userId)
@@ -65,10 +61,7 @@ namespace EventFlow.Controllers
             return View(events);
         }
 
-        // =====================================================
-        // STUDENT - APPLY (GET)
-        // =====================================================
-
+        
         [HttpGet]
         [Authorize(Roles = AppRoles.Student)]
         public async Task<IActionResult> Apply(int eventId)
@@ -96,16 +89,13 @@ namespace EventFlow.Controllers
             });
         }
 
-        // =====================================================
-        // STUDENT - APPLY (POST)
-        // =====================================================
+       
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = AppRoles.Student)]
         public async Task<IActionResult> Apply(VolunteerApplyViewModel model)
         {
-            // The student's identity ALWAYS comes from the login, never the form.
             var userId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(userId))
@@ -124,7 +114,6 @@ namespace EventFlow.Controllers
 
             if (!ModelState.IsValid)
             {
-                // Show the real validation errors on the same page.
                 model.Event = eventItem;
 
                 return View(model);
@@ -134,7 +123,6 @@ namespace EventFlow.Controllers
             {
                 EventId = eventItem!.Id,
                 VolunteerId = userId,
-                // Work is assigned later by the event creator/manager.
                 Role = string.Empty,
                 Notes = string.IsNullOrWhiteSpace(model.Notes)
                     ? null
@@ -152,7 +140,7 @@ namespace EventFlow.Controllers
             }
             catch (DbUpdateException)
             {
-                // The unique (EventId, VolunteerId) index rejected a double submit.
+                
                 _context.Entry(volunteer).State = EntityState.Detached;
 
                 var duplicate = await _context.Volunteers.AnyAsync(v =>
@@ -182,9 +170,6 @@ namespace EventFlow.Controllers
             return RedirectToAction(nameof(MyApplications));
         }
 
-        // =====================================================
-        // STUDENT - MY APPLICATIONS
-        // =====================================================
 
         [Authorize(Roles = AppRoles.Student)]
         public async Task<IActionResult> MyApplications()
@@ -209,9 +194,7 @@ namespace EventFlow.Controllers
             return View(applications);
         }
 
-        // =====================================================
-        // STUDENT - MARK COMPLETED
-        // =====================================================
+       
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -225,8 +208,7 @@ namespace EventFlow.Controllers
                 return Challenge();
             }
 
-            // Filtering by the logged-in user means a student can never
-            // complete somebody else's assignment (IDOR protection).
+            
             var volunteer = await _context.Volunteers
                 .FirstOrDefaultAsync(v =>
                     v.Id == id &&
@@ -256,9 +238,7 @@ namespace EventFlow.Controllers
             return RedirectToAction(nameof(MyApplications));
         }
 
-        // =====================================================
-        // EVENT CREATOR / ADMIN / FACULTY / CLUB PRESIDENT - EVENT LIST
-        // =====================================================
+    
 
         [Authorize]
         public async Task<IActionResult> Manage()
@@ -291,10 +271,7 @@ namespace EventFlow.Controllers
             return View(rows);
         }
 
-        // =====================================================
-        // EVENT CREATOR / ADMIN / FACULTY / CLUB PRESIDENT - EVENT VOLUNTEERS
-        // =====================================================
-
+      
         [Authorize]
         public async Task<IActionResult> EventVolunteers(int eventId)
         {
@@ -339,9 +316,7 @@ namespace EventFlow.Controllers
             return View(model);
         }
 
-        // =====================================================
-        // APPROVE APPLICATION  (Pending -> Accepted)
-        // =====================================================
+       
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -374,9 +349,7 @@ namespace EventFlow.Controllers
                     new { eventId = volunteer.EventId });
             }
 
-            // =====================================================
-            // CHECK VOLUNTEER TIME CONFLICT
-            // =====================================================
+           
 
             var eventItem = await _context.Events
                 .FirstOrDefaultAsync(e => e.Id == volunteer.EventId);
@@ -406,9 +379,7 @@ namespace EventFlow.Controllers
                     new { eventId = volunteer.EventId });
             }
 
-            // =====================================================
-            // APPROVE VOLUNTEER
-            // =====================================================
+          
 
             volunteer.Status = VolunteerStatus.Accepted;
             volunteer.AssignedAt = DateTime.UtcNow;
@@ -423,10 +394,7 @@ namespace EventFlow.Controllers
                 new { eventId = volunteer.EventId });
         }
 
-        // =====================================================
-        // REJECT APPLICATION  (Pending -> Rejected)
-        // =====================================================
-
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -471,9 +439,7 @@ namespace EventFlow.Controllers
                 new { eventId = volunteer.EventId });
         }
 
-        // =====================================================
-        // ASSIGN WORK TO AN ACCEPTED VOLUNTEER
-        // =====================================================
+       
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -527,9 +493,7 @@ namespace EventFlow.Controllers
                 new { eventId = model.EventId });
         }
 
-        // =====================================================
-        // HELPERS
-        // =====================================================
+       
 
         private Task<Event?> LoadEventAsync(int eventId)
         {
@@ -540,11 +504,7 @@ namespace EventFlow.Controllers
                 .FirstOrDefaultAsync(e => e.Id == eventId);
         }
 
-        /// <summary>
-        /// Server-side rules for a student volunteer application.
-        /// Returns a redirect (with a TempData message) when the student
-        /// may NOT apply, or null when everything is fine.
-        /// </summary>
+       
         private async Task<IActionResult?> CheckApplyEligibilityAsync(
             Event? eventItem,
             string userId)
@@ -557,7 +517,7 @@ namespace EventFlow.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // ORGANIZER CANNOT APPLY TO VOLUNTEER FOR OWN EVENT
+           
             if (!string.IsNullOrWhiteSpace(userId) &&
                 eventItem.OrganizerId == userId)
             {

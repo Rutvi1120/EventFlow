@@ -13,9 +13,7 @@ namespace EventFlow.Services
             _context = context;
         }
 
-        // ============================================================
-        // 1. VENUE CONFLICT
-        // ============================================================
+       
 
         public async Task<Event?> FindVenueConflictAsync(
             int venueId,
@@ -39,10 +37,7 @@ namespace EventFlow.Services
         }
 
 
-        // ============================================================
-        // 2. PARTICIPANT CONFLICT
-        // ============================================================
-
+      
         public async Task<Event?> FindParticipantConflictAsync(
             string userId,
             int eventId)
@@ -72,9 +67,7 @@ namespace EventFlow.Services
         }
 
 
-        // ============================================================
-        // 3. PARTICIPANT CONFLICT USING DATE/TIME
-        // ============================================================
+       
 
         public async Task<Event?> FindParticipantConflictAsync(
             string userId,
@@ -101,9 +94,7 @@ namespace EventFlow.Services
         }
 
 
-        // ============================================================
-        // 4. VOLUNTEER CONFLICT
-        // ============================================================
+        
 
 
         public async Task<Volunteer?> FindVolunteerConflictAsync(
@@ -134,9 +125,7 @@ namespace EventFlow.Services
                 .FirstOrDefault();
         }
 
-        // ============================================================
-        // 5. CHECK ALL CONFLICTS FOR AN EVENT
-        // ============================================================
+      
 
         public async Task<List<string>> CheckEventConflictsAsync(
             int eventId)
@@ -151,9 +140,7 @@ namespace EventFlow.Services
                 return conflicts;
 
 
-            // -----------------------------
-            // Venue conflict
-            // -----------------------------
+         
 
             if (eventItem.VenueId > 0)
             {
@@ -173,9 +160,7 @@ namespace EventFlow.Services
             }
 
 
-            // -----------------------------
-            // Participant conflicts
-            // -----------------------------
+          
 
             var registrations = await _context.Registrations
                 .Where(r => r.EventId == eventId)
@@ -202,9 +187,7 @@ namespace EventFlow.Services
             }
 
 
-            // -----------------------------
-            // Volunteer conflicts
-            // -----------------------------
+           
 
             var volunteers = await _context.Volunteers
                 .Where(v =>

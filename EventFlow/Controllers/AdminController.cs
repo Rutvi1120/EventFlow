@@ -59,7 +59,7 @@ namespace EventFlow.Controllers
             return View(users);
         }
 
-        // Approve Faculty / ClubPresident / Student
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveUser(string id)
@@ -71,7 +71,6 @@ namespace EventFlow.Controllers
                 return NotFound();
             }
 
-            // Make sure the user has requested a valid role
             if (string.IsNullOrWhiteSpace(user.RequestedRole))
             {
                 TempData["ErrorMessage"] =
@@ -90,7 +89,7 @@ namespace EventFlow.Controllers
                 return RedirectToAction(nameof(Users));
             }
 
-            // Approve the account
+          
             user.IsApproved = true;
 
             var updateResult = await _userManager.UpdateAsync(user);
@@ -104,7 +103,7 @@ namespace EventFlow.Controllers
                 return RedirectToAction(nameof(Users));
             }
 
-            // Assign the requested Identity role
+           
             if (!await _userManager.IsInRoleAsync(
                 user,
                 user.RequestedRole))
@@ -185,7 +184,7 @@ namespace EventFlow.Controllers
                 return NotFound();
             }
 
-            // Check venue conflict before approving the event
+            
             if (eventItem.VenueId > 0)
             {
                 var venueConflict =

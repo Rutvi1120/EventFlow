@@ -65,9 +65,7 @@ namespace EventFlow.Controllers
                 .OrderByDescending(e => e.StartDateTime)
                 .ToListAsync();
 
-            // -------------------------------------------------
-            // PENDING VOLUNTEER APPLICATIONS
-            // -------------------------------------------------
+          
 
             var pendingVolunteerApplications =
                 await _volunteerService.ManageableVolunteers(User)
@@ -96,7 +94,7 @@ namespace EventFlow.Controllers
             ViewBag.MyEvents = myEvents;
             ViewBag.PendingPresidentRequests = pendingPresidentRequests;
 
-            // Volunteer applications
+           
             ViewBag.PendingVolunteerApplications =
                 pendingVolunteerApplications;
 
@@ -106,9 +104,6 @@ namespace EventFlow.Controllers
             return View();
         }
 
-        // -----------------------------------------------------
-        // EVENTS
-        // -----------------------------------------------------
 
         public async Task<IActionResult> Events()
         {
@@ -124,19 +119,19 @@ namespace EventFlow.Controllers
                 .Where(e =>
                     e.OrganizerId == facultyId ||
 
-                    // Student-created events assigned to this Faculty
+                   
                     (
                         e.EventType == EventTypes.Student &&
                         e.FacultySupervisorId == facultyId
                     ) ||
 
-                    // Pending College events
+                    
                     (
                         e.ApprovalStatus == EventApprovalStatus.Pending &&
                         e.EventType == EventTypes.College
                     ) ||
 
-                    // Club events supervised by this Faculty
+                  
                     (
                         e.EventType == EventTypes.Club &&
                         e.Club != null &&
@@ -157,10 +152,7 @@ namespace EventFlow.Controllers
             return View(events);
         }
 
-        // -----------------------------------------------------
-        // APPROVE EVENT
-        // -----------------------------------------------------
-
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveEvent(int id)
@@ -208,9 +200,6 @@ namespace EventFlow.Controllers
             return RedirectToAction(nameof(Events));
         }
 
-        // -----------------------------------------------------
-        // REJECT EVENT
-        // -----------------------------------------------------
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -259,9 +248,7 @@ namespace EventFlow.Controllers
             return RedirectToAction(nameof(Events));
         }
 
-        // -----------------------------------------------------
-        // CLUBS
-        // -----------------------------------------------------
+        
 
         public async Task<IActionResult> AllClubs()
         {
@@ -346,10 +333,7 @@ namespace EventFlow.Controllers
             return RedirectToAction(nameof(AllClubs));
         }
 
-        // -----------------------------------------------------
-        // CLUB PRESIDENT
-        // -----------------------------------------------------
-
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApprovePresident(string userId)
@@ -440,9 +424,7 @@ namespace EventFlow.Controllers
                 new { id = club.Id });
         }
 
-        // -----------------------------------------------------
-        // CREATE COLLEGE EVENT
-        // -----------------------------------------------------
+        
 
         [HttpGet]
         public async Task<IActionResult> CreateEvent()

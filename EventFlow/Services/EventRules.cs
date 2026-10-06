@@ -7,11 +7,7 @@ namespace EventFlow.Services
 {
     public static class EventRules
     {
-        /// <summary>
-        /// Server-side check shared by every place that creates or edits an event:
-        /// the venue must exist and MaxParticipants must not exceed its capacity.
-        /// Adds errors to ModelState; the caller decides what to do.
-        /// </summary>
+       
         public static async Task ValidateVenueAsync(
             ApplicationDbContext context,
             ModelStateDictionary modelState,

@@ -29,9 +29,7 @@ namespace EventFlow.Controllers
             _conflictDetectionService = conflictDetectionService;
         }
 
-        // =========================================================
-        // DASHBOARD
-        // =========================================================
+      
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -91,9 +89,7 @@ namespace EventFlow.Controllers
             return View();
         }
 
-        // =========================================================
-        // MY CLUBS
-        // =========================================================
+       
         public async Task<IActionResult> AllClubs()
         {
             var userId = _userManager.GetUserId(User);
@@ -115,9 +111,7 @@ namespace EventFlow.Controllers
             return View(clubs);
         }
 
-        // =========================================================
-        // CLUB DETAILS
-        // =========================================================
+        
         public async Task<IActionResult> ClubDetails(int id)
         {
             var userId = _userManager.GetUserId(User);
@@ -160,9 +154,7 @@ namespace EventFlow.Controllers
             return View(club);
         }
 
-        // =========================================================
-        // CREATE EVENT - GET
-        // =========================================================
+        
         [HttpGet]
         public async Task<IActionResult> CreateEvent(int clubId)
         {
@@ -200,9 +192,7 @@ namespace EventFlow.Controllers
             return View(eventItem);
         }
 
-        // =========================================================
-        // CREATE EVENT - POST
-        // =========================================================
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEvent(
@@ -281,9 +271,6 @@ namespace EventFlow.Controllers
                 new { id = club.Id });
         }
 
-        // =========================================================
-        // CLUB EVENTS
-        // =========================================================
         public async Task<IActionResult> Events()
         {
             var userId = _userManager.GetUserId(User);
@@ -317,9 +304,7 @@ namespace EventFlow.Controllers
             return View(events);
         }
 
-        // =========================================================
-        // EDIT EVENT - GET
-        // =========================================================
+      
         [HttpGet]
         public async Task<IActionResult> EditEvent(int id)
         {
@@ -352,9 +337,7 @@ namespace EventFlow.Controllers
             return View(eventItem);
         }
 
-        // =========================================================
-        // EDIT EVENT - POST
-        // =========================================================
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditEvent(
@@ -438,9 +421,6 @@ namespace EventFlow.Controllers
             return RedirectToAction(nameof(Events));
         }
 
-        // =========================================================
-        // DELETE EVENT
-        // =========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteEvent(int id)
@@ -475,9 +455,7 @@ namespace EventFlow.Controllers
             return RedirectToAction(nameof(Events));
         }
 
-        // =========================================================
-        // VENUES
-        // =========================================================
+        
         private async Task LoadVenues()
         {
             var venues = await _context.Venues

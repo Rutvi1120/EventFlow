@@ -111,14 +111,12 @@ namespace EventFlow.Controllers
 
             eventItem.OrganizerId = userId;
 
-            // Never trust these values from the browser.
             eventItem.EventType = EventTypes.Student;
             eventItem.ApprovalStatus = EventApprovalStatus.Pending;
             eventItem.Status = "Upcoming";
             eventItem.ClubId = null;
             eventItem.ClubName = null;
 
-            // Faculty supervisor is required for Student-created events.
             if (string.IsNullOrWhiteSpace(eventItem.FacultySupervisorId))
             {
                 ModelState.AddModelError(

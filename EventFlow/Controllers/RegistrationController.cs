@@ -25,11 +25,7 @@ namespace EventFlow.Controllers
             _conflictDetectionService = conflictDetectionService;
         }
 
-        // =====================================================
-        // REGISTER
-        // If the event is full the user is placed on the waitlist.
-        // =====================================================
-
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(int eventId)
@@ -69,9 +65,7 @@ namespace EventFlow.Controllers
 
                 return RedirectToDetails(eventId);
             }
-            // =====================================================
-            // CHECK PARTICIPANT TIME CONFLICT
-            // =====================================================
+            
 
             var participantConflict =
                 await _conflictDetectionService.FindParticipantConflictAsync(
@@ -101,7 +95,7 @@ namespace EventFlow.Controllers
 
             try
             {
-                // Serializable so two students cannot both take the last seat.
+              
                 await using var transaction =
                     await _context.Database.BeginTransactionAsync(
                         IsolationLevel.Serializable);
@@ -151,10 +145,7 @@ namespace EventFlow.Controllers
             return RedirectToDetails(eventId);
         }
 
-        // =====================================================
-        // CANCEL REGISTRATION
-        // =====================================================
-
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel(int eventId)
@@ -193,32 +184,24 @@ namespace EventFlow.Controllers
 
             try
             {
-                // Keep cancellation and waitlist promotion together.
-                // Serializable prevents two cancellations from promoting
-                // the same waitlisted participant.
+               
                 await using var transaction =
                     await _context.Database.BeginTransactionAsync(
                         IsolationLevel.Serializable);
 
-                // ---------------------------------------------
-                // 1. Cancel current registration
-                // ---------------------------------------------
+                
                 _context.Registrations.Remove(registration);
 
                 await _context.SaveChangesAsync();
 
                 var eventItem = registration.Event;
 
-                // ---------------------------------------------
-                // 2. Check whether waitlist promotion is allowed
-                // ---------------------------------------------
+                
                 if (eventItem != null &&
                     eventItem.ApprovalStatus == EventApprovalStatus.Approved &&
                     !eventItem.HasStarted)
                 {
-                    // ---------------------------------------------
-                    // 3. Find earliest waitlisted participant
-                    // ---------------------------------------------
+                   
                     var nextEntry = await _context.WaitlistEntries
                         .Where(w => w.EventId == eventId)
                         .OrderBy(w => w.JoinedAt)
@@ -268,9 +251,7 @@ namespace EventFlow.Controllers
                     }
                 }
 
-                // ---------------------------------------------
-                // 6. Commit cancellation + promotion together
-                // ---------------------------------------------
+              
                 await transaction.CommitAsync();
             }
             catch (DbUpdateException)
@@ -296,10 +277,7 @@ namespace EventFlow.Controllers
             return RedirectToDetails(eventId);
         }
 
-        // =====================================================
-        // JOIN / LEAVE WAITLIST
-        // =====================================================
-
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> JoinWaitlist(int eventId)
@@ -412,9 +390,7 @@ namespace EventFlow.Controllers
             return RedirectToDetails(eventId);
         }
 
-        // =====================================================
-        // MY REGISTRATIONS / MY WAITLIST
-        // =====================================================
+      
 
         public async Task<IActionResult> MyRegistrations()
         {
@@ -460,9 +436,7 @@ namespace EventFlow.Controllers
             return View(waitlistEntries);
         }
 
-        // =====================================================
-        // HELPERS
-        // =====================================================
+        
 
         private IActionResult RedirectToDetails(int eventId)
         {
@@ -472,10 +446,7 @@ namespace EventFlow.Controllers
                 new { id = eventId });
         }
 
-        /// <summary>
-        /// Registration / waitlist is only possible for approved events
-        /// that have not started yet. Returns an error message, or null if open.
-        /// </summary>
+       
         private static string? GetSignupProblem(Event? eventItem)
         {
             if (eventItem == null)

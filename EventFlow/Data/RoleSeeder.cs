@@ -26,10 +26,7 @@ namespace EventFlow.Data
             var userManager =
                 serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            // ==========================================
-            // CREATE ROLES
-            // ==========================================
-
+        
             foreach (var role in Roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
@@ -49,16 +46,12 @@ namespace EventFlow.Data
                 }
             }
 
-            // ==========================================
-            // FIND ADMIN USER
-            // ==========================================
+          
 
             var admin =
                 await userManager.FindByEmailAsync(AdminEmail);
 
-            // ==========================================
-            // CREATE ADMIN IF IT DOES NOT EXIST
-            // ==========================================
+           
 
             if (admin == null)
             {
@@ -88,9 +81,6 @@ namespace EventFlow.Data
                 }
             }
 
-            // ==========================================
-            // MAKE SURE ADMIN IS APPROVED
-            // ==========================================
 
             if (!admin.IsApproved)
             {
@@ -113,9 +103,7 @@ namespace EventFlow.Data
                             e => e.Description)));
             }
 
-            // ==========================================
-            // MAKE SURE ADMIN HAS ADMIN ROLE
-            // ==========================================
+          
 
             if (!await userManager.IsInRoleAsync(
                 admin,

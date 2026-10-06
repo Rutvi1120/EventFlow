@@ -55,7 +55,7 @@ namespace EventFlow.Controllers
                 return NotFound();
             }
 
-            // Registration information
+           
             ViewBag.RegisteredCount = eventItem.Registrations.Count;
 
             ViewBag.SeatsLeft = Math.Max(
@@ -63,10 +63,10 @@ namespace EventFlow.Controllers
                 eventItem.MaxParticipants -
                 eventItem.Registrations.Count);
 
-            // Current user
+            
             var userId = _userManager.GetUserId(User);
 
-            // Check whether the current user is the event creator
+
             ViewBag.IsOrganizer =
                 !string.IsNullOrWhiteSpace(userId) &&
                 userId == eventItem.OrganizerId;
@@ -88,7 +88,7 @@ namespace EventFlow.Controllers
                 ViewBag.IsActiveVolunteer = myVolunteer != null;
             }
 
-            // Waitlist count
+           
             ViewBag.WaitlistCount =
                 eventItem.WaitlistEntries.Count;
 
@@ -112,7 +112,7 @@ namespace EventFlow.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            // Only the organizer or Admin can view participants for this event.
+           
             if (string.IsNullOrWhiteSpace(userId) ||
                 (eventItem.OrganizerId != userId && !User.IsInRole("Admin")))
             {

@@ -72,7 +72,6 @@ namespace EventFlow.Controllers
                 return BadRequest();
             }
 
-            // Do not allow capacity to drop below an upcoming event's participant limit.
             var largestUpcomingLimit = await _context.Events
                 .Where(e =>
                     e.VenueId == id &&

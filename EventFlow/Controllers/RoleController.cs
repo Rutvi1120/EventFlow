@@ -19,7 +19,6 @@ namespace EventFlow.Controllers
             _roleManager = roleManager;
         }
 
-        // Show all users and their roles
         public async Task<IActionResult> Index()
         {
             var users = _userManager.Users.Where(u => u.Email != "admin@gmail.com").ToList();
@@ -40,7 +39,6 @@ namespace EventFlow.Controllers
             return View(userRoles);
         }
 
-        // Show role assignment page
         [HttpGet]
         public async Task<IActionResult> AssignRole(string id)
         {
@@ -60,7 +58,6 @@ namespace EventFlow.Controllers
             return View(user);
         }
 
-        // Assign selected role
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AssignRole(string id, string role)

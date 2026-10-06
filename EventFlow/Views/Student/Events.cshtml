@@ -19,6 +19,17 @@
         </a>
     </div>
 
+    <div class="mb-3 d-flex gap-2 align-items-center">
+        <input id="student-events-search" class="form-control" style="max-width:360px;" type="search" placeholder="Search events..." />
+
+        <div class="btn-group" role="group" aria-label="Filter events">
+            <button type="button" class="btn btn-outline-secondary btn-sm student-events-filter active" data-filter="all">All</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm student-events-filter" data-filter="upcoming">Upcoming</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm student-events-filter" data-filter="ongoing">Ongoing</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm student-events-filter" data-filter="completed">Completed</button>
+        </div>
+    </div>
+
     @if (!Model.Any())
     {
         <div class="alert alert-info">
@@ -27,10 +38,12 @@
     }
     else
     {
-        <div class="row g-4">
+        <div class="row g-4" id="student-events-list">
             @foreach (var eventItem in Model)
             {
-                <div class="col-md-6 col-lg-4">
+                var startIso = eventItem.StartDateTime.ToString("o");
+                var endIso = eventItem.EndDateTime.ToString("o");
+                <div class="col-md-6 col-lg-4 event-card" data-name="@eventItem.Name.ToLower()" data-start="@startIso" data-end="@endIso">
                     <div class="card h-100 shadow-sm">
                         <div class="card-body d-flex flex-column">
                             <div class="mb-2">
@@ -97,4 +110,41 @@
             }
         </div>
     }
+
+    <script>
+        (function(){
+            const input = document.getElementById('student-events-search');
+            const filters = document.querySelectorAll('.student-events-filter');
+
+            function computeStatus(start, end){
+                const now = new Date();
+                if (now < start) return 'upcoming';
+                if (now >= start && now <= end) return 'ongoing';
+                return 'completed';
+            }
+
+            function applyFilter(){
+                const q = input.value.trim().toLowerCase();
+                const active = document.querySelector('.student-events-filter.active')?.dataset.filter || 'all';
+                document.querySelectorAll('#student-events-list .event-card').forEach(el=>{
+                    const name = (el.dataset.name || '').toLowerCase();
+                    const start = new Date(el.dataset.start);
+                    const end = new Date(el.dataset.end);
+                    const status = computeStatus(start,end);
+
+                    const matchesSearch = q === '' || name.indexOf(q) !== -1;
+                    const matchesFilter = active === 'all' || active === status;
+
+                    el.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+                });
+            }
+
+            input.addEventListener('input', applyFilter);
+            filters.forEach(btn=> btn.addEventListener('click', function(){
+                filters.forEach(b=>b.classList.remove('active'));
+                this.classList.add('active');
+                applyFilter();
+            }));
+        })();
+    </script>
 </div>

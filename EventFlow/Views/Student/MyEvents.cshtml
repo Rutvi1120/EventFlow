@@ -29,7 +29,42 @@
     }
     else
     {
-        <div class="table-responsive">
+        <div class="mb-3 d-flex gap-2 align-items-center">
+
+            <div class="btn-group"
+                 role="group"
+                 aria-label="Filter events">
+
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm student-myevents-filter active"
+                        data-filter="all">
+                    All
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm student-myevents-filter"
+                        data-filter="upcoming">
+                    Upcoming
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm student-myevents-filter"
+                        data-filter="ongoing">
+                    Ongoing
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm student-myevents-filter"
+                        data-filter="completed">
+                    Completed
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="table-responsive"
+             id="student-myevents-list">
 
             <table class="table table-hover align-middle">
 
@@ -46,7 +81,13 @@
 
                     @foreach (var eventItem in Model)
                     {
-                        <tr>
+                        var startIso = eventItem.StartDateTime.ToString("o");
+                        var endIso = eventItem.EndDateTime.ToString("o");
+
+                        <tr class="event-row"
+                            data-name="@eventItem.Name.ToLower()"
+                            data-start="@startIso"
+                            data-end="@endIso">
 
                             <td>
                                 <strong>
@@ -126,3 +167,75 @@
         </div>
     }
 </div>
+
+<script>
+    (function() {
+
+        const filters =
+            document.querySelectorAll('.student-myevents-filter');
+
+        function computeStatus(start, end) {
+
+            const now = new Date();
+
+            if (now < start) {
+                return 'upcoming';
+            }
+
+            if (now >= start && now <= end) {
+                return 'ongoing';
+            }
+
+            return 'completed';
+        }
+
+        function applyFilter() {
+
+            const active =
+                document.querySelector(
+                    '.student-myevents-filter.active'
+                )?.dataset.filter || 'all';
+
+            document
+                .querySelectorAll(
+                    '#student-myevents-list .event-row'
+                )
+                .forEach(el => {
+
+                    const start =
+                        new Date(el.dataset.start);
+
+                    const end =
+                        new Date(el.dataset.end);
+
+                    const status =
+                        computeStatus(start, end);
+
+                    const matchesFilter =
+                        active === 'all' ||
+                        active === status;
+
+                    el.style.display =
+                        matchesFilter ? '' : 'none';
+                });
+        }
+
+        filters.forEach(btn => {
+
+            btn.addEventListener('click', function() {
+
+                filters.forEach(b =>
+                    b.classList.remove('active')
+                );
+
+                this.classList.add('active');
+
+                applyFilter();
+            });
+
+        });
+
+        applyFilter();
+
+    })();
+</script>

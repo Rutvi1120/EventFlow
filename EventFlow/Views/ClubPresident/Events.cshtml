@@ -19,6 +19,17 @@
         </div>
     </div>
 
+    <div class="mb-3 d-flex gap-2 align-items-center">
+        <input id="club-events-search" class="form-control" style="max-width:360px;" type="search" placeholder="Search events..." />
+
+        <div class="btn-group" role="group" aria-label="Filter events">
+            <button type="button" class="btn btn-outline-secondary btn-sm club-events-filter active" data-filter="all">All</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm club-events-filter" data-filter="upcoming">Upcoming</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm club-events-filter" data-filter="ongoing">Ongoing</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm club-events-filter" data-filter="completed">Completed</button>
+        </div>
+    </div>
+
     <partial name="_Alerts" />
 
     @if (!Model.Any())
@@ -29,7 +40,7 @@
     }
     else
     {
-        <div class="table-responsive">
+        <div class="table-responsive" id="club-events-list">
             <table class="table table-hover align-middle">
 
                 <thead>
@@ -47,7 +58,10 @@
 
                     @foreach (var eventItem in Model)
                     {
-                        <tr>
+                        var startIso = eventItem.StartDateTime.ToString("o");
+                        var endIso = eventItem.EndDateTime.ToString("o");
+
+                        <tr class="event-row" data-name="@eventItem.Name.ToLower()" data-start="@startIso" data-end="@endIso">
 
                             <td>
                                 <strong>
@@ -153,5 +167,44 @@
             </table>
         </div>
     }
+
+    <script>
+        (function(){
+            const input = document.getElementById('club-events-search');
+            const filters = document.querySelectorAll('.club-events-filter');
+
+            function computeStatus(start, end){
+                const now = new Date();
+                if (now < start) return 'upcoming';
+                if (now >= start && now <= end) return 'ongoing';
+                return 'completed';
+            }
+
+            function applyFilter(){
+                const q = input.value.trim().toLowerCase();
+                const active = document.querySelector('.club-events-filter.active')?.dataset.filter || 'all';
+                document.querySelectorAll('#club-events-list .event-row').forEach(el=>{
+                    const name = (el.dataset.name || '').toLowerCase();
+                    const start = new Date(el.dataset.start);
+                    const end = new Date(el.dataset.end);
+                    const status = computeStatus(start,end);
+
+                    const matchesSearch = q === '' || name.indexOf(q) !== -1;
+                    const matchesFilter = active === 'all' || active === status;
+
+                    el.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+                });
+            }
+
+            input.addEventListener('input', applyFilter);
+            filters.forEach(btn=> btn.addEventListener('click', function(){
+                filters.forEach(b=>b.classList.remove('active'));
+                this.classList.add('active');
+                applyFilter();
+            }));
+            // initial apply
+            applyFilter();
+        })();
+    </script>
 
 </div>

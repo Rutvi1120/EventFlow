@@ -14,6 +14,17 @@
         </div>
     </div>
 
+    <div class="mb-3 d-flex gap-2 align-items-center">
+        <input id="myevents-search" class="form-control" style="max-width:360px;" type="search" placeholder="Search events..." />
+
+        <div class="btn-group" role="group" aria-label="Filter events">
+            <button type="button" class="btn btn-outline-secondary btn-sm myevents-filter active" data-filter="all">All</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm myevents-filter" data-filter="upcoming">Upcoming</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm myevents-filter" data-filter="ongoing">Ongoing</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm myevents-filter" data-filter="completed">Completed</button>
+        </div>
+    </div>
+
     @if (!Model.Any())
     {
         <div class="alert alert-info">
@@ -22,7 +33,7 @@
     }
     else
     {
-        <div class="table-responsive">
+        <div class="table-responsive" id="myevents-list">
             <table class="table table-bordered table-hover align-middle">
                 <thead>
                     <tr>
@@ -39,7 +50,10 @@
                 <tbody>
                     @foreach (var eventItem in Model)
                     {
-                        <tr>
+                        var startIso = eventItem.StartDateTime.ToString("o");
+                        var endIso = eventItem.EndDateTime.ToString("o");
+
+                        <tr class="event-row" data-name="@(eventItem.Name?.ToLower())" data-start="@startIso" data-end="@endIso">
                             <td>@eventItem.Name</td>
 
                             <td>

@@ -46,26 +46,34 @@ namespace EventFlow.Controllers
                 .Include(e => e.Registrations)
                 .Include(e => e.WaitlistEntries)
                 .Include(e => e.Volunteers)
-                .FirstOrDefaultAsync(e =>
-                    e.Id == id &&
-                    e.ApprovalStatus == "Approved");
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (eventItem == null)
             {
                 return NotFound();
             }
 
-           
+            var userId = _userManager.GetUserId(User);
+
+            bool canViewUnapproved =
+                User.IsInRole("Admin") ||
+                User.IsInRole("Faculty") ||
+                (!string.IsNullOrWhiteSpace(userId) &&
+                 eventItem.OrganizerId == userId);
+
+            // Unapproved events should only be visible to
+            // authorized management users or their organizer.
+            if (eventItem.ApprovalStatus != "Approved" && !canViewUnapproved)
+            {
+                return NotFound();
+            }
+
             ViewBag.RegisteredCount = eventItem.Registrations.Count;
 
             ViewBag.SeatsLeft = Math.Max(
                 0,
                 eventItem.MaxParticipants -
                 eventItem.Registrations.Count);
-
-            
-            var userId = _userManager.GetUserId(User);
-
 
             ViewBag.IsOrganizer =
                 !string.IsNullOrWhiteSpace(userId) &&
@@ -88,7 +96,6 @@ namespace EventFlow.Controllers
                 ViewBag.IsActiveVolunteer = myVolunteer != null;
             }
 
-           
             ViewBag.WaitlistCount =
                 eventItem.WaitlistEntries.Count;
 

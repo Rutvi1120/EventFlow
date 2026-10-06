@@ -22,6 +22,17 @@
         </a>
     </div>
 
+    <div class="mb-3 d-flex gap-2 align-items-center">
+        <input id="faculty-events-search" class="form-control" style="max-width:360px;" type="search" placeholder="Search events..." />
+
+        <div class="btn-group" role="group" aria-label="Filter events">
+            <button type="button" class="btn btn-outline-secondary btn-sm faculty-events-filter active" data-filter="all">All</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm faculty-events-filter" data-filter="upcoming">Upcoming</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm faculty-events-filter" data-filter="ongoing">Ongoing</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm faculty-events-filter" data-filter="completed">Completed</button>
+        </div>
+    </div>
+
     <partial name="_Alerts" />
 
     @if (!Model.Any())
@@ -32,7 +43,7 @@
     }
     else
     {
-        <div class="table-responsive">
+        <div class="table-responsive" id="faculty-events-list">
             <table class="table table-bordered table-hover align-middle">
                 <thead>
                     <tr>
@@ -49,7 +60,10 @@
                 <tbody>
                     @foreach (var eventItem in Model)
                     {
-                        <tr>
+                        var startIso = eventItem.StartDateTime.ToString("o");
+                        var endIso = eventItem.EndDateTime.ToString("o");
+
+                        <tr class="event-row" data-name="@eventItem.Name.ToLower()" data-start="@startIso" data-end="@endIso">
                             <td>
                                 <strong>@eventItem.Name</strong>
 
@@ -163,4 +177,42 @@
             </table>
         </div>
     }
+
+    <script>
+        (function(){
+            const input = document.getElementById('faculty-events-search');
+            const filters = document.querySelectorAll('.faculty-events-filter');
+
+            function computeStatus(start, end){
+                const now = new Date();
+                if (now < start) return 'upcoming';
+                if (now >= start && now <= end) return 'ongoing';
+                return 'completed';
+            }
+
+            function applyFilter(){
+                const q = input.value.trim().toLowerCase();
+                const active = document.querySelector('.faculty-events-filter.active')?.dataset.filter || 'all';
+                document.querySelectorAll('#faculty-events-list .event-row').forEach(el=>{
+                    const name = (el.dataset.name || '').toLowerCase();
+                    const start = new Date(el.dataset.start);
+                    const end = new Date(el.dataset.end);
+                    const status = computeStatus(start,end);
+
+                    const matchesSearch = q === '' || name.indexOf(q) !== -1;
+                    const matchesFilter = active === 'all' || active === status;
+
+                    el.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+                });
+            }
+
+            input.addEventListener('input', applyFilter);
+            filters.forEach(btn=> btn.addEventListener('click', function(){
+                filters.forEach(b=>b.classList.remove('active'));
+                this.classList.add('active');
+                applyFilter();
+            }));
+            applyFilter();
+        })();
+    </script>
 </div>

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace EventFlow.Controllers
 {
@@ -92,6 +93,108 @@ namespace EventFlow.Controllers
                 eventItem.WaitlistEntries.Count;
 
             return View(eventItem);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Participants(int id)
+        {
+            var eventItem = await _context.Events
+                .Include(e => e.Venue)
+                .Include(e => e.Organizer)
+                .Include(e => e.Registrations)
+                    .ThenInclude(r => r.User)
+                .FirstOrDefaultAsync(e => e.Id == id && e.ApprovalStatus == "Approved");
+
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            var userId = _userManager.GetUserId(User);
+
+            // Only the organizer or Admin can view participants for this event.
+            if (string.IsNullOrWhiteSpace(userId) ||
+                (eventItem.OrganizerId != userId && !User.IsInRole("Admin")))
+            {
+                return Forbid();
+            }
+
+            return View(eventItem);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> ExportParticipants(int id)
+        {
+            var eventItem = await _context.Events
+                .Include(e => e.Registrations)
+                    .ThenInclude(r => r.User)
+                .FirstOrDefaultAsync(e => e.Id == id && e.ApprovalStatus == "Approved");
+
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(userId) ||
+                (eventItem.OrganizerId != userId && !User.IsInRole("Admin")))
+            {
+                return Forbid();
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Name,Email,RegisteredAt,EventName");
+
+            foreach (var r in eventItem.Registrations.OrderBy(r => r.RegisteredAt))
+            {
+                var name = r.User?.FullName ?? string.Empty;
+                var email = r.User?.Email ?? string.Empty;
+                var date = r.RegisteredAt.ToString("u");
+                sb.AppendLine($"\"{name}\",\"{email}\",\"{date}\",\"{eventItem.Name}\"");
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+
+            return File(bytes, "text/csv", $"participants_event_{id}.csv");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> ExportVolunteers(int id)
+        {
+            var eventItem = await _context.Events
+                .Include(e => e.Volunteers)
+                    .ThenInclude(v => v.VolunteerUser)
+                .FirstOrDefaultAsync(e => e.Id == id && e.ApprovalStatus == "Approved");
+
+            if (eventItem == null)
+            {
+                return NotFound();
+            }
+
+            var userId = _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(userId) ||
+                (eventItem.OrganizerId != userId && !User.IsInRole("Admin")))
+            {
+                return Forbid();
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Name,Email,Status,AppliedAt,EventName");
+
+            foreach (var v in eventItem.Volunteers.OrderBy(v => v.Id))
+            {
+                var name = v.VolunteerUser?.FullName ?? string.Empty;
+                var email = v.VolunteerUser?.Email ?? string.Empty;
+                var status = v.Status ?? string.Empty;
+                var applied = v.AssignedAt?.ToString("u") ?? string.Empty;
+                sb.AppendLine($"\"{name}\",\"{email}\",\"{status}\",\"{applied}\",\"{eventItem.Name}\"");
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+
+            return File(bytes, "text/csv", $"volunteers_event_{id}.csv");
         }
         [Authorize]
         public async Task<IActionResult> MyEvents()

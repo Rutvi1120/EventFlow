@@ -557,6 +557,16 @@ namespace EventFlow.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            // ORGANIZER CANNOT APPLY TO VOLUNTEER FOR OWN EVENT
+            if (!string.IsNullOrWhiteSpace(userId) &&
+                eventItem.OrganizerId == userId)
+            {
+                TempData["ErrorMessage"] =
+                    "As the organizer of this event you cannot apply to volunteer.";
+
+                return RedirectToAction("Details", "Events", new { id = eventItem.Id });
+            }
+
             if (eventItem.ApprovalStatus != EventApprovalStatus.Approved)
             {
                 TempData["ErrorMessage"] =

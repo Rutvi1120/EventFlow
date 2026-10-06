@@ -110,6 +110,36 @@
                     Login to Register
                 </a>
             }
+            else if (isOrganizer)
+            {
+                <!-- Organizer dashboard for this event -->
+                <div class="mb-3">
+                    <h4>Organizer Dashboard</h4>
+
+                    <div class="row g-3">
+                        <div class="col-auto">
+                            <div class="card p-3">
+                                <div class="fs-5 fw-bold">Participants</div>
+                                <div class="text-muted">@registeredCount total</div>
+                            </div>
+                        </div>
+
+                        <div class="col-auto">
+                            <div class="card p-3">
+                                <div class="fs-5 fw-bold">Volunteers</div>
+                                <div class="text-muted">@Model.Volunteers.Count total</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                        <a asp-controller="Events" asp-action="Participants" asp-route-id="@Model.Id" class="btn btn-outline-primary">View Participants</a>
+                        <a asp-controller="Volunteer" asp-action="EventVolunteers" asp-route-eventId="@Model.Id" class="btn btn-outline-secondary">Manage Volunteers</a>
+                        <a asp-controller="Events" asp-action="ExportParticipants" asp-route-id="@Model.Id" class="btn btn-outline-success">Download Participants CSV</a>
+                        <a asp-controller="Events" asp-action="ExportVolunteers" asp-route-id="@Model.Id" class="btn btn-outline-info">Download Volunteers CSV</a>
+                    </div>
+                </div>
+            }
             else
             {
                 <div class="d-flex flex-wrap align-items-center gap-2">
@@ -156,6 +186,10 @@
                         <span class="badge bg-info text-dark fs-6">
                             Registration closed - event in progress
                         </span>
+                    }
+                    else if (isOrganizer)
+                    {
+                        <span class="badge bg-secondary fs-6">You are the organizer of this event</span>
                     }
                     else if (isFull)
                     {

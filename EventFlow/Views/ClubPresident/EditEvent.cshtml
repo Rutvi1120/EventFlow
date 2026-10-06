@@ -76,7 +76,14 @@
 
                                 <input asp-for="StartDateTime"
                                        type="datetime-local"
-                                       class="form-control" />
+                                       class="form-control"
+                                       value="@(Model.StartDateTime == DateTime.MinValue
+                                           ? DateTime.Now.ToString("yyyy-MM-ddTHH:mm")
+                                           : Model.StartDateTime.ToString("yyyy-MM-ddTHH:mm"))" />
+
+                                <span asp-validation-for="StartDateTime"
+                                      class="text-danger">
+                                </span>
 
                                 <span asp-validation-for="StartDateTime"
                                       class="text-danger">
@@ -91,8 +98,14 @@
 
                                 <input asp-for="EndDateTime"
                                        type="datetime-local"
-                                       class="form-control" />
+                                       class="form-control"
+                                       value="@(Model.EndDateTime == DateTime.MinValue
+                                           ? DateTime.Now.AddHours(1).ToString("yyyy-MM-ddTHH:mm")
+                                           : Model.EndDateTime.ToString("yyyy-MM-ddTHH:mm"))" />
 
+                                <span asp-validation-for="EndDateTime"
+                                      class="text-danger">
+                                </span>
                                 <span asp-validation-for="EndDateTime"
                                       class="text-danger">
                                 </span>

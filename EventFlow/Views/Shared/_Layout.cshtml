@@ -23,6 +23,10 @@
         User.Identity?.IsAuthenticated == true &&
         User.IsInRole("Faculty");
 
+    var isClubPresident =
+        User.Identity?.IsAuthenticated == true &&
+        User.IsInRole("ClubPresident");
+
     var isIdentityPage =
         string.Equals(
             currentArea,
@@ -53,6 +57,7 @@
     @await RenderSectionAsync("Styles", required: false)
 
     <style>
+
         /* =========================================================
            ADMIN SHELL
            ========================================================= */
@@ -645,41 +650,245 @@
 
 
         /* =========================================================
+           CLUB PRESIDENT SHELL
+           ========================================================= */
+
+        .club-president-layout {
+            min-height: 100vh;
+            display: flex;
+            background: #f5f7fb;
+        }
+
+        .club-president-sidebar {
+            width: 260px;
+            min-width: 260px;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1100;
+            background: linear-gradient(
+                180deg,
+                #312e81 0%,
+                #4338ca 55%,
+                #5b21b6 100%
+            );
+            color: white;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .club-president-brand {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .club-president-brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white !important;
+            text-decoration: none;
+        }
+
+        .club-president-brand-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.16);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .club-president-brand-icon img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+        }
+
+        .club-president-brand-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .club-president-brand-subtitle {
+            font-size: 0.72rem;
+            opacity: 0.65;
+            margin-top: 2px;
+        }
+
+        .club-president-sidebar-nav {
+            padding: 20px 12px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .club-president-sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 5px;
+            color: rgba(255, 255, 255, 0.82);
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 0.94rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .club-president-sidebar-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(3px);
+        }
+
+        .club-president-sidebar-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: inset 3px 0 0 white;
+        }
+
+        .club-president-sidebar-icon {
+            width: 22px;
+            text-align: center;
+        }
+
+        .club-president-sidebar-bottom {
+            padding: 15px 12px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .club-president-user-box {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 11px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .club-president-user-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .club-president-user-role {
+            font-size: 0.72rem;
+            opacity: 0.65;
+            margin-top: 2px;
+        }
+
+        .club-president-logout {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 13px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 9px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .club-president-logout:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .club-president-main {
+            width: calc(100% - 260px);
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .club-president-topbar {
+            min-height: 70px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+
+        .club-president-topbar-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .club-president-topbar-subtitle {
+            font-size: 0.78rem;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .club-president-topbar-user {
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .club-president-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+
+        /* =========================================================
            RESPONSIVE SHELLS
            ========================================================= */
 
         @@media (max-width: 991px) {
+
             .admin-sidebar,
             .student-sidebar,
-            .faculty-sidebar {
+            .faculty-sidebar,
+            .club-president-sidebar {
                 width: 220px;
                 min-width: 220px;
             }
 
             .admin-main,
             .student-main,
-            .faculty-main {
+            .faculty-main,
+            .club-president-main {
                 width: calc(100% - 220px);
                 margin-left: 220px;
             }
 
             .admin-content,
             .student-content,
-            .faculty-content {
+            .faculty-content,
+            .club-president-content {
                 padding: 20px;
             }
 
             .admin-topbar,
             .student-topbar,
-            .faculty-topbar {
+            .faculty-topbar,
+            .club-president-topbar {
                 padding: 0 20px;
             }
         }
 
         @@media (max-width: 767px) {
+
             .admin-sidebar,
             .student-sidebar,
-            .faculty-sidebar {
+            .faculty-sidebar,
+            .club-president-sidebar {
                 position: relative;
                 width: 100%;
                 min-width: 100%;
@@ -688,29 +897,34 @@
 
             .admin-main,
             .student-main,
-            .faculty-main {
+            .faculty-main,
+            .club-president-main {
                 width: 100%;
                 margin-left: 0;
             }
 
             .admin-layout,
             .student-layout,
-            .faculty-layout {
+            .faculty-layout,
+            .club-president-layout {
                 display: block;
             }
 
             .admin-sidebar-bottom,
             .student-sidebar-bottom,
-            .faculty-sidebar-bottom {
+            .faculty-sidebar-bottom,
+            .club-president-sidebar-bottom {
                 display: none;
             }
 
             .admin-topbar,
             .student-topbar,
-            .faculty-topbar {
+            .faculty-topbar,
+            .club-president-topbar {
                 position: relative;
             }
         }
+
     </style>
 </head>
 
@@ -957,36 +1171,6 @@ else if (isStudent)
 
                 </a>
 
-                <a class="student-sidebar-link
-                    @(currentController == "Volunteer" && currentAction == "Index" ? "active" : "")"
-                   asp-controller="Volunteer"
-                   asp-action="Index">
-
-                    <span class="student-sidebar-icon">🤝</span>
-                    <span>Volunteer</span>
-
-                </a>
-
-                <a class="student-sidebar-link
-                    @(currentController == "Volunteer" && currentAction == "MyApplications" ? "active" : "")"
-                   asp-controller="Volunteer"
-                   asp-action="MyApplications">
-
-                    <span class="student-sidebar-icon">📝</span>
-                    <span>My Applications</span>
-
-                </a>
-
-                <a class="student-sidebar-link
-                    @(currentController == "Volunteer" && currentAction == "Manage" ? "active" : "")"
-                   asp-controller="Volunteer"
-                   asp-action="Manage">
-
-                    <span class="student-sidebar-icon">👥</span>
-                    <span>Manage Volunteers</span>
-
-                </a>
-
             </nav>
 
             <div class="student-sidebar-bottom">
@@ -1139,16 +1323,6 @@ else if (isFaculty)
 
                 </a>
 
-                <a class="faculty-sidebar-link
-                    @(currentController == "Volunteer" ? "active" : "")"
-                   asp-controller="Volunteer"
-                   asp-action="Manage">
-
-                    <span class="faculty-sidebar-icon">🤝</span>
-                    <span>Volunteer Management</span>
-
-                </a>
-
             </nav>
 
             <div class="faculty-sidebar-bottom">
@@ -1214,12 +1388,179 @@ else if (isFaculty)
 
     </div>
 }
+else if (isClubPresident)
+{
+    <!-- =========================================================
+         CLUB PRESIDENT LAYOUT
+         ========================================================= -->
+
+    <div class="club-president-layout">
+
+        <aside class="club-president-sidebar">
+
+            <div class="club-president-brand">
+
+                <a asp-controller="ClubPresident"
+                   asp-action="Index"
+                   class="club-president-brand-link">
+
+                    <div class="club-president-brand-icon">
+                        <img src="~/images/logo.png"
+                             alt="EventFlow Logo" />
+                    </div>
+
+                    <div>
+                        <div class="club-president-brand-title">
+                            EventFlow
+                        </div>
+
+                        <div class="club-president-brand-subtitle">
+                            Club President Portal
+                        </div>
+                    </div>
+
+                </a>
+
+            </div>
+
+            <nav class="club-president-sidebar-nav">
+
+                <!-- DASHBOARD -->
+
+                <a class="club-president-sidebar-link
+                    @(currentController == "ClubPresident" && currentAction == "Index" ? "active" : "")"
+                   asp-controller="ClubPresident"
+                   asp-action="Index">
+
+                    <span class="club-president-sidebar-icon">🏠</span>
+                    <span>Dashboard</span>
+
+                </a>
+
+                <!-- BROWSE ALL EVENTS -->
+
+                <a class="club-president-sidebar-link
+                    @(currentController == "Events" ? "active" : "")"
+                   asp-controller="Events"
+                   asp-action="Index">
+
+                    <span class="club-president-sidebar-icon">📅</span>
+                    <span>Browse Events</span>
+
+                </a>
+
+                <!-- MY CLUBS -->
+
+                <a class="club-president-sidebar-link
+                    @(currentController == "ClubPresident" &&
+                      (currentAction == "AllClubs" ||
+                       currentAction == "ClubDetails") ? "active" : "")"
+                   asp-controller="ClubPresident"
+                   asp-action="AllClubs">
+
+                    <span class="club-president-sidebar-icon">🏛️</span>
+                    <span>My Clubs</span>
+
+                </a>
+
+                <!-- MY CLUB EVENTS -->
+
+                <a class="club-president-sidebar-link
+                    @(currentController == "ClubPresident" &&
+                      (currentAction == "Events" ||
+                       currentAction == "EditEvent") ? "active" : "")"
+                   asp-controller="ClubPresident"
+                   asp-action="Events">
+
+                    <span class="club-president-sidebar-icon">🎯</span>
+                    <span>My Events</span>
+
+                </a>
+
+                <!-- MY REGISTRATIONS -->
+
+                <a class="club-president-sidebar-link
+                    @(currentController == "Registration" ? "active" : "")"
+                   asp-controller="Registration"
+                   asp-action="MyRegistrations">
+
+                    <span class="club-president-sidebar-icon">🎟️</span>
+                    <span>My Registrations</span>
+
+                </a>
+
+
+            </nav>
+
+            <div class="club-president-sidebar-bottom">
+
+                <div class="club-president-user-box">
+
+                    <div class="club-president-user-name">
+                        @User.Identity?.Name
+                    </div>
+
+                    <div class="club-president-user-role">
+                        Club President
+                    </div>
+
+                </div>
+
+                <form asp-area="Identity"
+                      asp-page="/Account/Logout"
+                      asp-route-returnUrl="/"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="club-president-logout">
+
+                        <span>🚪</span>
+                        <span>Logout</span>
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </aside>
+
+        <main class="club-president-main">
+
+            <header class="club-president-topbar">
+
+                <div>
+
+                    <div class="club-president-topbar-title">
+                        @ViewData["Title"]
+                    </div>
+
+                    <div class="club-president-topbar-subtitle">
+                        EventFlow Club President Portal
+                    </div>
+
+                </div>
+
+                <div class="club-president-topbar-user">
+                    Welcome, @User.Identity?.Name
+                </div>
+
+            </header>
+
+            <div class="club-president-content">
+                @RenderBody()
+            </div>
+
+        </main>
+
+    </div>
+}
 else
 {
     <!-- =========================================================
-         NORMAL LAYOUT
-         Faculty is no longer rendered here.
-         This remains for ClubPresident / Guest / other users.
+         NORMAL / GUEST LAYOUT
          ========================================================= -->
 
     <header>
@@ -1250,51 +1591,13 @@ else
 
                     <ul class="navbar-nav flex-grow-1">
 
-                        @if (User.Identity?.IsAuthenticated == true &&
-                             User.IsInRole("ClubPresident"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="ClubPresident"
-                                   asp-action="Index">
-                                    Dashboard
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="ClubPresident"
-                                   asp-action="MyClubs">
-                                    My Clubs
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="ClubPresident"
-                                   asp-action="Events">
-                                    Club Events
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="Volunteer"
-                                   asp-action="Manage">
-                                    Volunteer Management
-                                </a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="Events"
-                                   asp-action="Index">
-                                    Events
-                                </a>
-                            </li>
-                        }
+                        <li class="nav-item">
+                            <a class="nav-link text-dark"
+                               asp-controller="Events"
+                               asp-action="Index">
+                                Events
+                            </a>
+                        </li>
 
                     </ul>
 
@@ -1329,6 +1632,7 @@ else
 }
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
 <script src="~/js/site.js"

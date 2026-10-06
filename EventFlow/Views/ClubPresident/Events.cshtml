@@ -4,10 +4,12 @@
     ViewData["Title"] = "Club Events";
 
     var manageableIds =
-        ViewBag.ManageableEventIds as HashSet<int> ?? new HashSet<int>();
+        ViewBag.ManageableEventIds as HashSet<int>
+        ?? new HashSet<int>();
 }
 
 <div class="container py-4">
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1>Club Events</h1>
@@ -29,6 +31,7 @@
     {
         <div class="table-responsive">
             <table class="table table-hover align-middle">
+
                 <thead>
                     <tr>
                         <th>Event</th>
@@ -41,11 +44,15 @@
                 </thead>
 
                 <tbody>
+
                     @foreach (var eventItem in Model)
                     {
                         <tr>
+
                             <td>
-                                <strong>@eventItem.Name</strong>
+                                <strong>
+                                    @eventItem.Name
+                                </strong>
                             </td>
 
                             <td>
@@ -86,6 +93,7 @@
 
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
+
                                     @if (eventItem.ApprovalStatus == "Approved")
                                     {
                                         <a asp-controller="Events"
@@ -116,7 +124,9 @@
                                         </a>
 
                                         <form asp-action="DeleteEvent"
-                                              method="post">
+                                              method="post"
+                                              class="d-inline">
+
                                             @Html.AntiForgeryToken()
 
                                             <input type="hidden"
@@ -124,17 +134,24 @@
                                                    value="@eventItem.Id" />
 
                                             <button type="submit"
-                                                    class="btn btn-sm btn-outline-danger">
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Are you sure you want to delete this event?');">
                                                 Delete
                                             </button>
+
                                         </form>
                                     }
+
                                 </div>
                             </td>
+
                         </tr>
                     }
+
                 </tbody>
+
             </table>
         </div>
     }
+
 </div>

@@ -1,0 +1,44 @@
+@model EventFlow.Models.Event
+
+@{
+	ViewData["Title"] = "Event Participants";
+}
+
+<div class="container py-4">
+
+	<div class="mb-3">
+		<a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Back to Event</a>
+	</div>
+
+	<h1 class="mb-3">Participants for @Model.Name</h1>
+
+	<partial name="_Alerts" />
+
+	@if (Model.Registrations == null || !Model.Registrations.Any())
+	{
+		<div class="alert alert-info">No participants registered for this event.</div>
+	}
+	else
+	{
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Email</th>
+					<th>Registered At (UTC)</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var r in Model.Registrations.OrderBy(r => r.RegisteredAt))
+				{
+					<tr>
+						<td>@(r.User?.FullName ?? "-")</td>
+						<td>@(r.User?.Email ?? "-")</td>
+						<td>@r.RegisteredAt.ToString("u")</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+
+</div>

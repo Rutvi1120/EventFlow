@@ -1,631 +1,768 @@
 ﻿@{
     ViewData["Title"] = "Club President Dashboard";
-    int myClubCount = ViewBag.MyClubCount ?? 0;
-    int clubEventCount = ViewBag.ClubEventCount ?? 0;
-    int pendingVolunteerCount = ViewBag.PendingVolunteerCount ?? 0;
+
+    var presidentName =
+        ViewBag.PresidentName?.ToString() ?? "President";
+
+    var myClubCount =
+        Convert.ToInt32(ViewBag.MyClubCount ?? 0);
+
+    var clubEventCount =
+        Convert.ToInt32(ViewBag.ClubEventCount ?? 0);
+
+    var upcomingEventCount =
+        Convert.ToInt32(ViewBag.UpcomingEventCount ?? 0);
+
+    var completedEventCount =
+        Convert.ToInt32(ViewBag.CompletedEventCount ?? 0);
+
+    var totalParticipants =
+        Convert.ToInt32(ViewBag.TotalParticipants ?? 0);
+
+    var pendingVolunteerCount =
+        Convert.ToInt32(ViewBag.PendingVolunteerCount ?? 0);
+
+    var totalEventsForProgress =
+        Math.Max(clubEventCount, 1);
+
+    var upcomingPercent =
+        Math.Min(
+            100,
+            (upcomingEventCount * 100) / totalEventsForProgress);
+
+    var completedPercent =
+        Math.Min(
+            100,
+            (completedEventCount * 100) / totalEventsForProgress);
 }
 
 <style>
-    body {
-        background: #f7f9fc;
+    .club-president-dashboard {
+        max-width: 1200px;
+        margin: 0 auto;
     }
 
-    /* ================= HEADER ================= */
+    /* =========================================================
+           WELCOME BANNER
+           ========================================================= */
 
-    .dashboard-header {
-        background: linear-gradient(135deg, #6f42c1, #9b59b6);
-        color: white;
+    .cp-welcome-banner {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 190px;
+        padding: 38px 45px;
+        margin-bottom: 28px;
         border-radius: 24px;
-        padding: 35px;
-        margin-bottom: 30px;
-        box-shadow: 0 15px 35px rgba(111, 66, 193, 0.18);
+        background: linear-gradient( 135deg, #312e81 0%, #4338ca 55%, #5b21b6 100% );
+        color: white;
+        box-shadow: 0 15px 35px rgba(67, 56, 202, 0.20);
     }
 
-        .dashboard-header h1 {
-            font-weight: 800;
-            margin-bottom: 8px;
+        .cp-welcome-banner::before {
+            content: "";
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            right: 80px;
+            top: -150px;
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 50%;
         }
 
-        .dashboard-header p {
-            color: rgba(255,255,255,0.78);
-            margin-bottom: 0;
+        .cp-welcome-banner::after {
+            content: "";
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            right: 125px;
+            top: -105px;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 50%;
         }
 
-    .club-icon {
-        width: 72px;
-        height: 72px;
+    .cp-welcome-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .cp-welcome-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.65);
+        margin-bottom: 10px;
+    }
+
+    .cp-welcome-content h1 {
+        font-size: 2.5rem;
+        font-weight: 750;
+        margin: 0 0 10px;
+        color: white;
+    }
+
+    .cp-welcome-content p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.98rem;
+    }
+
+    .cp-welcome-icon {
+        position: relative;
+        z-index: 2;
+        width: 90px;
+        height: 90px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.13);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        font-size: 2.4rem;
+        backdrop-filter: blur(8px);
+    }
+
+    /* =========================================================
+           ANALYTICS CARDS
+           ========================================================= */
+
+    .cp-analytics-card {
+        position: relative;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
         border-radius: 20px;
-        background: rgba(255,255,255,0.14);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
+        padding: 25px;
+        min-height: 180px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    /* ================= STAT ================= */
-
-    .stat-card {
-        background: white;
-        border: none;
-        border-radius: 18px;
-        padding: 24px;
-        height: 100%;
-        box-shadow: 0 8px 25px rgba(32, 56, 85, 0.07);
-        transition: 0.25s ease;
-    }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(32, 56, 85, 0.11);
+        .cp-analytics-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
         }
 
-    .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
+        .cp-analytics-card::after {
+            content: "";
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            right: -40px;
+            bottom: -45px;
+            border-radius: 50%;
+            background: #eef2ff;
+        }
+
+    .cp-analytics-icon {
+        width: 50px;
+        height: 50px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
-        margin-bottom: 15px;
+        border-radius: 14px;
+        font-size: 1.35rem;
+        margin-bottom: 18px;
     }
 
-    .stat-number {
-        font-size: 30px;
-        font-weight: 800;
-        color: #172033;
+    .cp-clubs-card .cp-analytics-icon {
+        background: #eef2ff;
     }
 
-    .stat-label {
-        color: #667085;
-        font-size: 14px;
+    .cp-events-card .cp-analytics-icon {
+        background: #ede9fe;
     }
 
-    /* ================= SECTIONS ================= */
-
-    .section-title {
-        font-weight: 800;
-        color: #172033;
+    .cp-participants-card .cp-analytics-icon {
+        background: #ecfdf5;
     }
 
-    .section-description {
-        color: #667085;
+    .cp-upcoming-card .cp-analytics-icon {
+        background: #eff6ff;
     }
 
-    /* ================= ACTION CARDS ================= */
+    .cp-completed-card .cp-analytics-icon {
+        background: #f0fdf4;
+    }
 
-    .action-card {
+    .cp-volunteer-card .cp-analytics-icon {
+        background: #fff7ed;
+    }
+
+    .cp-analytics-title {
+        position: relative;
+        z-index: 2;
+        color: #6b7280;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 7px;
+    }
+
+    .cp-analytics-number {
+        position: relative;
+        z-index: 2;
+        color: #111827;
+        font-size: 2.3rem;
+        line-height: 1;
+        font-weight: 750;
+        margin-bottom: 9px;
+    }
+
+    .cp-analytics-subtitle {
+        position: relative;
+        z-index: 2;
+        color: #9ca3af;
+        font-size: 0.82rem;
+    }
+
+    /* =========================================================
+           OVERVIEW SECTION
+           ========================================================= */
+
+    .cp-overview-section {
+        margin-top: 28px;
         background: white;
-        border: 1px solid #edf0f5;
+        border: 1px solid #e5e7eb;
         border-radius: 20px;
         padding: 28px;
-        height: 100%;
-        transition: 0.25s ease;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.035);
     }
 
-        .action-card:hover {
-            transform: translateY(-6px);
-            border-color: transparent;
-            box-shadow: 0 15px 35px rgba(32, 56, 85, 0.1);
-        }
+    .cp-section-label {
+        color: #6366f1;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+        margin-bottom: 5px;
+    }
 
-    .action-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 17px;
+    .cp-section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 5px;
+    }
+
+    .cp-section-description {
+        color: #6b7280;
+        font-size: 0.88rem;
+        margin: 0 0 24px;
+    }
+
+    .cp-overview-row {
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-size: 27px;
-        margin-bottom: 20px;
+        justify-content: space-between;
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f1f3;
     }
 
-    .action-card h5 {
-        font-weight: 700;
-        color: #172033;
-    }
+        .cp-overview-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
 
-    .action-card p {
-        color: #667085;
-        min-height: 48px;
-        line-height: 1.6;
-    }
+        .cp-overview-row:first-of-type {
+            padding-top: 0;
+        }
 
-    .dashboard-btn {
-        border-radius: 10px;
-        padding: 9px 18px;
+    .cp-overview-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #374151;
+        font-size: 0.92rem;
         font-weight: 600;
     }
 
-    /* ================= VOLUNTEER ALERT ================= */
-
-    .volunteer-alert {
-        border-radius: 20px;
-        border: none;
-        background: linear-gradient( 135deg, #fff7e6, #fffdf7 );
-        box-shadow: 0 8px 25px rgba(32, 56, 85, 0.06);
-    }
-
-    .volunteer-alert-icon {
-        width: 55px;
-        height: 55px;
-        border-radius: 15px;
-        background: #ffe8b3;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 25px;
-    }
-
-    /* ================= QUICK GUIDE ================= */
-
-    .guide-card {
-        background: #172033;
-        color: white;
-        border-radius: 22px;
-        padding: 30px;
-    }
-
-        .guide-card p {
-            color: #aeb8ca;
-        }
-
-    .guide-step {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-top: 20px;
-    }
-
-    .guide-number {
-        min-width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: #6f42c1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .cp-overview-value {
+        color: #4f46e5;
+        font-size: 1.05rem;
         font-weight: 700;
     }
 
-    @@media (max-width: 768px) {
-        .dashboard-header {
-            padding: 25px;
+    .cp-overview-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #6366f1;
+    }
+
+        .cp-overview-dot.green {
+            background: #10b981;
         }
 
-        .club-icon {
+        .cp-overview-dot.orange {
+            background: #f59e0b;
+        }
+
+        .cp-overview-dot.blue {
+            background: #0ea5e9;
+        }
+
+    /* =========================================================
+           EVENT ACTIVITY
+           ========================================================= */
+
+    .cp-activity-section {
+        margin-top: 28px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.035);
+    }
+
+    .cp-progress-item {
+        margin-bottom: 24px;
+    }
+
+        .cp-progress-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .cp-progress-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 9px;
+        color: #374151;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .cp-progress-value {
+        color: #4f46e5;
+        font-weight: 700;
+    }
+
+    .cp-progress-track {
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #eef2f7;
+    }
+
+    .cp-progress-bar {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient( 90deg, #4338ca, #6366f1 );
+        transition: width 0.3s ease;
+    }
+
+    /* =========================================================
+           RESPONSIVE
+           ========================================================= */
+
+    @@media (max-width: 900px) {
+        .cp-welcome-banner {
+            padding: 32px 35px;
+        }
+
+        .cp-welcome-content h1 {
+            font-size: 2.2rem;
+        }
+
+        .cp-welcome-icon {
+            width: 75px;
+            height: 75px;
+            font-size: 2rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .club-president-dashboard {
+            padding: 0 3px;
+        }
+
+        .cp-welcome-banner {
+            padding: 28px 25px;
+            min-height: 170px;
+            border-radius: 20px;
+        }
+
+        .cp-welcome-content h1 {
+            font-size: 1.8rem;
+        }
+
+        .cp-welcome-content p {
+            font-size: 0.88rem;
+        }
+
+        .cp-welcome-icon {
             display: none;
+        }
+
+        .cp-analytics-card {
+            min-height: 160px;
+        }
+
+        .cp-analytics-number {
+            font-size: 2rem;
+        }
+
+        .cp-overview-section,
+        .cp-activity-section {
+            padding: 22px;
         }
     }
 </style>
 
-
 <div class="container py-4">
 
-    <partial name="_Alerts" />
+    <div class="club-president-dashboard">
 
+        <partial name="_Alerts" />
 
-    <!-- ================= HEADER ================= -->
+        <!-- =====================================================
+             WELCOME
+             ====================================================== -->
 
-    <div class="dashboard-header">
+        <div class="cp-welcome-banner">
 
-        <div class="row align-items-center">
+            <div class="cp-welcome-content">
 
-            <div class="col">
-
-                <div class="small fw-semibold mb-2">
-                    CLUB MANAGEMENT PORTAL
+                <div class="cp-welcome-label">
+                    CLUB PRESIDENT PORTAL
                 </div>
 
                 <h1>
-                    Club President Dashboard 👑
+                    Welcome back, @presidentName 👋
                 </h1>
 
                 <p>
-                    Manage your club, organize events and coordinate
-                    your volunteer team from one place.
+                    Here's an overview of your clubs and their event activity.
                 </p>
 
             </div>
 
-            <div class="col-auto">
+            <div class="cp-welcome-icon">
+                🏛️
+            </div>
 
-                <div class="club-icon">
-                    👑
+        </div>
+
+
+        <!-- =====================================================
+             ANALYTICS
+             No navigation/action buttons here.
+             ====================================================== -->
+
+        <div class="row g-4">
+
+            <!-- MY CLUBS -->
+
+            <div class="col-md-6 col-xl-4">
+
+                <div class="cp-analytics-card cp-clubs-card">
+
+                    <div class="cp-analytics-icon">
+                        🏛️
+                    </div>
+
+                    <div class="cp-analytics-title">
+                        My Clubs
+                    </div>
+
+                    <div class="cp-analytics-number">
+                        @myClubCount
+                    </div>
+
+                    <div class="cp-analytics-subtitle">
+                        Approved clubs under your presidency
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CLUB EVENTS -->
+
+            <div class="col-md-6 col-xl-4">
+
+                <div class="cp-analytics-card cp-events-card">
+
+                    <div class="cp-analytics-icon">
+                        📅
+                    </div>
+
+                    <div class="cp-analytics-title">
+                        Total Club Events
+                    </div>
+
+                    <div class="cp-analytics-number">
+                        @clubEventCount
+                    </div>
+
+                    <div class="cp-analytics-subtitle">
+                        Events organized by your clubs
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PARTICIPANTS -->
+
+            <div class="col-md-6 col-xl-4">
+
+                <div class="cp-analytics-card cp-participants-card">
+
+                    <div class="cp-analytics-icon">
+                        👥
+                    </div>
+
+                    <div class="cp-analytics-title">
+                        Total Participants
+                    </div>
+
+                    <div class="cp-analytics-number">
+                        @totalParticipants
+                    </div>
+
+                    <div class="cp-analytics-subtitle">
+                        Registrations across your club events
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- UPCOMING -->
+
+            <div class="col-md-6 col-xl-4">
+
+                <div class="cp-analytics-card cp-upcoming-card">
+
+                    <div class="cp-analytics-icon">
+                        🗓️
+                    </div>
+
+                    <div class="cp-analytics-title">
+                        Upcoming Events
+                    </div>
+
+                    <div class="cp-analytics-number">
+                        @upcomingEventCount
+                    </div>
+
+                    <div class="cp-analytics-subtitle">
+                        Approved events scheduled ahead
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- COMPLETED -->
+
+            <div class="col-md-6 col-xl-4">
+
+                <div class="cp-analytics-card cp-completed-card">
+
+                    <div class="cp-analytics-icon">
+                        ✓
+                    </div>
+
+                    <div class="cp-analytics-title">
+                        Completed Events
+                    </div>
+
+                    <div class="cp-analytics-number">
+                        @completedEventCount
+                    </div>
+
+                    <div class="cp-analytics-subtitle">
+                        Events that have already finished
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PENDING VOLUNTEERS -->
+
+            <div class="col-md-6 col-xl-4">
+
+                <div class="cp-analytics-card cp-volunteer-card">
+
+                    <div class="cp-analytics-icon">
+                        ⏳
+                    </div>
+
+                    <div class="cp-analytics-title">
+                        Pending Volunteers
+                    </div>
+
+                    <div class="cp-analytics-number">
+                        @pendingVolunteerCount
+                    </div>
+
+                    <div class="cp-analytics-subtitle">
+                        Applications awaiting action
+                    </div>
+
                 </div>
 
             </div>
 
         </div>
 
-    </div>
+
+        <!-- =====================================================
+             CLUB ACTIVITY OVERVIEW
+             ====================================================== -->
+
+        <div class="cp-overview-section">
+
+            <div class="cp-section-label">
+                CLUB OVERVIEW
+            </div>
+
+            <h2 class="cp-section-title">
+                Your Club Activity
+            </h2>
+
+            <p class="cp-section-description">
+                A quick summary of activity across the clubs you manage.
+            </p>
 
 
-    <!-- ================= STATISTICS ================= -->
+            <div class="cp-overview-row">
 
-    <div class="row g-4 mb-5">
-
-        <!-- My Clubs -->
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-primary-subtle text-primary">
-                    🏛️
+                <div class="cp-overview-name">
+                    <span class="cp-overview-dot"></span>
+                    Approved clubs
                 </div>
 
-                <div class="stat-number">
+                <div class="cp-overview-value">
                     @myClubCount
                 </div>
 
-                <div class="stat-label">
-                    My Clubs
-                </div>
-
             </div>
 
-        </div>
 
+            <div class="cp-overview-row">
 
-        <!-- My Events -->
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-success-subtle text-success">
-                    📅
+                <div class="cp-overview-name">
+                    <span class="cp-overview-dot blue"></span>
+                    Total club events
                 </div>
 
-                <div class="stat-number">
+                <div class="cp-overview-value">
                     @clubEventCount
                 </div>
 
-                <div class="stat-label">
-                    Club Events
+            </div>
+
+
+            <div class="cp-overview-row">
+
+                <div class="cp-overview-name">
+                    <span class="cp-overview-dot green"></span>
+                    Total participants
+                </div>
+
+                <div class="cp-overview-value">
+                    @totalParticipants
                 </div>
 
             </div>
 
-        </div>
 
+            <div class="cp-overview-row">
 
-        <!-- Volunteer Applications -->
-
-        <div class="col-6 col-lg-3">
-
-            <div class="stat-card">
-
-                <div class="stat-icon bg-warning-subtle text-warning">
-                    🤝
+                <div class="cp-overview-name">
+                    <span class="cp-overview-dot orange"></span>
+                    Pending volunteer applications
                 </div>
 
-                <div class="stat-number">
+                <div class="cp-overview-value">
                     @pendingVolunteerCount
                 </div>
 
-                <div class="stat-label">
-                    Pending Volunteers
-                </div>
-
             </div>
 
         </div>
 
 
-        <!-- Event Discovery -->
+        <!-- =====================================================
+             EVENT ACTIVITY
+             ====================================================== -->
 
-        <div class="col-6 col-lg-3">
+        <div class="cp-activity-section">
 
-            <div class="stat-card">
-
-                <div class="stat-icon bg-info-subtle text-info">
-                    🔎
-                </div>
-
-                <div class="stat-number">
-                    ∞
-                </div>
-
-                <div class="stat-label">
-                    Events to Discover
-                </div>
-
+            <div class="cp-section-label">
+                EVENT ACTIVITY
             </div>
 
-        </div>
+            <h2 class="cp-section-title">
+                Event Progress
+            </h2>
 
-    </div>
-
-
-    <!-- ================= CLUB MANAGEMENT ================= -->
-
-    <div class="mb-4">
-
-        <h3 class="section-title mb-1">
-            Club Management
-        </h3>
-
-        <p class="section-description mb-0">
-            Manage your clubs and organize successful events.
-        </p>
-
-    </div>
+            <p class="cp-section-description">
+                Overview of upcoming and completed events organized by your clubs.
+            </p>
 
 
-    <div class="row g-4 mb-5">
+            <!-- UPCOMING -->
 
-        <!-- My Clubs -->
+            <div class="cp-progress-item">
 
-        <div class="col-md-6 col-lg-3">
+                <div class="cp-progress-header">
 
-            <div class="action-card">
+                    <span>
+                        Upcoming Events
+                    </span>
 
-                <div class="action-icon bg-primary-subtle text-primary">
-                    🏛️
+                    <span class="cp-progress-value">
+                        @upcomingEventCount
+                    </span>
+
                 </div>
 
-                <h5>
-                    My Clubs
-                </h5>
+                <div class="cp-progress-track">
 
-                <p>
-                    View and manage the clubs where
-                    you are a president.
-                </p>
-
-                <a asp-action="AllClubs"
-                   class="btn btn-primary dashboard-btn">
-                    View My Clubs →
-                </a>
-
-            </div>
-
-        </div>
-
-
-        <!-- My Events -->
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="action-card">
-
-                <div class="action-icon bg-success-subtle text-success">
-                    📅
-                </div>
-
-                <h5>
-                    My Events
-                </h5>
-
-                <p>
-                    Manage events organized by
-                    your club.
-                </p>
-
-                <a asp-action="Events"
-                   class="btn btn-success dashboard-btn">
-                    Manage Events →
-                </a>
-
-            </div>
-
-        </div>
-
-
-        <!-- Browse Events -->
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="action-card">
-
-                <div class="action-icon bg-info-subtle text-info">
-                    🔎
-                </div>
-
-                <h5>
-                    Browse Events
-                </h5>
-
-                <p>
-                    Discover approved college events
-                    and activities.
-                </p>
-
-                <a asp-controller="Events"
-                   asp-action="Index"
-                   class="btn btn-info dashboard-btn">
-                    Explore Events →
-                </a>
-
-            </div>
-
-        </div>
-
-
-        <!-- Volunteers -->
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="action-card">
-
-                <div class="action-icon bg-warning-subtle text-warning">
-                    🤝
-                </div>
-
-                <h5>
-                    Volunteers
-                </h5>
-
-                <p>
-                    Review and manage volunteer
-                    applications for your events.
-                </p>
-
-                <a asp-controller="Volunteer"
-                   asp-action="Manage"
-                   class="btn btn-warning dashboard-btn">
-                    Manage Volunteers →
-                </a>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- ================= VOLUNTEER NOTIFICATION ================= -->
-    @if (pendingVolunteerCount > 0)
-    {
-        <div class="volunteer-alert p-4 mb-5">
-
-            <div class="row align-items-center">
-
-                <div class="col">
-
-                    <div class="d-flex align-items-center gap-3">
-
-                        <div class="volunteer-alert-icon">
-                            🤝
-                        </div>
-
-                        <div>
-
-                            <h5 class="fw-bold mb-1">
-                                Volunteer Applications Need Review
-                            </h5>
-
-                            <p class="text-muted mb-0">
-                                You have
-                                <strong>@pendingVolunteerCount</strong>
-                                pending volunteer
-                                @(pendingVolunteerCount == 1
-                                    ? "application"
-                                    : "applications")
-                                waiting for your decision.
-                            </p>
-
-                        </div>
-
+                    <div class="cp-progress-bar"
+                         style="width: @upcomingPercent%;">
                     </div>
 
                 </div>
 
-                <div class="col-auto mt-3 mt-md-0">
-
-                    <a asp-controller="Volunteer"
-                       asp-action="Manage"
-                       class="btn btn-warning dashboard-btn">
-                        Review Applications →
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-success border-0 rounded-4 p-4 mb-5">
-
-            <div class="d-flex align-items-center gap-3">
-
-                <div style="font-size: 28px;">
-                    ✓
-                </div>
-
-                <div>
-
-                    <h6 class="fw-bold mb-1">
-                        Volunteer applications are up to date
-                    </h6>
-
-                    <small>
-                        There are currently no pending applications
-                        requiring your attention.
-                    </small>
-
-                </div>
-
-            </div>
-
-        </div>
-    }
-
-
-    <!-- ================= QUICK GUIDE ================= -->
-
-    <div class="guide-card mb-5">
-
-        <div class="row align-items-center">
-
-            <div class="col-lg-5">
-
-                <span class="badge bg-light text-dark mb-3">
-                    CLUB PRESIDENT GUIDE
-                </span>
-
-                <h3 class="fw-bold">
-                    Run your club smoothly
-                </h3>
-
-                <p>
-                    EventFlow gives club presidents everything
-                    they need to organize activities and manage
-                    student participation.
-                </p>
-
             </div>
 
 
-            <div class="col-lg-7">
+            <!-- COMPLETED -->
 
-                <div class="guide-step">
+            <div class="cp-progress-item">
 
-                    <div class="guide-number">
-                        01
-                    </div>
+                <div class="cp-progress-header">
 
-                    <div>
-                        <strong>Manage your club</strong>
-                        <div class="text-white-50 small">
-                            Keep your club information organized.
-                        </div>
-                    </div>
+                    <span>
+                        Completed Events
+                    </span>
 
-                </div>
-
-
-                <div class="guide-step">
-
-                    <div class="guide-number">
-                        02
-                    </div>
-
-                    <div>
-                        <strong>Organize events</strong>
-                        <div class="text-white-50 small">
-                            Create and manage your club activities.
-                        </div>
-                    </div>
+                    <span class="cp-progress-value">
+                        @completedEventCount
+                    </span>
 
                 </div>
 
+                <div class="cp-progress-track">
 
-                <div class="guide-step">
-
-                    <div class="guide-number">
-                        03
-                    </div>
-
-                    <div>
-                        <strong>Manage volunteers</strong>
-                        <div class="text-white-50 small">
-                            Review applications and build your event team.
-                        </div>
+                    <div class="cp-progress-bar"
+                         style="width: @completedPercent%;">
                     </div>
 
                 </div>
@@ -637,4 +774,3 @@
     </div>
 
 </div>
-

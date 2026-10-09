@@ -16,8 +16,10 @@
         <div class="col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-body p-4">
-                    <form asp-action="EditEvent"
-                          method="post">
+                   <form asp-action="EditEvent"
+                      asp-route-id="@Model.Id"
+                      method="post"
+                      enctype="multipart/form-data">
 
                         @Html.AntiForgeryToken()
 
@@ -146,6 +148,34 @@
                                 <span asp-validation-for="VenueId"
                                       class="text-danger">
                                 </span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="bannerImage" class="form-label">
+                                    Event Banner
+                                </label>
+
+                                @if (!string.IsNullOrEmpty(Model.BannerImagePath))
+                                {
+                                    <div class="mb-2">
+                                        <img src="@Model.BannerImagePath"
+                                             alt="Current event banner"
+                                             class="img-fluid rounded"
+                                             style="max-height: 200px;" />
+                                    </div>
+                                }
+
+                                <input type="file"
+                                       id="bannerImage"
+                                       name="bannerImage"
+                                       class="form-control"
+                                       accept=".jpg,.jpeg,.png,.webp" />
+
+                                <div class="form-text">
+                                    Leave empty to keep the current banner.
+                                </div>
+
+                                <span class="text-danger"
+                                      asp-validation-for="BannerImagePath"></span>
                             </div>
                         </div>
 

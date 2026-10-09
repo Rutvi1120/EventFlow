@@ -138,6 +138,24 @@
                                       class="text-danger">
                                 </span>
                             </div>
+                            <div class="mb-3">
+                                <label for="bannerImage" class="form-label">
+                                    Event Banner
+                                </label>
+
+                                <input type="file"
+                                       id="bannerImage"
+                                       name="bannerImage"
+                                       class="form-control"
+                                       accept=".jpg,.jpeg,.png,.webp" />
+
+                                <div class="form-text">
+                                    JPG, JPEG, PNG or WEBP. Maximum size: 5 MB.
+                                </div>
+
+                                <span class="text-danger"
+                                      asp-validation-for="BannerImagePath"></span>
+                            </div>
                         </div>
 
                         <div class="alert alert-info">

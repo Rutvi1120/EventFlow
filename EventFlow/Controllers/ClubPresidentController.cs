@@ -17,19 +17,18 @@ namespace EventFlow.Controllers
         private readonly VolunteerManagementService _volunteerService;
         private readonly ConflictDetectionService _conflictDetectionService;
 
+        private readonly EventBannerService _eventBannerService;
         public ClubPresidentController(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager,
-            VolunteerManagementService volunteerService,
-            ConflictDetectionService conflictDetectionService)
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager,
+    EventBannerService eventBannerService)
         {
             _context = context;
             _userManager = userManager;
-            _volunteerService = volunteerService;
-            _conflictDetectionService = conflictDetectionService;
+            _eventBannerService = eventBannerService;
         }
 
-      
+
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -197,7 +196,7 @@ namespace EventFlow.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEvent(
             int clubId,
-            Event eventItem)
+            Event eventItem, IFormFile? bannerImage)
         {
             var userId = _userManager.GetUserId(User);
 
@@ -259,6 +258,21 @@ namespace EventFlow.Controllers
                 await LoadVenues();
                 ViewBag.Club = club;
 
+                return View(eventItem);
+            }
+            try
+            {
+                eventItem.BannerImagePath =
+                    await _eventBannerService.SaveBannerAsync(
+                        bannerImage);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(
+                    "bannerImage",
+                    ex.Message);
+
+                await LoadVenues();
                 return View(eventItem);
             }
 
@@ -337,19 +351,19 @@ namespace EventFlow.Controllers
             return View(eventItem);
         }
 
-       
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditEvent(
             int id,
-            Event eventItem)
+            Event eventItem,
+            IFormFile? bannerImage)
         {
             var userId = _userManager.GetUserId(User);
 
             if (string.IsNullOrWhiteSpace(userId))
-            {
                 return Challenge();
-            }
 
             var existingEvent = await _context.Events
                 .Include(e => e.Club)
@@ -359,14 +373,10 @@ namespace EventFlow.Controllers
                     e.EventType == "Club");
 
             if (existingEvent == null)
-            {
                 return NotFound();
-            }
 
             if (existingEvent.ApprovalStatus == "Approved")
-            {
                 return BadRequest();
-            }
 
             if (eventItem.EndDateTime <= eventItem.StartDateTime)
             {
@@ -401,9 +411,36 @@ namespace EventFlow.Controllers
 
             if (!ModelState.IsValid)
             {
+                eventItem.BannerImagePath = existingEvent.BannerImagePath;
+                eventItem.Club = existingEvent.Club;
+
                 await LoadVenues();
                 return View(eventItem);
             }
+
+            string? newBannerPath = null;
+
+            // Save a new banner only when the user selects a file.
+            try
+            {
+                if (bannerImage != null && bannerImage.Length > 0)
+                {
+                    newBannerPath =
+                        await _eventBannerService.SaveBannerAsync(bannerImage);
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError("bannerImage", ex.Message);
+
+                eventItem.BannerImagePath = existingEvent.BannerImagePath;
+                eventItem.Club = existingEvent.Club;
+
+                await LoadVenues();
+                return View(eventItem);
+            }
+
+            var oldBannerPath = existingEvent.BannerImagePath;
 
             existingEvent.Name = eventItem.Name;
             existingEvent.Description = eventItem.Description;
@@ -411,12 +448,38 @@ namespace EventFlow.Controllers
             existingEvent.EndDateTime = eventItem.EndDateTime;
             existingEvent.MaxParticipants = eventItem.MaxParticipants;
             existingEvent.VenueId = eventItem.VenueId;
+
+            // Preserve the old banner unless a replacement was uploaded.
+            if (!string.IsNullOrWhiteSpace(newBannerPath))
+            {
+                existingEvent.BannerImagePath = newBannerPath;
+            }
+
             existingEvent.EventType = "Club";
             existingEvent.ClubName = existingEvent.Club?.Name;
             existingEvent.ApprovalStatus = "Pending";
             existingEvent.Status = "Upcoming";
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                // Avoid leaving an unused new image if the database save fails.
+                if (!string.IsNullOrWhiteSpace(newBannerPath))
+                    _eventBannerService.DeleteBanner(newBannerPath);
+
+                throw;
+            }
+
+            // Remove the previous image only after the update succeeds.
+            if (!string.IsNullOrWhiteSpace(newBannerPath))
+            {
+                _eventBannerService.DeleteBanner(oldBannerPath);
+            }
+
+            TempData["SuccessMessage"] = "Event updated successfully.";
 
             return RedirectToAction(nameof(Events));
         }

@@ -16,8 +16,10 @@
         <div class="col-lg-8">
             <div class="card shadow-sm">
                 <div class="card-body p-4">
-                    <form asp-action="CreateEvent"
-                          method="post">
+                    <form asp-controller="Student"
+                      asp-action="CreateEvent"
+                      method="post"
+                      enctype="multipart/form-data">
 
                         <div asp-validation-summary="ModelOnly"
                              class="text-danger mb-3">
@@ -168,6 +170,24 @@
                                 <span asp-validation-for="VenueId"
                                       class="text-danger">
                                 </span>
+                            </div>
+                            <div class="mb-3">
+                                <label for="bannerImage" class="form-label">
+                                    Event Banner
+                                </label>
+
+                                <input type="file"
+                                       id="bannerImage"
+                                       name="bannerImage"
+                                       class="form-control"
+                                       accept=".jpg,.jpeg,.png,.webp" />
+
+                                <div class="form-text">
+                                    JPG, JPEG, PNG or WEBP. Maximum size: 5 MB.
+                                </div>
+
+                                <span class="text-danger"
+                                      asp-validation-for="BannerImagePath"></span>
                             </div>
                         </div>
 

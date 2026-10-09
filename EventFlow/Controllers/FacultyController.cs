@@ -16,14 +16,17 @@ namespace EventFlow.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly VolunteerManagementService _volunteerService;
 
+        private readonly EventBannerService _eventBannerService;
         public FacultyController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            VolunteerManagementService volunteerService)
+            VolunteerManagementService volunteerService,
+            EventBannerService eventBannerService)
         {
             _context = context;
             _userManager = userManager;
             _volunteerService = volunteerService;
+            _eventBannerService = eventBannerService;
         }
 
         public async Task<IActionResult> Index()
@@ -45,12 +48,13 @@ namespace EventFlow.Controllers
                 .Include(e => e.Club)
                 .Include(e => e.Venue)
                 .Where(e =>
-                    e.ApprovalStatus == "Pending" &&
+                    e.ApprovalStatus == EventApprovalStatus.Pending &&
                     (
-                        e.EventType == "Student" ||
-                        e.EventType == "College" ||
+                        (e.EventType == EventTypes.Student &&
+                         e.FacultySupervisorId == facultyId) ||
+                        e.EventType == EventTypes.College ||
                         (
-                            e.EventType == "Club" &&
+                            e.EventType == EventTypes.Club &&
                             e.Club != null &&
                             e.Club.FacultySupervisorId == facultyId
                         )
@@ -65,7 +69,7 @@ namespace EventFlow.Controllers
                 .OrderByDescending(e => e.StartDateTime)
                 .ToListAsync();
 
-          
+
 
             var pendingVolunteerApplications =
                 await _volunteerService.ManageableVolunteers(User)
@@ -94,7 +98,7 @@ namespace EventFlow.Controllers
             ViewBag.MyEvents = myEvents;
             ViewBag.PendingPresidentRequests = pendingPresidentRequests;
 
-           
+
             ViewBag.PendingVolunteerApplications =
                 pendingVolunteerApplications;
 
@@ -119,19 +123,19 @@ namespace EventFlow.Controllers
                 .Where(e =>
                     e.OrganizerId == facultyId ||
 
-                   
+
                     (
                         e.EventType == EventTypes.Student &&
                         e.FacultySupervisorId == facultyId
                     ) ||
 
-                    
+
                     (
                         e.ApprovalStatus == EventApprovalStatus.Pending &&
                         e.EventType == EventTypes.College
                     ) ||
 
-                  
+
                     (
                         e.EventType == EventTypes.Club &&
                         e.Club != null &&
@@ -148,11 +152,12 @@ namespace EventFlow.Controllers
                 .ToListAsync();
 
             ViewBag.ManageableEventIds = new HashSet<int>(manageableIds);
+            ViewBag.FacultyId = facultyId;
 
             return View(events);
         }
 
-       
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveEvent(int id)
@@ -248,7 +253,7 @@ namespace EventFlow.Controllers
             return RedirectToAction(nameof(Events));
         }
 
-        
+
 
         public async Task<IActionResult> AllClubs()
         {
@@ -333,7 +338,7 @@ namespace EventFlow.Controllers
             return RedirectToAction(nameof(AllClubs));
         }
 
-       
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApprovePresident(string userId)
@@ -424,7 +429,7 @@ namespace EventFlow.Controllers
                 new { id = club.Id });
         }
 
-        
+
 
         [HttpGet]
         public async Task<IActionResult> CreateEvent()
@@ -441,7 +446,7 @@ namespace EventFlow.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateEvent(Event eventItem)
+        public async Task<IActionResult> CreateEvent(Event eventItem, IFormFile? bannerImage)
         {
             var facultyId = _userManager.GetUserId(User);
 
@@ -484,6 +489,21 @@ namespace EventFlow.Controllers
                 await LoadVenues();
                 return View(eventItem);
             }
+            try
+            {
+                eventItem.BannerImagePath =
+                    await _eventBannerService.SaveBannerAsync(
+                        bannerImage);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(
+                    "bannerImage",
+                    ex.Message);
+
+                await LoadVenues();
+                return View(eventItem);
+            }
 
             _context.Events.Add(eventItem);
 
@@ -492,6 +512,139 @@ namespace EventFlow.Controllers
             TempData["SuccessMessage"] =
                 "College event created successfully.";
 
+            return RedirectToAction(nameof(Events));
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> EditEvent(int id)
+        {
+            var facultyId = _userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(facultyId))
+                return Challenge();
+
+            // Faculty may edit only college events that they created.
+            var eventItem = await _context.Events.FirstOrDefaultAsync(e =>
+                e.Id == id &&
+                e.OrganizerId == facultyId &&
+                e.EventType == "College");
+
+            if (eventItem == null)
+                return NotFound();
+
+            await LoadVenues();
+            return View(eventItem);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditEvent(int id, Event model, IFormFile? bannerImage)
+        {
+            var facultyId = _userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(facultyId))
+                return Challenge();
+
+            var existingEvent = await _context.Events.FirstOrDefaultAsync(e =>
+                e.Id == id &&
+                e.OrganizerId == facultyId &&
+                e.EventType == "College");
+
+            if (existingEvent == null)
+                return NotFound();
+
+            if (model.EndDateTime <= model.StartDateTime)
+                ModelState.AddModelError(nameof(Event.EndDateTime), "End time must be later than start time.");
+
+            var venue = await _context.Venues.FirstOrDefaultAsync(v => v.Id == model.VenueId);
+            if (venue == null)
+                ModelState.AddModelError(nameof(Event.VenueId), "The selected venue does not exist.");
+            else if (model.MaxParticipants > venue.Capacity)
+                ModelState.AddModelError(nameof(Event.MaxParticipants), $"This venue can accommodate only {venue.Capacity} participants.");
+
+            if (!ModelState.IsValid)
+            {
+                model.Id = id;
+                model.BannerImagePath = existingEvent.BannerImagePath;
+                await LoadVenues();
+                return View(model);
+            }
+
+            string? newBannerPath = null;
+            if (bannerImage != null && bannerImage.Length > 0)
+            {
+                try
+                {
+                    newBannerPath = await _eventBannerService.SaveBannerAsync(bannerImage);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError("bannerImage", ex.Message);
+                    model.Id = id;
+                    model.BannerImagePath = existingEvent.BannerImagePath;
+                    await LoadVenues();
+                    return View(model);
+                }
+            }
+
+            existingEvent.Name = model.Name;
+            existingEvent.Description = model.Description;
+            existingEvent.StartDateTime = model.StartDateTime;
+            existingEvent.EndDateTime = model.EndDateTime;
+            existingEvent.MaxParticipants = model.MaxParticipants;
+            existingEvent.VenueId = model.VenueId;
+            existingEvent.Status = "Upcoming";
+            // Keep the event's current approval state; editing does not silently change it.
+
+            if (!string.IsNullOrWhiteSpace(newBannerPath))
+            {
+                var oldBannerPath = existingEvent.BannerImagePath;
+                existingEvent.BannerImagePath = newBannerPath;
+                await _context.SaveChangesAsync();
+                _eventBannerService.DeleteBanner(oldBannerPath);
+            }
+            else
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["SuccessMessage"] = "College event updated successfully.";
+            return RedirectToAction(nameof(Events));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteEvent(int id)
+        {
+            var facultyId = _userManager.GetUserId(User);
+            if (string.IsNullOrWhiteSpace(facultyId))
+                return Challenge();
+
+            // Never allow deletion of another organizer's or a supervised event.
+            var eventItem = await _context.Events
+                .Include(e => e.Registrations)
+                .Include(e => e.WaitlistEntries)
+                .Include(e => e.Volunteers)
+                .FirstOrDefaultAsync(e =>
+                    e.Id == id &&
+                    e.OrganizerId == facultyId &&
+                    e.EventType == "College");
+
+            if (eventItem == null)
+                return NotFound();
+
+            // Preserve attendee/volunteer records and avoid foreign-key failures.
+            if (eventItem.Registrations.Any() || eventItem.WaitlistEntries.Any() || eventItem.Volunteers.Any())
+            {
+                TempData["ErrorMessage"] = "This event cannot be deleted because it already has registrations, waitlist entries, or volunteers.";
+                return RedirectToAction(nameof(Events));
+            }
+
+            var bannerPath = eventItem.BannerImagePath;
+            _context.Events.Remove(eventItem);
+            await _context.SaveChangesAsync();
+            _eventBannerService.DeleteBanner(bannerPath);
+
+            TempData["SuccessMessage"] = "College event deleted successfully.";
             return RedirectToAction(nameof(Events));
         }
 

@@ -15,13 +15,16 @@ namespace EventFlow.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
+        private readonly EventBannerService _eventBannerService;
         public StudentController(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager)
-        {
-            _context = context;
-            _userManager = userManager;
-        }
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager,
+    EventBannerService eventBannerService)
+{
+    _context = context;
+    _userManager = userManager;
+    _eventBannerService = eventBannerService;
+}
 
         public async Task<IActionResult> Index()
         {
@@ -100,7 +103,7 @@ namespace EventFlow.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateEvent(Event eventItem)
+        public async Task<IActionResult> CreateEvent(Event eventItem, IFormFile? bannerImage)
         {
             var userId = _userManager.GetUserId(User);
 
@@ -159,7 +162,22 @@ namespace EventFlow.Controllers
 
                 return View(eventItem);
             }
+            try
+            {
+                eventItem.BannerImagePath =
+                    await _eventBannerService.SaveBannerAsync(bannerImage);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(
+                    "bannerImage",
+                    ex.Message);
 
+                await LoadVenues();
+                await LoadFacultySupervisors();
+
+                return View(eventItem);
+            }
             _context.Events.Add(eventItem);
 
             await _context.SaveChangesAsync();
@@ -224,7 +242,7 @@ namespace EventFlow.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditEvent(
             int id,
-            Event eventItem)
+            Event eventItem, IFormFile? bannerImage)
         {
             var userId = _userManager.GetUserId(User);
 
@@ -243,7 +261,27 @@ namespace EventFlow.Controllers
             {
                 return NotFound();
             }
+            if (bannerImage != null && bannerImage.Length > 0)
+            {
+                try
+                {
+                    var oldBanner = existingEvent.BannerImagePath;
 
+                    existingEvent.BannerImagePath =
+                        await _eventBannerService.SaveBannerAsync(
+                            bannerImage);
+
+                    _eventBannerService.DeleteBanner(oldBanner);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ModelState.AddModelError(
+                        "bannerImage",
+                        ex.Message);
+
+                    return View(eventItem);
+                }
+            }
             if (existingEvent.ApprovalStatus == "Approved")
             {
                 return BadRequest();
@@ -332,9 +370,13 @@ namespace EventFlow.Controllers
                 return BadRequest();
             }
 
+            var bannerPath = eventItem.BannerImagePath;
+
             _context.Events.Remove(eventItem);
 
             await _context.SaveChangesAsync();
+
+            _eventBannerService.DeleteBanner(bannerPath);
 
             return RedirectToAction(nameof(MyEvents));
         }

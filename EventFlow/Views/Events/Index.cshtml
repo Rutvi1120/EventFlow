@@ -73,6 +73,20 @@
                                 <strong>Venue:</strong>
                                 @(eventItem.Venue?.Name ?? "Not specified")
                             </div>
+                           @if (!string.IsNullOrWhiteSpace(eventItem.BannerImagePath))
+{
+    <img src="@Url.Content(eventItem.BannerImagePath)"
+         class="card-img-top"
+         alt="@eventItem.Name banner"
+         style="height: 220px; width: 100%; object-fit: cover;"
+         onerror="this.style.display='none';" />
+}
+else
+{
+    <div class="text-muted text-center py-4">
+        No banner available
+    </div>
+}
 
                             <div class="mt-auto">
                                 <a asp-action="Details"

@@ -1170,6 +1170,17 @@ else if (isStudent)
                     <span>Registrations</span>
 
                 </a>
+              
+                    <a class="student-sidebar-link
+                    @(currentController == "Volunteer" && currentAction == "MyApplications" ? "active" : "")"
+                   asp-controller="Volunteer"
+                   asp-action="MyApplications">
+
+                    <span class="student-sidebar-icon">📋</span>
+                    <span>My applications</span>
+
+                </a>
+
 
             </nav>
 

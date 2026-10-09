@@ -50,6 +50,76 @@
 
             <hr />
 
+            @if (!string.IsNullOrEmpty(Model.BannerImagePath))
+            {
+                <div class="mb-3">
+       
+                    <img src="@Url.Content(Model.BannerImagePath)"
+                         alt="Event Banner"
+                         class="img-fluid rounded"
+                         style="max-height: 200px; cursor: zoom-in;"
+                         onclick="openBannerFullscreen(this.src)" />
+                </div>
+            }
+
+            <!-- Full-screen image viewer -->
+            <div id="bannerViewer"
+                 onclick="closeBannerFullscreen()"
+                 style="display:none;
+                        position:fixed;
+                        z-index:9999;
+                        inset:0;
+                        background:rgba(0,0,0,0.95);
+                        align-items:center;
+                        justify-content:center;
+                        padding:20px;">
+
+                <button type="button"
+                        onclick="closeBannerFullscreen(); event.stopPropagation();"
+                        aria-label="Close image"
+                        style="position:absolute;
+                               top:20px;
+                               right:25px;
+                               color:white;
+                               background:transparent;
+                               border:none;
+                               font-size:35px;
+                               cursor:pointer;">
+                    &times;
+                </button>
+
+                <img id="fullscreenBanner"
+                     alt="Full-screen Event Banner"
+                     style="max-width:95%;
+                            max-height:90vh;
+                            object-fit:contain;"
+                     onclick="event.stopPropagation()" />
+            </div>
+
+            <script>
+                function openBannerFullscreen(imageSrc) {
+                    document.getElementById('fullscreenBanner').src = imageSrc;
+
+                    const viewer = document.getElementById('bannerViewer');
+                    viewer.style.display = 'flex';
+
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeBannerFullscreen() {
+                    document.getElementById('bannerViewer').style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') {
+                        closeBannerFullscreen();
+                    }
+                });
+            </script>
+
+
+
             <div class="mb-4">
                 <h5>Description</h5>
                 <p class="mb-0">@Model.Description</p>

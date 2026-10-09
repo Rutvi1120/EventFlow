@@ -5,6 +5,7 @@
 
     var manageableIds =
         ViewBag.ManageableEventIds as HashSet<int> ?? new HashSet<int>();
+    var facultyId = ViewBag.FacultyId as string;
 }
 
 <div class="container py-4">
@@ -139,6 +140,22 @@
                                         </a>
                                     }
 
+                                    @if (eventItem.EventType == "College" && eventItem.OrganizerId == facultyId)
+                                    {
+                                        <a asp-action="EditEvent"
+                                           asp-route-id="@eventItem.Id"
+                                           class="btn btn-sm btn-outline-warning">
+                                            Edit
+                                        </a>
+
+                                        <form asp-action="DeleteEvent" method="post"
+                                              onsubmit="return confirm('Are you sure you want to delete this college event?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@eventItem.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    }
+
                                     @if (eventItem.ApprovalStatus == "Pending")
                                     {
                                         <form asp-action="ApproveEvent"
@@ -179,40 +196,40 @@
     }
 
     <script>
-        (function(){
-            const input = document.getElementById('faculty-events-search');
-            const filters = document.querySelectorAll('.faculty-events-filter');
+            (function(){
+                const input = document.getElementById('faculty-events-search');
+                const filters = document.querySelectorAll('.faculty-events-filter');
 
-            function computeStatus(start, end){
-                const now = new Date();
-                if (now < start) return 'upcoming';
-                if (now >= start && now <= end) return 'ongoing';
-                return 'completed';
-            }
+                function computeStatus(start, end){
+                    const now = new Date();
+                    if (now < start) return 'upcoming';
+                    if (now >= start && now <= end) return 'ongoing';
+                    return 'completed';
+                }
 
-            function applyFilter(){
-                const q = input.value.trim().toLowerCase();
-                const active = document.querySelector('.faculty-events-filter.active')?.dataset.filter || 'all';
-                document.querySelectorAll('#faculty-events-list .event-row').forEach(el=>{
-                    const name = (el.dataset.name || '').toLowerCase();
-                    const start = new Date(el.dataset.start);
-                    const end = new Date(el.dataset.end);
-                    const status = computeStatus(start,end);
+                function applyFilter(){
+                    const q = input.value.trim().toLowerCase();
+                    const active = document.querySelector('.faculty-events-filter.active')?.dataset.filter || 'all';
+                    document.querySelectorAll('#faculty-events-list .event-row').forEach(el=>{
+                        const name = (el.dataset.name || '').toLowerCase();
+                        const start = new Date(el.dataset.start);
+                        const end = new Date(el.dataset.end);
+                        const status = computeStatus(start,end);
 
-                    const matchesSearch = q === '' || name.indexOf(q) !== -1;
-                    const matchesFilter = active === 'all' || active === status;
+                        const matchesSearch = q === '' || name.indexOf(q) !== -1;
+                        const matchesFilter = active === 'all' || active === status;
 
-                    el.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
-                });
-            }
+                        el.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+                    });
+                }
 
-            input.addEventListener('input', applyFilter);
-            filters.forEach(btn=> btn.addEventListener('click', function(){
-                filters.forEach(b=>b.classList.remove('active'));
-                this.classList.add('active');
+                input.addEventListener('input', applyFilter);
+                filters.forEach(btn=> btn.addEventListener('click', function(){
+                    filters.forEach(b=>b.classList.remove('active'));
+                    this.classList.add('active');
+                    applyFilter();
+                }));
                 applyFilter();
-            }));
-            applyFilter();
-        })();
+            })();
     </script>
 </div>

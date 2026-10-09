@@ -25,6 +25,9 @@ namespace EventFlow.Models
         [Range(1, 100000)]
         public int MaxParticipants { get; set; }
 
+        [StringLength(500)]
+        public string? BannerImagePath { get; set; }
+
         [Required]
         [StringLength(30)]
         public string EventType { get; set; } = "Student";
